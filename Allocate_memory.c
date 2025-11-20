@@ -34,5 +34,5 @@ int main() {
 
     Free_Memory(F, u);
     
-    return 0;
+    return 0; //return 0 表示沒有問題 1或1以上的數字通常代表有錯誤。
 }
