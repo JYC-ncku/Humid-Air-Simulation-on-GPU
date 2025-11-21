@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 void Allocate_memory(float **array1, float **array2, float **array3, int N){
     *array1 = (float*)malloc(N * sizeof(float));
@@ -21,12 +22,12 @@ void Free_memory( float *array1, float *array2, float *array3){
 }
 
 int main(){
-    const int N = 200 ;
-    float *T, *t, *x;
+    const int N = 200;
+    float *T, *T_new, *x ;
 
-    Allocate_memory(&T, &t, &x, N);
+    Allocate_memory(&T, &T_new, &x, N);
 
-    Free_memory(T, t, x);
+    Free_memory(T, T_new, x);
 
     return(0);
 }
