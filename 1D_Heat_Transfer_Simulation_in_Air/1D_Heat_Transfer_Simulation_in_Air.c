@@ -21,11 +21,25 @@ void Free_memory( float *array1, float *array2, float *array3){
         printf("Memory freed successfully\n");
 }
 
+void 
+
 int main(){
     const int N = 200;
+    const float alpha = 0.25; 
+    const float dt = 0.0005; // CFL must be <= 0.5, and dt cannot be set too large to avoid divergence. 
+    const float dx = 0.1/(N-1); // Total length = 0.1 m, and N-1 is because N start from 0.
+
     float *T, *T_new, *x ;
+    float time = 0.0;
+    int i;
 
     Allocate_memory(&T, &T_new, &x, N);
+
+    // Setting initial condition
+    for (i = 0; i<N; i++){
+        T[i] = 300;
+        x[i] = i * dx ;
+    }
 
     Free_memory(T, T_new, x);
 
