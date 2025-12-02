@@ -9,8 +9,8 @@
     const float gamma = 1.4; // Gamma value of air is 1.4
 
 // 程式控制常數
-    const float L = 0.10;      // Total length 10cm = 0.10m
-    const float Tt = 325.0; // 目標（Target)溫度 K
+    const float L = 0.10;      // Total length 0.10 m
+    const float Tt = 325.0; // 目標（target)溫度 K
     const float Ti = 300.0; // 初始(initial)溫度 K
     const float Tf = 450.0; // 右邊界固定(fix)溫度 K
     const float dt = 0.001; // 固定時間步長(Time step)，若r值檢測大於0.5則須將此值調小。有兩種方式：一是固定r值，另外就是固定dt，由於這題我們想得到的是時間，所以固定dt所得到的答案較精確。
@@ -35,25 +35,29 @@
             printf("Memory freed successfully\n");
     }
 
-// Using FTCS to calculate time when T=325K at x = 5cm.
-    int main(){
-        const int N = 200;
-
-        float dt = ; 
-        float dx = 0.1/(N-1); // Total length = 0.1 m, and N-1 is because N start from 0.
-        float *T, *T_new, *x ;
-        float time = 0.0;
-        const float Cv = R/(gamma-1); // specific heat at constant volume of air
-        const float Cp = Cv+R; // specific heat at constant pressure of air
-        const float alpha = k/(rho*Cp); // thermal diffusivity
-        const float r = alpha*(dt/(dx)^2);
-        int i;
+//Using FTCS to calculate time when T=325K at x = 5cm.
+    void FRCS_1D(int N, int no_step){
 
     Allocate_memory(&T, &T_new, &x, N);
 
-    
+
 
     Free_memory(T, T_new, x);
 
+
+
+
+
+
+    }
+
+// Setting the number of grid points and the time step..
+    int main(){
+        const int N = 201; 
+        const int tm = 500; //tmax:模擬時間設定最多500秒就結束，如果在500秒之前得到結果就會提早結束。
+        const int time_step = (int)(tm/dt) //總時間步數(total time step)，total time step = tmax / dt.
+
+    FTCS_1D(N, time_step);
+
     return(0);
-}
+    } 
