@@ -15,7 +15,7 @@ const float Ti = 300.0; // 初始(initial)溫度 K
 const float Tf = 450.0; // 右邊界固定(fix)溫度 K
 
 // Set a maximum number of steps 
-const int no_steps = 10000;
+const int no_steps = 100000;
 
 // Allocate and free memory
 void Allocate_memory(float **array1, float **array2, float **array3, int N){    
