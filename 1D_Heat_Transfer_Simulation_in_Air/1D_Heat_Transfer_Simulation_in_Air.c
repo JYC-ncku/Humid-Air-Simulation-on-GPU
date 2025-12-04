@@ -92,11 +92,22 @@ void FTCS_1D(int N, int no_steps){
                     break;
                 }                         
         }
+
+    printf("\n ---Heat flux of each cell--- \n");
+
+    for (int j = 0; j < N - 1; j++) {
+    
+    // calculate heat flux.
+    
+    float Cell_heat_flux = -((T[j] - T[j+1]) / dx) * k;  
+    printf("Cell %d : heat_flux = %.3f W\n", j, Cell_heat_flux);
+    }
+
     // 7. 最終結果與記憶體釋放
     if (target_reached == 0) {
     printf("Simulation ended: The target was not achieved after %d steps, or %g seconds.\n", no_steps, no_steps*dt);
     } else {
-        printf("Target achieved! Time spent: %.4f seconds.\n", time_to_reach);
+        printf("Target achieved! The time required for the temperature at x = 5 cm to reach 325 K is %.3f seconds.\n", time_to_reach);
     }
     Free_memory(T, T_new, x); 
 }
