@@ -64,8 +64,8 @@ void FTCS_1D(int N, int no_steps){
     int target_reached = 0; //target_reached是一個旗標 (Flag) 變數，它用來表示某個布林（Boolean）狀態：目標是否達成，0表示未達成(not completed)、1表示已達成(complete)。
     for(int i=0; i < N; i++){
         x[i] = i * dx;
-        T[i] = Ti;
-        T_new[i] = Ti; //所有位置的初始溫度都一樣都是Ti
+        T[i] = Ti; 
+        T_new[i] = Ti; // 所有位置的初始溫度都一樣都是Ti
     }
     T[N-1] = Tf; 
     T_new[N-1] = Tf;
@@ -79,7 +79,7 @@ void FTCS_1D(int N, int no_steps){
     T_new[0] = T[0];
     T_new[N-1] = Tf; // 右邊界(RIGHT boundary)：固定溫度(fix temperature)
 
-    time_to_reach += dt;
+    time_to_reach += dt; // time to reach = time to reach + dt
     // d. 陣列更新
             for (int i = 0; i < N; i++) { 
                 T[i] = T_new[i];           
@@ -100,7 +100,7 @@ void FTCS_1D(int N, int no_steps){
     }
     Free_memory(T, T_new, x); 
 }
-// Setting the number of grid points and the time step..
+// Setting the number of grid points.
     int main(){
         const int N = 201; 
      FTCS_1D(N, no_steps);
