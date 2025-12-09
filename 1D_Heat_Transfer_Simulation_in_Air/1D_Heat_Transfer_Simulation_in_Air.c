@@ -117,7 +117,7 @@ void FTCS_1D(int N, int no_steps){
     }
 
     for (int i =0; i<N; i++){
-        printf("%g\t%g\n", x[i], T[i]);
+        fprintf(pFile,"%g\t%g\n", x[i], T[i]);
     }
 
     fclose(pFile);
