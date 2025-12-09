@@ -42,8 +42,6 @@ void FTCS_1D(int N, int no_steps){
     FILE *pFile;
     // 變數宣告
     float *x, *T, *T_new;      
-    // malloc x, T, T_new
-    Allocate_memory(&T, &T_new, &x, N);
     // 1.參數計算
     float Cv = R/(GAMMA-1);
     float Cp = Cv+R;
@@ -56,6 +54,9 @@ void FTCS_1D(int N, int no_steps){
     float time_to_reach = 0.0; //initialize the time,為了計算達到目標的時間，必須先將時間初始化。
     int target_reached = 0; //target_reached是一個旗標 (Flag) 變數，它用來表示某個布林（Boolean）狀態：目標是否達成，0表示未達成(not completed)、1表示已達成(complete)。
     float Cell_heat_flux;
+
+    // malloc x, T, T_new
+    Allocate_memory(&T, &T_new, &x, N);
 
     // Open file
     pFile = fopen("results.txt","w");
@@ -103,11 +104,9 @@ void FTCS_1D(int N, int no_steps){
     printf("\n ---Heat flux of each cell--- \n");
 
     for (int j = 0; j < N - 1; j++) {
-    
-    // calculate heat flux.
-    
-    Cell_heat_flux = -((T[j] - T[j+1]) / dx) * k;  
-    printf("Cell %d : heat_flux = %.3f W\n", j, Cell_heat_flux);
+        // calculate heat flux.
+        Cell_heat_flux = -((T[j] - T[j+1]) / dx) * k;  
+        printf("Cell %d : heat_flux = %.3f W\n", j, Cell_heat_flux);
     }
 
     // 7. 最終結果與記憶體釋放
@@ -117,7 +116,9 @@ void FTCS_1D(int N, int no_steps){
         printf("Target achieved! The time required for the temperature at x = 5 cm to reach 325 K is %.3f seconds.\n", time_to_reach);
     }
 
-
+    for (int i =0; i<N; i++){
+        printf("%g\t%g\n", x[i], T[i]);
+    }
 
     fclose(pFile);
 
