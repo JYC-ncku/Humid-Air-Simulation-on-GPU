@@ -1,3 +1,5 @@
+# Sine_wave graph
+
 Complie this code using:
 ```
     gcc sine_wave.c -o sine_wave.exe -lm
