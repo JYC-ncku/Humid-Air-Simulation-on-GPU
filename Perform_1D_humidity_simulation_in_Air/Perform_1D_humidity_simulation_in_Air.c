@@ -2,6 +2,13 @@
 #include <stdlib.h>
 #include <math.h>
 
+//Setting parameters
+const float L = 0.1
+const float hum_init = 0;
+const float hum_final = 1;
+const float hum_target = 0.25;
+
+
 void Allocate_memory(float **array1, float **array2, float **array3, int N){
     *array1 = (float*)malloc(N * sizeof(float));
     *array2 = (float*)malloc(N * sizeof(float));
