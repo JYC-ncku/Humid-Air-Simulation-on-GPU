@@ -7,7 +7,8 @@ const float L = 0.1
 const float hum_init = 0;
 const float hum_final = 1;
 const float hum_target = 0.25;
-
+const float Pi = M_PI;
+const float D = 2.0e-5; //Diffusivity of air.
 //Set a maximum number of steps
 const int no_steps = 10000;
 
@@ -30,31 +31,32 @@ void Free_memory(float *array1, float *array2, float *array3){
 }
 
 void Humidity_1D(int N, no_steps){
-    float D = 2.0e-5; //Diffusivity of air.
     float *x, *hum, *hum_new;
     float dx = L / (N-1);
     float PHI = 0.25;
     float dt = (PHI * (dx*dx))/D;
-    float time_to_reach = 0; //Iintialize the time.
-    int target_reach = 0;
-
+    float time = 0; //Iintialize the time.
+    
     Allocate_memory(&x, &hum, &hum_new, N);
         for (int i=0; i<N; i++){
             x[i]=i * dx;
             hum[i]=hum_init;
-            hum_new[i]=hum_init;
         }
+        hum[0]=hum_init;
         hum[N-1]=hum_final;
-        hum_new[N-1]=hum_final;
 
-        time_to_reach += dt;
+        while(time < T_final){
 
-
+            for (int cell = 0; cell<N; cell++){
+                hum_new[cell] = hum[cell]
+            }
+        }
     Free_memory(x, hum, hum_new);
 }
 
 int main(){
     const int N=200;
+    const int NIF=N+1;
     Humidity_1D(N, no_steps);
     return(0);
 }
