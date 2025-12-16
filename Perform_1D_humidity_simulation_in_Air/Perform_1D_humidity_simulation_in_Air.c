@@ -48,8 +48,6 @@ void Humidity_1D(int N, no_steps){
         hum_new[N-1]=hum_final;
 
         time_to_reach += dt;
-        
-
 
 
     Free_memory(x, hum, hum_new);
