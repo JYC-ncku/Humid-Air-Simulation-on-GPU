@@ -12,21 +12,23 @@ const float D = 2.0e-5; //Diffusivity of air.
 //Set a maximum number of steps
 const int no_steps = 10000;
 
-void Allocate_memory(float **array1, float **array2, float **array3, int N){
+void Allocate_memory(float **array1, float **array2, float **array3, float **array4, int N){
     *array1 = (float*)malloc(N * sizeof(float));
     *array2 = (float*)malloc(N * sizeof(float));
     *array3 = (float*)malloc(N * sizeof(float));
-    if (*array1 == NULL || *array2 == NULL || *array3 == NULL){
+    *array4 = (float*)malloc((N+1) * sizeof(float));
+    if (*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL){
         printf("Memory allocation failed!\n");
         exit(1);
     }
         printf("Memory allcoation successfully for %d elements\n", N);
 }
 
-void Free_memory(float *array1, float *array2, float *array3){
+void Free_memory(float *array1, float *array2, float *array3, float *array4){
     free(array1);
     free(array2);
     free(array3);
+    free(array4);
     printf("Memory freed successfully!\n");
 }
 /*
@@ -37,14 +39,14 @@ void Free_memory(float *array1, float *array2, float *array3){
     ----------------------------
     0        1       N-1       N
 */
-void Humidity_1D(int N, no_steps){
-    float *x, *hum, *hum_new;
+void Humidity_1D(int N, int no_steps){
+    float *x, *hum, *hum_new, *F;
     float dx = L / N;
     float PHI = 0.25;
     float dt = PHI * ((dx*dx)/D);
     float time = 0; //Iintialize the time.
     
-    Allocate_memory(&x, &hum, &hum_new, N);
+    Allocate_memory(&x, &hum, &hum_new, &F, N);
         //Initialization
         for (int i=0; i<N; i++){
             x[i]=(i+0.5) * dx; //計算每個cell中間的flux
@@ -53,7 +55,7 @@ void Humidity_1D(int N, no_steps){
 
         //Calculate interface flux
         //中間邊界flux
-    for (int stpe=0; step < no_steps; step++){
+    for (int step=0; step < no_steps; step++){
         for (int j = 1; j < N; j++) {
         F[j] = -D * (hum[j] - hum[j-1]) / dx;
         }
@@ -69,10 +71,13 @@ void Humidity_1D(int N, no_steps){
         for (int cell = 0; cell<N; cell++){
                 hum_new[cell] = hum[cell]-(dt/dx)*(F[cell+1]-F[cell]);
             }
+        for (int i = 0; i < N; i++){
+            hum[i]=hum_new[i];
         }
-    }
-    Free_memory(x, hum, hum_new);
-
+        time = time+dt
+        }
+    Free_memory(x, hum, hum_new, F);
+}
 
 int main(){
     const int N=200; //Number of cell
