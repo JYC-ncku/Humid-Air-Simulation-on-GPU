@@ -29,21 +29,37 @@ void Free_memory(float *array1, float *array2, float *array3){
     free(array3);
     printf("Memory freed successfully!\n");
 }
-
+/*
+    ----------------------------
+    |        |        |        |
+    |   0    |  ...   |   N-1  |   ===>   Have total N cells and N+1 interface. (because N is from 0)
+    |        |        |        | 
+    ----------------------------
+    0        1       N-1       N
+*/
 void Humidity_1D(int N, no_steps){
     float *x, *hum, *hum_new;
     float dx = L / N;
     float PHI = 0.25;
-    float dt = (PHI * (dx*dx))/D;
+    float dt = PHI * ((dx*dx)/D);
     float time = 0; //Iintialize the time.
     
     Allocate_memory(&x, &hum, &hum_new, N);
+        //Initialization
         for (int i=0; i<N; i++){
-            x[i]=i * dx;
-            hum[i]=hum_init;
+            x[i]=(i+0.5) * dx; //計算每個cell中間的flux
+            hum[i]=hum_init; //每個cell一開始的濕度都為0
         }
-        hum[0]=hum_init;
-        hum[N-1]=hum_final;
+
+        //Calculate interface flux
+        //中間邊界flux
+    for (int stpe=0; step < no_steps; step++){
+        for (int j = 1; j < N; j++) {
+        F[j] = -D * (hum[j] - hum[j-1]) / dx;
+        }
+        
+        F[0] = -D * (hum[0] - 0.0) / (0.5 * dx); //左邊界flux
+        F[N] = -D * (1 - hum[N-1]) / (0.5 * dx); //右邊界flux
 
         /*    Solving
         dh/dt + dF/dx = 0
@@ -51,15 +67,15 @@ void Humidity_1D(int N, no_steps){
         h* = h - dt*dF/dx
         */
         for (int cell = 0; cell<N; cell++){
-                hum_new[cell] = hum[cell]-(dt/dx)*(F[cell+1]*F[cell])
+                hum_new[cell] = hum[cell]-(dt/dx)*(F[cell+1]-F[cell]);
             }
         }
+    }
     Free_memory(x, hum, hum_new);
 
 
 int main(){
-    const int N=200; //Number of cells
-    const int NIF=N+1; //Number of interface
+    const int N=200; //Number of cell
     Humidity_1D(N, no_steps);
     return(0);
 }
