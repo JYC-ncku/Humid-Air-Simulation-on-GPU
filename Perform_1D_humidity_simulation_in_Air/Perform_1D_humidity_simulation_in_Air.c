@@ -32,7 +32,7 @@ void Free_memory(float *array1, float *array2, float *array3){
 
 void Humidity_1D(int N, no_steps){
     float *x, *hum, *hum_new;
-    float dx = L / (N-1);
+    float dx = L / N;
     float PHI = 0.25;
     float dt = (PHI * (dx*dx))/D;
     float time = 0; //Iintialize the time.
@@ -45,18 +45,21 @@ void Humidity_1D(int N, no_steps){
         hum[0]=hum_init;
         hum[N-1]=hum_final;
 
-        while(time < T_final){
-
-            for (int cell = 0; cell<N; cell++){
-                hum_new[cell] = hum[cell]
+        /*    Solving
+        dh/dt + dF/dx = 0
+    So
+        h* = h - dt*dF/dx
+        */
+        for (int cell = 0; cell<N; cell++){
+                hum_new[cell] = hum[cell]-(dt/dx)*(F[cell+1]*F[cell])
             }
         }
     Free_memory(x, hum, hum_new);
-}
+
 
 int main(){
-    const int N=200;
-    const int NIF=N+1;
+    const int N=200; //Number of cells
+    const int NIF=N+1; //Number of interface
     Humidity_1D(N, no_steps);
     return(0);
 }
