@@ -40,6 +40,7 @@ void Free_memory(float *array1, float *array2, float *array3, float *array4){
     0        1       N-1       N
 */
 void Humidity_1D(int N, int no_steps){
+    FILE *pFile;
     float *x, *hum, *hum_new, *F;
     float dx = L / N;
     float PHI = 0.25;
@@ -49,6 +50,7 @@ void Humidity_1D(int N, int no_steps){
     float reach_time = 0;
     
     Allocate_memory(&x, &hum, &hum_new, &F, N);
+    pFile = fopen("results.txt","w");
         //Initialization
         for (int i=0; i<N; i++){
             x[i]=(i+0.5) * dx; //計算每個cell中間的flux
@@ -85,6 +87,10 @@ void Humidity_1D(int N, int no_steps){
         }
         time = time+dt;
     }
+    for (int i =0; i<N; i++){
+        fprintf(pFile,"%g\t%g\n", x[i], hum[i]);
+    }
+    fclose(pFile);
     printf("\n Total time spent: %.3f seconds. \n", time);
 
     Free_memory(x, hum, hum_new, F);
