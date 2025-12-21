@@ -3,14 +3,14 @@
 #include <math.h>
 
 //Setting parameters
-const float L = 0.1
+const float L = 0.1;
 const float hum_init = 0;
 const float hum_final = 1;
 const float hum_target = 0.25;
 const float Pi = M_PI;
 const float D = 2.0e-5; //Diffusivity of air.
 //Set a maximum number of steps
-const int no_steps = 10000;
+const int no_steps = 100000;
 
 void Allocate_memory(float **array1, float **array2, float **array3, float **array4, int N){
     *array1 = (float*)malloc(N * sizeof(float));
@@ -28,7 +28,7 @@ void Free_memory(float *array1, float *array2, float *array3, float *array4){
     free(array1);
     free(array2);
     free(array3);
-    free(array4);
+    free(array4);   
     printf("Memory freed successfully!\n");
 }
 /*
@@ -45,6 +45,8 @@ void Humidity_1D(int N, int no_steps){
     float PHI = 0.25;
     float dt = PHI * ((dx*dx)/D);
     float time = 0; //Iintialize the time.
+    int reached = 0;
+    float reach_time = 0;
     
     Allocate_memory(&x, &hum, &hum_new, &F, N);
         //Initialization
@@ -71,11 +73,20 @@ void Humidity_1D(int N, int no_steps){
         for (int cell = 0; cell<N; cell++){
                 hum_new[cell] = hum[cell]-(dt/dx)*(F[cell+1]-F[cell]);
             }
+
+        if (reached == 0 && hum_new[N/2] >= 0.25) {
+                reach_time = time; // 記下現在的時間
+                reached = 1;       // 改成 1，之後的 step 就不會再進來這個 if
+                printf("\n At %.3f seconds, the humidity at x = 5 cm reaches 25%%.\n", reach_time);
+            }
+
         for (int i = 0; i < N; i++){
             hum[i]=hum_new[i];
         }
-        time = time+dt
-        }
+        time = time+dt;
+    }
+    printf("\n Total time spent: %.3f seconds. \n", time);
+
     Free_memory(x, hum, hum_new, F);
 }
 
