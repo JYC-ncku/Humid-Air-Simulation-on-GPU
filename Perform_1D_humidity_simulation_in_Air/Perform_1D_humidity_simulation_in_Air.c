@@ -3,32 +3,34 @@
 #include <math.h>
 
 //Setting parameters
-const float L = 0.1;
-const float hum_init = 0;
-const float hum_final = 1;
-const float hum_target = 0.25;
-const float Pi = M_PI;
-const float D = 2.0e-5; //Diffusivity of air.
+const double L = 0.1;
+const double hum_init = 0;
+const double hum_final = 1;
+const double hum_target = 0.25;
+const double Pi = M_PI;
+const double D = 2.0e-5; //Diffusivity of air.
 //Set a maximum number of steps
-const int no_steps = 100000;
+const int no_steps = 15000;
 
-void Allocate_memory(float **array1, float **array2, float **array3, float **array4, int N){
-    *array1 = (float*)malloc(N * sizeof(float));
-    *array2 = (float*)malloc(N * sizeof(float));
-    *array3 = (float*)malloc(N * sizeof(float));
-    *array4 = (float*)malloc((N+1) * sizeof(float));
-    if (*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL){
+void Allocate_memory(double **array1, double **array2, double **array3, double **array4, double **array5, int N){
+    *array1 = (double*)malloc(N * sizeof(double));
+    *array2 = (double*)malloc(N * sizeof(double));
+    *array3 = (double*)malloc(N * sizeof(double));
+    *array4 = (double*)malloc((N+1) * sizeof(double));
+    *array5 = (double*)malloc(N * sizeof(double));
+    if (*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL){
         printf("Memory allocation failed!\n");
         exit(1);
     }
         printf("Memory allcoation successfully for %d elements\n", N);
 }
 
-void Free_memory(float *array1, float *array2, float *array3, float *array4){
+void Free_memory(double *array1, double *array2, double *array3, double *array4, double *array5){
     free(array1);
     free(array2);
     free(array3);
-    free(array4);   
+    free(array4); 
+    free(array5);   
     printf("Memory freed successfully!\n");
 }
 /*
@@ -41,15 +43,15 @@ void Free_memory(float *array1, float *array2, float *array3, float *array4){
 */
 void Humidity_1D(int N, int no_steps){
     FILE *pFile;
-    float *x, *hum, *hum_new, *F;
-    float dx = L / N;
-    float PHI = 0.25;
-    float dt = PHI * ((dx*dx)/D);
-    float time = 0; //Iintialize the time.
+    double *x, *hum, *hum_new, *F, *hum_exact;
+    double dx = L / N;
+    double PHI = 0.25;
+    double dt = PHI * ((dx*dx)/D);
+    double time = 0; //Iintialize the time.
     int reached = 0;
-    float reach_time = 0;
+    double reach_time = 0;
     
-    Allocate_memory(&x, &hum, &hum_new, &F, N);
+    Allocate_memory(&x, &hum, &hum_new, &F, &hum_exact, N);
     pFile = fopen("results.txt","w");
         //Initialization
         for (int i=0; i<N; i++){
@@ -76,7 +78,7 @@ void Humidity_1D(int N, int no_steps){
                 hum_new[cell] = hum[cell]-(dt/dx)*(F[cell+1]-F[cell]);
             }
 
-        if (reached == 0 && hum_new[N/2] >= 0.25) {
+        if (reached == 0 && hum_new[N/2] >= hum_target) {
                 reach_time = time; // 記下現在的時間
                 reached = 1;       // 改成 1，之後的 step 就不會再進來這個 if
                 printf("\n At %.3f seconds, the humidity at x = 5 cm reaches 25%%.\n", reach_time);
@@ -87,13 +89,28 @@ void Humidity_1D(int N, int no_steps){
         }
         time = time+dt;
     }
+    //Calculate exact solution
+    for (int i = 0; i < N; i++) {
+        double current_x = x[i];
+        double sum = 0.0;
+        for (int n = 1; n < 200; n++) { // n可以自己定
+            double An = (2.0 * pow(-1.0, n)) / (n * M_PI);
+            double term = An * sin((n * M_PI * current_x) / L) * exp(-(n * n * M_PI * M_PI * D * time) / (L * L));
+            sum += term;
+        }
+        hum_exact[i] = (current_x / L) + sum;
+    }
+
+
+
     for (int i =0; i<N; i++){
-        fprintf(pFile,"%g\t%g\n", x[i], hum[i]);
+        double error = (hum[i]-hum_exact[i]) * (hum[i]-hum_exact[i]);
+        fprintf(pFile,"%g\t%g\t%g\t%e\n", x[i], hum[i], hum_exact[i], error);
     }
     fclose(pFile);
     printf("\n Total time spent: %.3f seconds. \n", time);
 
-    Free_memory(x, hum, hum_new, F);
+    Free_memory(x, hum, hum_new, F, hum_exact);
 }
 
 int main(){
