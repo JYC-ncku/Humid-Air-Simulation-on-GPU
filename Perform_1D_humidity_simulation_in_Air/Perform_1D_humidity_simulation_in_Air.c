@@ -122,20 +122,21 @@ void Calculate_Humidity_Exact(int N, int N_TERMS, double *x_arr, double sim_time
 
 int main(){
     const int N=200; //Number of cell
-    const int N_TERMS=200; //Number of exact_solution steps
+    const int N_TERMS=50; //Number of exact_solution steps
     double *x, *hum, *hum_new, *F, *hum_exact;
 
     Allocate_memory(&x, &hum, &hum_new, &F, &hum_exact, N);
-
+    //定義模擬時間= funtion Humidity_1D 回傳的時間
     double sim_time = Humidity_1D(N, no_steps, x, hum, hum_new, F);
-    Calculate_Humidity_Exact(N, N_TERMS, x, sim_time, hum_exact);
 
+    Calculate_Humidity_Exact(N, N_TERMS, x, sim_time, hum_exact);
+    //寫入數據
     FILE *pFile = fopen("results.txt", "w");
     for (int i = 0; i < N; i++) {
         fprintf(pFile, "%.6f\t%.15e\t%.15e\n", x[i], hum[i], hum_exact[i]);
     }
     fclose(pFile);
-
+    //計算誤差值
     double error = 0.0;
     for (int i =0; i<N; i++){
         error = error + (hum[i]-hum_exact[i]) * (hum[i]-hum_exact[i]);
