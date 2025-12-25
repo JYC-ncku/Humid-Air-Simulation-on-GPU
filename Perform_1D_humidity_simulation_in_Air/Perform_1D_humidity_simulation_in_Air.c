@@ -41,7 +41,7 @@ void Free_memory(double *array1, double *array2, double *array3, double *array4,
     ----------------------------
     0        1       N-1       N
 */
-double Humidity_1D(int N, int no_steps, double *x,double *hum, double*hum_new, double*F){
+double Humidity_1D(int N, int no_steps, double *x,double *hum, double*hum_new, double*F){  //這裡不用void的原因是因為void不會回傳數據
     double dx = L / N;
     double PHI = 0.25;
     double dt = PHI * ((dx*dx)/D);
@@ -76,7 +76,7 @@ double Humidity_1D(int N, int no_steps, double *x,double *hum, double*hum_new, d
 
         if (reached == 0 && hum_new[N/2] >= hum_target) {
                 reach_time = time; // 記下現在的時間
-                reached = 1;       // 改成 1，之後的 step 就不會再進來這個 if
+                reached = 1;       // 改成1，之後的 step 就不會再進來這個 if
                 printf("\n At %.3f seconds, the humidity at x = 5 cm reaches 25%%.\n", reach_time);
             }
 
@@ -96,7 +96,7 @@ double Humidity_1D(int N, int no_steps, double *x,double *hum, double*hum_new, d
     return time;
 }
 
-void Calculate_Humidity_Exact(int N, int N_TERMS, double *x_arr, double sim_time, double *hum_exact){
+void Calculate_Humidity_Exact(int N, int N_TERMS, double *x_arr, double sim_time, double *hum_exact){  //x_arr跟x[i]是一樣的東西，只是在這裡需要更改寫法，不然電腦會看不懂x[i]是什麼
     //Calculate exact solution
     double C0 = 0.0;
     double Csat = 1.0;  
@@ -126,8 +126,8 @@ int main(){
     double *x, *hum, *hum_new, *F, *hum_exact;
 
     Allocate_memory(&x, &hum, &hum_new, &F, &hum_exact, N);
-    //定義模擬時間= funtion Humidity_1D 回傳的時間
-    double sim_time = Humidity_1D(N, no_steps, x, hum, hum_new, F);
+    //定義模擬時間= double Humidity_1D 回傳的時間
+    double sim_time = Humidity_1D(N, no_steps, x, hum, hum_new, F); //這麼做可以確保Numerical solution 與 Exact solution跑得時間一樣，就不用另外定義一個精確解要跑的時間
 
     Calculate_Humidity_Exact(N, N_TERMS, x, sim_time, hum_exact);
     //寫入數據
