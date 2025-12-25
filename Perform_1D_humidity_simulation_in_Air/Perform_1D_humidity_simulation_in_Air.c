@@ -3,7 +3,7 @@
 #include <math.h>
 
 //Setting parameters
-const double L = 0.1;
+const double L = 0.10;
 const double hum_init = 0;
 const double hum_final = 1;
 const double hum_target = 0.25;
@@ -41,8 +41,7 @@ void Free_memory(double *array1, double *array2, double *array3, double *array4,
     ----------------------------
     0        1       N-1       N
 */
-void Humidity_1D(int N, int no_steps){
-    double *x, *hum, *hum_new, *F, *hum_exact;
+double Humidity_1D(int N, int no_steps, double *x,double *hum, double*hum_new, double*F){
     double dx = L / N;
     double PHI = 0.25;
     double dt = PHI * ((dx*dx)/D);
@@ -50,7 +49,6 @@ void Humidity_1D(int N, int no_steps){
     int reached = 0;
     double reach_time = 0;
     
-    Allocate_memory(&x, &hum, &hum_new, &F, &hum_exact, N);
         //Initialization
         for (int i=0; i<N; i++){
             x[i]=(i+0.5) * dx; //計算每個cell中間的flux
@@ -87,18 +85,56 @@ void Humidity_1D(int N, int no_steps){
         }
         time = time+dt;
     }
+   
+    //write fluxes to file: one line per interface (index, flux) 
+    FILE *pFile = fopen("fluxes.txt","w");
+    for (int j=0; j<N+1; j++){
+        fprintf(pFile, "%d %.15e\n", j, F[j]);
+    }
+    fclose(pFile);
+    printf("\n Total time spent: %.3f seconds. \n", time);
+    return time;
+}
+
+void Calculate_Humidity_Exact(int N, int N_TERMS, double *x_arr, double sim_time, double *hum_exact){
     //Calculate exact solution
+    double C0 = 0.0;
+    double Csat = 1.0;  
+    double Pi = M_PI;
+
+    // 2. 使用 for 迴圈計算級數累加 (n 從 0 到 N_TERMS)
     for (int i = 0; i < N; i++) {
-        double current_x = x[i];
         double sum = 0.0;
-        for (int n = 1; n < 200; n++) { // n可以自己定
-            double An = (2.0 * pow(-1.0, n)) / (n * M_PI);
-            double term = An * sin((n * M_PI * current_x) / L) * exp(-(n * n * M_PI * M_PI * D * time) / (L * L));
+        for (int n = 1; n < N_TERMS; n++) {
+            // 每次迴圈都要重新計算當前的 An
+            double An = ((2.0 * pow(-1.0, n)) / (n*Pi));
+
+            // 計算級數的當前項 (term)
+            double term = An * sin((n * Pi * x_arr[i]) / L) * exp(-( n * n * Pi * Pi * D * sim_time) / (L * L));
+            
+            // 累加到 sum
             sum += term;
         }
-        hum_exact[i] = (current_x / L) + sum;
+        double C_xt = (x_arr[i]/L)+sum;
+        hum_exact[i] = C_xt;
     }
+}
 
+int main(){
+    const int N=200; //Number of cell
+    const int N_TERMS=200; //Number of exact_solution steps
+    double *x, *hum, *hum_new, *F, *hum_exact;
+
+    Allocate_memory(&x, &hum, &hum_new, &F, &hum_exact, N);
+
+    double sim_time = Humidity_1D(N, no_steps, x, hum, hum_new, F);
+    Calculate_Humidity_Exact(N, N_TERMS, x, sim_time, hum_exact);
+
+    FILE *pFile = fopen("results.txt", "w");
+    for (int i = 0; i < N; i++) {
+        fprintf(pFile, "%.6f\t%.15e\t%.15e\n", x[i], hum[i], hum_exact[i]);
+    }
+    fclose(pFile);
 
     double error = 0.0;
     for (int i =0; i<N; i++){
@@ -107,27 +143,7 @@ void Humidity_1D(int N, int no_steps){
     error = (double)(error / N);
     printf("error = %e\n", error);
 
-    //write fluxes to file: one line per interface (index, flux) 
-    FILE *pFile = fopen("fluxes.txt","w");
-    for (int j=0; j<N+1; j++){
-        fprintf(pFile, "%d %.15e\n", j, F[j]);
-    }
-    fclose(pFile);
-
-    //Write humudity to file
-    pFile = fopen("results.txt","w");
-    for (int cell=0; cell<N; cell++){
-        fprintf(pFile, "%.4f\t%.15e\t%.15e\n", x[cell], hum[cell], hum_exact[cell]);
-    }
-    fclose(pFile);
-
-    printf("\n Total time spent: %.3f seconds. \n", time);
-
     Free_memory(x, hum, hum_new, F, hum_exact);
-}
 
-int main(){
-    const int N=200; //Number of cell
-    Humidity_1D(N, no_steps);
     return(0);
 }
