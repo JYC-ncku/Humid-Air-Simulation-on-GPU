@@ -42,17 +42,15 @@ void Free_memory(double *array1, double *array2, double *array3, double *array4,
     0        1       N-1       N
 */
 void Humidity_1D(int N, int no_steps){
-    FILE *pFile;
     double *x, *hum, *hum_new, *F, *hum_exact;
     double dx = L / N;
     double PHI = 0.25;
     double dt = PHI * ((dx*dx)/D);
-    double time = 0; //Iintialize the time.
+    double time = 0; //Iintialize the time. 
     int reached = 0;
     double reach_time = 0;
     
     Allocate_memory(&x, &hum, &hum_new, &F, &hum_exact, N);
-    pFile = fopen("results.txt","w");
         //Initialization
         for (int i=0; i<N; i++){
             x[i]=(i+0.5) * dx; //計算每個cell中間的flux
@@ -60,7 +58,7 @@ void Humidity_1D(int N, int no_steps){
         }
 
         //Calculate interface flux
-        //中間邊界flux
+        //中間邊界flux    FILE *pFile;
     for (int step=0; step < no_steps; step++){
         for (int j = 1; j < N; j++) {
         F[j] = -D * (hum[j] - hum[j-1]) / dx;
@@ -102,12 +100,27 @@ void Humidity_1D(int N, int no_steps){
     }
 
 
-
+    double error = 0.0;
     for (int i =0; i<N; i++){
-        double error = (hum[i]-hum_exact[i]) * (hum[i]-hum_exact[i]);
-        fprintf(pFile,"%g\t%g\t%g\t%e\n", x[i], hum[i], hum_exact[i], error);
+        error = error + (hum[i]-hum_exact[i]) * (hum[i]-hum_exact[i]);
+    }
+    error = (double)(error / N);
+    printf("error = %e\n", error);
+
+    //write fluxes to file: one line per interface (index, flux) 
+    FILE *pFile = fopen("fluxes.txt","w");
+    for (int j=0; j<N+1; j++){
+        fprintf(pFile, "%d %.15e\n", j, F[j]);
     }
     fclose(pFile);
+
+    //Write humudity to file
+    pFile = fopen("results.txt","w");
+    for (int cell=0; cell<N; cell++){
+        fprintf(pFile, "%.4f\t%.15e\t%.15e\n", x[cell], hum[cell], hum_exact[cell]);
+    }
+    fclose(pFile);
+
     printf("\n Total time spent: %.3f seconds. \n", time);
 
     Free_memory(x, hum, hum_new, F, hum_exact);
