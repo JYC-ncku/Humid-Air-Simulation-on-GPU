@@ -11,5 +11,5 @@ Information on the 1D Heat transfer simulation of air can be found [here](./1D_H
 ## Sine-wave
 This is for practicing how to transfer calculation results from C code to MATLAB for plotting. The results can be viewed by clicking [here](./sine_wave/README.md).
 
-## Sine-wave
+## Perform_1D_humidity_simulation_in_Air
 Information on the 1D Humidity simulation of air can be found [here](./Perform_1D_humidity_simulation_in_Air/READE.md)
