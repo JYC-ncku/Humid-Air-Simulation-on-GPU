@@ -31,15 +31,27 @@ void Free_memory(double *array1, double *array2, double *array3, double *array4,
     double g = 9.81;
     const int no_steps = 15000;
 
+/*
+    ----------------------------
+    |        |        |        |
+    |   0    |  ...   |    N   |   ===>   Have total N cells and N+1 interface. (because N is from 0)
+    |        |        |        | 
+    ----------------------------
+    0        1       N        N+1
+*/
 
-void Shallow_Water(int N_CELLS, int no_steps, double *x, double *h, double *u, double *mass, double *momentum, double *mass_flux, double *momentum_flux, double *p0, double *p1){
+
+
+void Shallow_Water(int N_CELLS, int N_INTERFACES, int no_steps, double *x, double *h, double *u, double *mass, double *momentum, double *mass_flux, double *momentum_flux, double *p0, double *p1){
     double dx = L/N_CELLS;
     double CFL = 0.8;
     double S_max = 0.0;
+    double t = 0; // Initialize time.
+    double t_final = 0.5; // Simulation time.
 
     // Set the initial co conditions
     for (int i=0; i<N_CELLS; i++){
-        x[i] = (i+0.5) * dx;
+        x[i] = (i-0.5) * dx;
         if (i < N_CELLS/2){
             p0[i] = 1; // Initial water high = 1m in 0 to 0.5m.
         } else {
@@ -50,6 +62,15 @@ void Shallow_Water(int N_CELLS, int no_steps, double *x, double *h, double *u, d
         momentum[i] = p0[i] * p1[i];
     }
 
+    // left cell = interface -1, right cell = interface
+    for (int j=0; j<N_INTERFACES; j++ ){
+        mass_flux[j-1] = p0[j-1] * p1[j-1]; // left mass flux
+        momentum_flux[j-1] = p0[j-1]*p1[j-1]*p1[j-1]+0.5*g*p0[j-1]*p0[j-1]; // left momentum flux
+        mass_flux[j] = p0[j] * p1[j]; // right mass flux
+        momentum_flux[j] = p0[j]*p1[j]*p1[j]+0.5*g*p0[j]*p0[j]; //right momentum flux
+    }
+
+    while (t <= t_final){
     // Set CFL
     for (int i=0; i<N_CELLS; i++){
         double S_local = fabs(u[i] + sqrt(g*h[i]));
@@ -58,6 +79,15 @@ void Shallow_Water(int N_CELLS, int no_steps, double *x, double *h, double *u, d
         } 
     }
     double dt = CFL * (dx/S_max);
+
+    // Calculate mass and momentum
+    for (int i=0; i<N_CELLS; i++){
+        mass[i] = mass[i] - (dx/dt)*(mass_flux[i+1]-mass_flux[i]);
+        momentum[i] = momentum[i] - (dx/dt)*(momentum_flux[i+1]-momentum_flux[i]);
+    }
+
+    }
+
 
 }
 
