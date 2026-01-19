@@ -35,15 +35,13 @@ void Free_memory(double *array1, double *array2, double *array3, double *array4,
 /*
     ----------------------------
     |        |        |        |
-    |   0    |  ...   |  N(i)  |   ===>   Have total N(i) cells and N+1(j) interface. (because N is from 0)
+    |   0    |  ...   |    N   |   ===>   Have total N cells and N+1 interface. (because N is from 0)
     |        |        |        | 
     ----------------------------
-    0        1       N        N+1(j)
+    0        1       N        N+1
 */
 
-
-
-void Shallow_Water(int N_CELLS, int N_INTERFACES, double *x, double *h, double *u, double *mass, double *momentum, double *mass_flux, double *momentum_flux, double *p0, double *p1){
+void Shallow_Water(int N_CELLS, int N_INTERFACES, double *x, double *mass, double *momentum, double *mass_flux, double *momentum_flux, double *p0, double *p1){
     double dx = L/N_CELLS;
     double CFL = 0.8;
     double t = 0; // Initialize time.
@@ -51,57 +49,61 @@ void Shallow_Water(int N_CELLS, int N_INTERFACES, double *x, double *h, double *
 
     // Set the initial co conditions
     for (int i=0; i<N_CELLS; i++){
-        x[i] = (i-0.5) * dx;
+        x[i] = (i+0.5) * dx;
         if (i < N_CELLS/2){
             p0[i] = 1; // Initial water high = 1m in 0 to 0.5m.
         } else {
-            p0[i] = 0.1; // Initial water high = 1m in 0.5 to 1m (Shallow Water).
+            p0[i] = 0.1; // Initial water high = 0.1m in 0.5 to 1m (Shallow Water).
         }
         p1[i] = 0; // Water speed = 0 m/s in initial condition.
-    mass[i]= p0[i];
-    momentum[i] = p0[i] * p1[i];
     }    
 
-    while (t <= t_final){
-        double S_max = 0.0;
-    // Set CFL
     for (int i=0; i<N_CELLS; i++){
-        double S_local = fabs((momentum[i]/mass[i]) + sqrt(g*mass[i]));
+    mass[i] = p0[i];
+    momentum[i] = p0[i] * p1[i];
+    }
+
+    while (t <= t_final){
+    double S_max = 1e-10;
+
+    // Compute the fluxes now using both left and right
+    // left cell = interface -1, right cell = interface
+    for (int j=1; j<N_CELLS; j++ ){
+        double mass_flux_L =  p0[j-1]*p1[j-1]; // left mass flux
+        double momentum_flux_L = p0[j-1]*p1[j-1]*p1[j-1] + 0.5*g*p0[j-1]*p0[j-1]; // left momentum flux
+        double mass_flux_R = p0[j]*p1[j]; // right mass flux
+        double momentum_flux_R = p0[j]*p1[j]*p1[j] + 0.5*g*p0[j]*p0[j]; //right momentum flux
+    // Set CFL
+        double S_L = fabs(p1[j-1]) + sqrt(g*p0[j-1]);
+        double S_R = fabs(p1[j]) + sqrt(g*p0[j]);
+        double S_local;
+        if (S_L>S_R){
+            S_local = S_L;
+        }else {
+            S_local = S_R;
+        }
         if (S_local>S_max){
             S_max = S_local;
         } 
+    // Compute the Rusanov Flux
+        mass_flux[j] = 0.5*(mass_flux_L + mass_flux_R)-0.5*S_local* (mass[j]-mass[j-1]);
+        momentum_flux[j] = 0.5*(momentum_flux_L + momentum_flux_R)-0.5*S_local*(momentum[j]-momentum[j-1]);
     }
     double dt = CFL * (dx/S_max);
 
     //Set boundary condition
     mass_flux[0] = mass_flux[1];
     momentum_flux[0] = momentum_flux[1];
-    mass_flux[N_INTERFACES] = mass_flux[N_INTERFACES-1];
-    momentum_flux[N_INTERFACES] = momentum_flux[N_INTERFACES-1]; 
-
-    // Compute the fluxes now using both left and right
-    // left cell = interface -1, right cell = interface
-    for (int j=1; j<N_INTERFACES; j++ ){
-        double mass_flux_L = p0[j-1] * p1[j-1]; // left mass flux
-        double momentum_flux_L = p0[j-1]*p1[j-1]*p1[j-1]+0.5*g*p0[j-1]*p0[j-1]; // left momentum flux
-        double mass_flux_R = p0[j] * p1[j]; // right mass flux
-        double momentum_flux_R = p0[j]*p1[j]*p1[j]+0.5*g*p0[j]*p0[j]; //right momentum flux
-        double mass_R = mass[j]; // left mass
-        double momentum_R = momentum[j]; //left momentum
-        double mass_L = mass[j-1]; // right mass
-        double momentum_L = momentum[j-1]; // right momentum
-    // Compute the Rusanov Flux
-        mass_flux[j] = 0.5*(mass_flux_L + mass_flux_R)-0.5*S_max* (mass_R-mass_L);
-        momentum_flux[j] = 0.5*(momentum_flux_L + momentum_flux_R)-0.5*S_max*(momentum_R-momentum_L);
-    }
+    mass_flux[N_CELLS] = mass_flux[N_CELLS-1]; //我們的網格是從0開始，最後一格為N-1。
+    momentum_flux[N_CELLS] = momentum_flux[N_CELLS-1]; 
     // Compute fluxes
     for (int i=0; i<N_CELLS; i++){
         mass[i] = mass[i] - (dt/dx)*(mass_flux[i+1]-mass_flux[i]);
         momentum[i] = momentum[i] - (dt/dx)*(momentum_flux[i+1]-momentum_flux[i]);
     }
     for (int i=0; i<N_CELLS; i++){
-        p0[i] = mass[i];
-        p1[i] = momentum[i]/mass[i];
+        p0[i]=mass[i];
+        p1[i]=momentum[i]/mass[i];
     }
     t += dt;
     }
@@ -111,7 +113,15 @@ int main(){
     const int N_CELLS = 200; // Number of cells
     const int N_INTERFACES = N_CELLS+1; // Number of interfaces
     double *x, *mass, *momentum, *mass_flux, *momentum_flux, *p0, *p1; // x is position, h is water high, u is water velocity, po is primitive values of h, p1 is primitive values of u
+
     Allocate_memory(&x, &mass, &momentum, &mass_flux, &momentum_flux, &p0, &p1, N_CELLS, N_INTERFACES);
+
+    Shallow_Water(N_CELLS, N_INTERFACES, x, mass, momentum, mass_flux, momentum_flux, p0, p1);
+    FILE *  pFile = fopen("Results_of_200_cells.txt","w");
+    for (int i=0; i<N_CELLS; i++){  
+        fprintf(pFile, "%.3f\t%.6f\t%.6f\n", x[i], p0[i], p1[i]);
+    }
+    fclose(pFile);
 
     Free_memory(x, mass, momentum, mass_flux, momentum_flux, p0, p1);
 }
