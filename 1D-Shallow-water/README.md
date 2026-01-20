@@ -1,3 +1,5 @@
+This code uses Rusanov Method to solve 1D Shallow water problem.
+
 Initial conditions:
 ```
 Left (x < 0.5m):
