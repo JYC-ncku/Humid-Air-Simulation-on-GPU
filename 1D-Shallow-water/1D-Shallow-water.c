@@ -64,8 +64,21 @@ void Shallow_Water(int N_CELLS, int N_INTERFACES, double *x, double *mass, doubl
     }
 
     while (t <= t_final){
-    double S_max = 1e-10;
-
+        double S_max, S_local;
+        // Set CFL
+        for (int j=1; j<N_CELLS;j++){
+        double S_L = fabs(p1[j-1]) + sqrt(g*p0[j-1]);
+        double S_R = fabs(p1[j]) + sqrt(g*p0[j]);
+            if (S_L>S_R){
+                S_local = S_L;
+            }else {
+                S_local = S_R;
+            }
+            if (S_local>S_max){
+                S_max = S_local;
+            } 
+        }
+        double dt = CFL * (dx/S_max);
     // Compute the fluxes now using both left and right
     // left cell = interface -1, right cell = interface
     for (int j=1; j<N_CELLS; j++ ){
@@ -73,23 +86,10 @@ void Shallow_Water(int N_CELLS, int N_INTERFACES, double *x, double *mass, doubl
         double momentum_flux_L = p0[j-1]*p1[j-1]*p1[j-1] + 0.5*g*p0[j-1]*p0[j-1]; // left momentum flux
         double mass_flux_R = p0[j]*p1[j]; // right mass flux
         double momentum_flux_R = p0[j]*p1[j]*p1[j] + 0.5*g*p0[j]*p0[j]; //right momentum flux
-    // Set CFL
-        double S_L = fabs(p1[j-1]) + sqrt(g*p0[j-1]);
-        double S_R = fabs(p1[j]) + sqrt(g*p0[j]);
-        double S_local;
-        if (S_L>S_R){
-            S_local = S_L;
-        }else {
-            S_local = S_R;
-        }
-        if (S_local>S_max){
-            S_max = S_local;
-        } 
     // Compute the Rusanov Flux
-        mass_flux[j] = 0.5*(mass_flux_L + mass_flux_R)-0.5*S_local* (mass[j]-mass[j-1]);
-        momentum_flux[j] = 0.5*(momentum_flux_L + momentum_flux_R)-0.5*S_local*(momentum[j]-momentum[j-1]);
+        mass_flux[j] = 0.5*(mass_flux_L + mass_flux_R)-0.5*S_max* (mass[j]-mass[j-1]);
+        momentum_flux[j] = 0.5*(momentum_flux_L + momentum_flux_R)-0.5*S_max*(momentum[j]-momentum[j-1]);
     }
-    double dt = CFL * (dx/S_max);
 
     //Set boundary condition
     mass_flux[0] = mass_flux[1];
