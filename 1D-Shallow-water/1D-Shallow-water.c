@@ -110,14 +110,14 @@ void Shallow_Water(int N_CELLS, int N_INTERFACES, double *x, double *mass, doubl
 }
 
 int main(){
-    const int N_CELLS = 800; // Number of cells
+    const int N_CELLS = 16000; // Number of cells
     const int N_INTERFACES = N_CELLS+1; // Number of interfaces
     double *x, *mass, *momentum, *mass_flux, *momentum_flux, *p0, *p1; // x is position, h is water high, u is water velocity, po is primitive values of h, p1 is primitive values of u
 
     Allocate_memory(&x, &mass, &momentum, &mass_flux, &momentum_flux, &p0, &p1, N_CELLS, N_INTERFACES);
 
     Shallow_Water(N_CELLS, N_INTERFACES, x, mass, momentum, mass_flux, momentum_flux, p0, p1);
-    FILE *  pFile = fopen("Results_of_800_cells.txt","w");
+    FILE *  pFile = fopen("Results_of_16000_cells.txt","w");
     for (int i=0; i<N_CELLS; i++){  
         fprintf(pFile, "%.3f\t%.6f\t%.6f\n", x[i], p0[i], p1[i]);
     }
