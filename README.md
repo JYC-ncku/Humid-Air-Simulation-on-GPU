@@ -13,3 +13,7 @@ This is for practicing how to transfer calculation results from C code to MATLAB
 
 ## Perform_1D_humidity_simulation_in_Air
 Information on the 1D Humidity simulation of air can be found [here](./Perform_1D_humidity_simulation_in_Air/READE.md)
+
+## 1D_Shallow_Water
+This code uses c language to simulation 1D Shallow water problem, and use Rusanov method to calculate flux.
+More information is in [here](./1D-Shallow-water/README.md)
