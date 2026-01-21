@@ -16,4 +16,4 @@ Information on the 1D Humidity simulation of air can be found [here](./Perform_1
 
 ## 1D_Shallow_Water
 This code uses c language to simulation 1D Shallow water problem, and use Rusanov method to calculate flux.
-More information is in [here](./1D-Shallow-water/README.md)
+More informations are in [here](./1D-Shallow-water/README.md)
