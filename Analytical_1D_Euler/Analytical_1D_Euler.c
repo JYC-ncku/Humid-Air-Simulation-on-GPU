@@ -48,8 +48,8 @@ double CPU_Compute_MAX_CFL(double *p0, double *p1, double *p2, float dx, float d
 int main(){
     int N_CELLS = 200;
     double *p0, *p1, *p2; 
-    float dx = 1/N_CELLS; 
-    float dt = 0.0001; //隨便設，如果CFL值出錯就調整dt值。
+    float dx = 1.0/N_CELLS; 
+    float dt = 0.0001; //隨便設，如果CFL有error就調整dt值。
     Allocate_memory(&p0, &p1, &p2, N_CELLS);
     CPU_Compute_MAX_CFL(p0, p1, p2, dx, dt, N_CELLS);
     Free_memory(p0, p1, p2);
