@@ -2,20 +2,24 @@
 #include <stdlib.h>
 #include <math.h>
 
-void Allocate_memory(double **array1, double **array2, double **array3, int N_CELLS){
+void Allocate_memory(double **array1, double **array2, double **array3, double **array4, double **array5, int N_CELLS){
     *array1 = (double*)malloc(N_CELLS * sizeof(double));
     *array2 = (double*)malloc(N_CELLS * sizeof(double));
     *array3 = (double*)malloc(N_CELLS * sizeof(double));
-    if(*array1 == NULL || *array2 == NULL || *array3 == NULL){
+	*array4 = (double*)malloc(N_CELLS * sizeof(double));
+	*array5 = (double*)malloc((N_CELLS+1) * sizeof(double));
+    if(*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL, *array5 == NULL){
         printf("Memory allocation failed!\n");
     }
         printf("Memory allocation successfully for %d elements!\n", N_CELLS);
 }
 
-void Free_memory(double *array1, double *array2, double *array3){
+void Free_memory(double *array1, double *array2, double *array3, double *array4, double *array5){
     free(array1);
     free(array2);
     free(array3);
+	free(array4);
+	free(array5);
     printf("Memory freed successfully!\n");
 }
 
@@ -30,7 +34,7 @@ double CPU_Compute_MAX_CFL(double *p0, double *p1, double *p2, float dx, float d
             printf("Error: Negative temperature in cell %d: T = %f\n. Aborting.", cell, T);
             exit(1);
         }
-        double a = sqrt(1.4 * 1.0 *T); // gamma = 1.4, R = 1.0
+        double a = sqrt(1.4 * 1.0 *T); // GAMMA = 1.4, R = 1.0
         double CFL = (fabs(u) + a) * (dt / dx);
         if (CFL>MAX_CFL){
             MAX_CFL = CFL;
@@ -45,9 +49,10 @@ double CPU_Compute_MAX_CFL(double *p0, double *p1, double *p2, float dx, float d
     }
 }
 
-void CPU_Calc_rho_u_P_T(double *interface_p,
+void CPU_Calc_rho_u_P_T(double *interface_p, double *flux,
     double QL_rho, double QL_ux, double QL_vy, double QL_vz, double QL_cRT,
     double QR_rho, double QR_ux, double QR_vy, double QR_vz, double QR_cRT, double R, double GAMMA,
+	double flxnmn, double flxpmn, double flxqmn,
     double nx, double ny, double nz,
     double px, double py, double pz,
     double qx, double qy, double qz, int wall_flag){
@@ -67,8 +72,9 @@ void CPU_Calc_rho_u_P_T(double *interface_p,
 	double PMIN = EMIN*RHOMIN*(GAMMA - 1.0); // 壓力的最小值
 	double CV = R/(GAMMA - 1.0);
 	double TMIN = EMIN/CV; //溫度的最小值
+    double mflx, pxflx, pyflx, pzflx, eflx; 
 	int option;
-	
+
 	// Left hand normals
 	QL_u = nx*QL_ux + ny*QL_vy + nz*QL_vz; 
 	QL_v = px*QL_ux + py*QL_vy + pz*QL_vz;
@@ -78,6 +84,7 @@ void CPU_Calc_rho_u_P_T(double *interface_p,
 	QR_u = nx*QR_ux + ny*QR_vy + nz*QR_vz;
 	QR_v = px*QR_ux + py*QR_vy + pz*QR_vz;
 	QR_w = qx*QR_ux + qy*QR_vy + qz*QR_vz;
+
 
     // Switch normal components in case one is a wall (Reflective conditions) ==> 邊界條件
 	if (wall_flag == 1) {
@@ -102,8 +109,8 @@ void CPU_Calc_rho_u_P_T(double *interface_p,
 
 	geff = GAMMA; // Effective GAMMA
 
-	gm1 = geff - 1.0; // Pretty obvious   gm1 is mean gamma minus one ==> gamma-1
-	gp1 = geff + 1.0; //                  gp1 is mean gamma plus one ==> gamma+1
+	gm1 = geff - 1.0; // Pretty obvious   gm1 is mean GAMMA minus one ==> GAMMA-1
+	gp1 = geff + 1.0; //                  gp1 is mean GAMMA plus one ==> GAMMA+1
 
     //                          計算p* and u*
 	//     -----------------------------------------------------
@@ -114,7 +121,7 @@ void CPU_Calc_rho_u_P_T(double *interface_p,
 	//     Intermediate variable. 
     //這一階段是在利用等熵關係來預測出當兩個網格撞在一起時，中間那塊區域的壓力跟速度。
      
-    //利用等熵過程中壓力與音速之間的關係式：aL/aR =(PL/PR)^((1-gamma)/2*gamma)，z就是利用這個關係式來判斷這個波形為何種波形的一個指標，為Riemann solver中的一個判斷波形的方法。 
+    //利用等熵過程中壓力與音速之間的關係式：aL/aR =(PL/PR)^((1-GAMMA)/2*GAMMA)，z就是利用這個關係式來判斷這個波形為何種波形的一個指標，為Riemann solver中的一個判斷波形的方法。 
 	base = QL_p/QR_p;
 	expon = gm1/(2.0*geff);
 	pwr = pow(base,expon);
@@ -430,10 +437,10 @@ void CPU_Calc_rho_u_P_T(double *interface_p,
 		    (gp1*QL_p+gm1*pstar);
 		
 		//    Specific energy -- from the Equation of state 
-		eLstar = pstar/(gm1*rhoLstar); // eL* = p* / ((gamma-1) * rhoL*)
+		eLstar = pstar/(gm1*rhoLstar); // eL* = p* / ((GAMMA-1) * rhoL*)
 		
 		//    Local speed of sound -- Perfect gas version.
-		aLstar = sqrt(geff*gm1*eLstar); // aL* = (gamma * (gamma-1) * eL*)
+		aLstar = sqrt(geff*gm1*eLstar); // aL* = (GAMMA * (GAMMA-1) * eL*)
 	    } else {  //如果不是 Shock wave 是 Rarefaction。
 		
 		//        Use the isentropic-wave relations. 
@@ -491,7 +498,6 @@ void CPU_Calc_rho_u_P_T(double *interface_p,
         // 沒有shock wave時的wave speed。
 	    wspeedL = QL_u - QL_a;
 	}
-	//getch();
 	if ((pstar > QR_p) && (vacuum == 0)) {
 	    //     Right wave is a shock. 
 	    temporary = 0.5*gp1*QR_p/QR_rho*(pstar/QR_p+gm1/gp1);
@@ -500,11 +506,7 @@ void CPU_Calc_rho_u_P_T(double *interface_p,
 	    //    Right wave is an expansion fan. 
 	    wspeedR = QR_u + QR_a;
 	}
-	//getch();
 
-	//     ************************************
-	//     Decide which way the waves are going. 
-	//     ************************************
     // 接下來要開始找"Location"！有ExapnisonL, ExpansionR, Contact, Shock.
 	option = 0;
 
@@ -658,7 +660,6 @@ void CPU_Calc_rho_u_P_T(double *interface_p,
 	    QI_T   = TRstar   + frac * (QR_T - TRstar);
 	}
 
-
 	//     ******************
 	//     Passive Quantities.
 	//     ******************
@@ -666,7 +667,7 @@ void CPU_Calc_rho_u_P_T(double *interface_p,
 	//     We assume that the transverse velocity is unaffected by
 	//     the normal interactions.  We only need to select the
 	//     correct value.
-	// 這裡使用upwind的方式來判斷v、w的值，u如果小於零表示流體從右往左流，所以v跟w理當用右邊的值，反之亦然。
+    // 這裡使用upwind的邏輯去計算v跟w，如果u<0表示流體從右往左流，那v跟w就得用右邊的，反之亦然。
 	if (QI_u < 0.0) {
 	    QI_v = QR_v;
 	    QI_w = QR_w;
@@ -674,7 +675,37 @@ void CPU_Calc_rho_u_P_T(double *interface_p,
 	    QI_v = QL_v;
 	    QI_w = QL_w;
 	}
-	// 算完所有物理量後最後將結果存入陣列當中。
+
+	//     ******** **********
+	//     Combine the fluxes
+	//     ******************
+
+	//    Mass/unit-area/unit-time
+	mflx = QI_rho*QI_u; // Mss flux
+
+	//    Normal momentum
+	flxnmn = QI_rho*QI_u*QI_u + QI_p;
+
+	//    Tangential momentums
+	flxpmn = mflx*QI_v;
+	flxqmn = mflx*QI_w;
+
+	//    Energy Flux
+	E_tot = QI_e + 0.5 * (QI_u*QI_u + QI_v*QI_v + QI_w*QI_w);
+	eflx = QI_rho*E_tot*QI_u + QI_p*QI_u; // Energy flux
+
+	//     Convert back to global axes
+	pxflx = flxnmn*nx + flxpmn*px + flxqmn*qx; // Momentum fluxes
+	pyflx = flxnmn*ny + flxpmn*py + flxqmn*qy;
+	pzflx = flxnmn*nz + flxpmn*pz + flxqmn*qz;
+
+	// Final Flux calculations
+	flux[0] = mflx;
+	flux[1] = pxflx;
+	flux[2] = pyflx;
+	flux[3] = pzflx;
+	flux[4] = eflx;
+
 	// States now
 	interface_p[0] = QI_rho;
 	interface_p[1] = QI_u;
@@ -682,13 +713,95 @@ void CPU_Calc_rho_u_P_T(double *interface_p,
 	interface_p[3] = QI_w;
 	interface_p[4] = QI_T;	
 }
+
 int main(){
     int N_CELLS = 200;
-    float L = 1.0;
-    double *p0, *p1, *p2; 
+	float L = 1.0;
     float dx = L/N_CELLS; 
     float dt = 0.0001; //隨便設，如果CFL有error就調整dt值。
-    Allocate_memory(&p0, &p1, &p2, N_CELLS);
-    CPU_Compute_MAX_CFL(p0, p1, p2, dx, dt, N_CELLS);
-    Free_memory(p0, p1, p2);
+	float t = 0;
+	float t_FINAL = 0.2;
+	double R = 1.0;
+	double GAMMA = 1.4;
+	int wall_flag = 0; 
+    double *p0, *p1, *p2, *interface_p, *flux;
+	double flxnmn, flxpmn, flxqmn;
+
+	Allocate_memory(&p0, &p1, &p2, &interface_p, &flux, N_CELLS);
+	//Initial condition
+	for ( int i = 0; i<N_CELLS; i++){
+		if (i<N_CELLS/2){
+			p0[i] = 10.0; //rho_L = 10
+			p1[i] = 0; //u_L = 0
+			p2[i] = 1.0; // T_L = 1
+		}else{
+			p0[i] = 1.0; //rho_R = 1
+			p1[i] = 0; //u_R = 0
+			p2[i] = 1.0; //T_R = 0
+		}
+	}
+	// Because this code only consider 1D, so let other two direction equal 0)
+	double QL_vy = 0, QL_vz = 0;
+	double QR_vy = 0, QR_vz = 0;
+    double nx = 1.0, ny = 0.0, nz = 0.0;
+    double px = 0.0, py = 1.0, pz = 0.0;
+    double qx = 0.0, qy = 0.0, qz = 1.0; 
+
+	while (t<t_FINAL){
+    	double MAX_CFL = CPU_Compute_MAX_CFL(p0, p1, p2, dx, dt, N_CELLS);
+
+		for (int i = 0; i < N_CELLS-1; i++){
+			double QL_rho = p0[i];
+    		double QR_rho = p0[i+1];
+    		double QL_ux  = p1[i];
+    		double QR_ux  = p1[i+1];
+    		double QL_T   = p2[i];
+    		double QR_T   = p2[i+1];
+			double QL_cRT = R * QL_T;
+    		double QR_cRT = R * QR_T;
+			CPU_Calc_rho_u_P_T(&interface_p[i*5], &flux[i*5], //因為flux跟interface_p都有5個物理量需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
+    		QL_rho, QL_ux, QL_vy, QL_vz, QL_cRT,
+    		QR_rho, QR_ux, QR_vy, QR_vz, QR_cRT, R, GAMMA,
+			flxnmn, flxpmn, flxqmn,
+     		nx, ny, nz,
+     		px, py, pz,
+     		qx, qy, qz, wall_flag);
+		}
+
+		for (int i = 1; i < N_CELLS - 1; i++) {
+    		// 我們是 i*5，所以左界面是 (i-1)*5，右界面是 i*5
+    		int L_interface = (i - 1) * 5;
+    		int R_interface = i * 5;
+
+			// p1 存的是速度 u，我們要先算動量 rho*u 的變化再去除以rho得到u。
+    		double old_momentum = p0[i] * p1[i]; // 這裡用簡化更新，實務上可用舊值
+    		double new_momentum = old_momentum + (dt / dx) * (flux[L_interface + 1] - flux[R_interface + 1]);
+
+    		// 先從溫度算總能 E，更新完 E 再扣掉動能回算 T
+    		double CV = R / (GAMMA - 1.0);
+    		double old_E = p0[i] * (CV * p2[i] + 0.5 * p1[i] * p1[i]);
+    		double new_E = old_E + (dt / dx) * (flux[L_interface + 4] - flux[R_interface + 4]);
+
+    		//更新密度 (p0)
+    		p0[i] = p0[i] + (dt / dx) * (flux[L_interface + 0] - flux[R_interface + 0]);
+    		// 更新動量並回推速度 (p1)
+    		p1[i] = new_momentum / p0[i]; // 得到新的速度 u
+    		// 更新能量並回推溫度 (p2)
+			double new_internal_energy = (new_E / p0[i]) - 0.5 * p1[i] * p1[i];
+    		p2[i] = new_internal_energy / CV;
+		}
+		// Boundary condition for compute flux.	
+		// 左邊界 (Inlet/Ghost 1)
+		p0[0] = p0[1];
+		p1[0] = p1[1];
+		p2[0] = p2[1];
+
+		// 右邊界 (Outlet/Ghost 2)
+		p0[N_CELLS-1] = p0[N_CELLS-2];
+		p1[N_CELLS-1] = p1[N_CELLS-2];
+		p2[N_CELLS-1] = p2[N_CELLS-2];
+		t += dt;
+	}
+    Free_memory(p0, p1, p2, interface_p, flux);
+	return 0;
 }
