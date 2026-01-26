@@ -45,7 +45,7 @@ double CPU_Compute_MAX_CFL(double *p0, double *p1, double *p2, float dx, float d
     }
 }
 
-void CPU_Calc_rho_u_P_T(double *flux, double *interface_p,
+void CPU_Calc_rho_u_P_T(double *interface_p,
     double QL_rho, double QL_ux, double QL_vy, double QL_vz, double QL_cRT,
     double QR_rho, double QR_ux, double QR_vy, double QR_vz, double QR_cRT, double R, double GAMMA,
     double nx, double ny, double nz,
@@ -67,7 +67,6 @@ void CPU_Calc_rho_u_P_T(double *flux, double *interface_p,
 	double PMIN = EMIN*RHOMIN*(GAMMA - 1.0); // 壓力的最小值
 	double CV = R/(GAMMA - 1.0);
 	double TMIN = EMIN/CV; //溫度的最小值
-    double mflx, pxflx, pyflx, pzflx, eflx; 
 	int option;
 	
 	// Left hand normals
@@ -638,15 +637,20 @@ void CPU_Calc_rho_u_P_T(double *flux, double *interface_p,
 	    QI_T   = TRstar;
 	}
 
+	//如果 Rarefaction wave 剛好在interface上
 	if (option == 14) { 
 	    //        The right wave is an expansion. 
 	    VA = QR_u + QR_a;
 	    VB = ustar + aRstar;
 	    //        The right rarefaction straddles the cell interface.
-	    //        Interpolate velocity inside the right rarefaction. 
+	    //        Interpolate velocity inside the right rarefaction.
+		// 計算當前位置距離波尾還有多遠，frac mean fraction(比例)，意思就是當前位置與整段波長(VA-VB)的比例，可得知目前我在幾％的位置。 
 	    frac = (-VB)/(VA-VB);
 	    QI_u = ustar+frac*(QR_u-ustar);
 	    //        Take the easy way out and linearly interpolate. 
+		//在膨脹波內部，壓力、密度、速度的變化其實是等熵且非線性的（通常是冪次定律）。
+		//為了省計算量，直接用「連連看」的方式，在 ustar（波尾的值）與 QR_u（波頭的值）之間一條直線，按比例 frac 取值。
+		//在膨脹波內部有一套非常漂亮的等熵公式，但那要用到更複雜的次方運算。這裡選擇用線性插值，是因為算的快，且在網格夠細時精確度通常已經夠用了。
 	    QI_a   = aRstar   + frac * (QR_a - aRstar);
 	    QI_rho = rhoRstar + frac * (QR_rho - rhoRstar);
 	    QI_p   = pstar   + frac * (QR_p - pstar);
@@ -662,7 +666,7 @@ void CPU_Calc_rho_u_P_T(double *flux, double *interface_p,
 	//     We assume that the transverse velocity is unaffected by
 	//     the normal interactions.  We only need to select the
 	//     correct value.
-
+	// 這裡使用upwind的方式來判斷v、w的值，u如果小於零表示流體從右往左流，所以v跟w理當用右邊的值，反之亦然。
 	if (QI_u < 0.0) {
 	    QI_v = QR_v;
 	    QI_w = QR_w;
@@ -670,7 +674,7 @@ void CPU_Calc_rho_u_P_T(double *flux, double *interface_p,
 	    QI_v = QL_v;
 	    QI_w = QL_w;
 	}
-
+	// 算完所有物理量後最後將結果存入陣列當中。
 	// States now
 	interface_p[0] = QI_rho;
 	interface_p[1] = QI_u;
