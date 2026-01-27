@@ -7,8 +7,8 @@ void Allocate_memory(double **array1, double **array2, double **array3, double *
     *array2 = (double*)malloc(N_CELLS * sizeof(double));
     *array3 = (double*)malloc(N_CELLS * sizeof(double));
 	*array4 = (double*)malloc(N_CELLS * sizeof(double));
-	*array5 = (double*)malloc((N_CELLS+1) * sizeof(double));
-	*array6 = (double*)malloc((N_CELLS+1) * sizeof(double));
+	*array5 = (double*)malloc((N_CELLS+1) * 5 * sizeof(double));
+	*array6 = (double*)malloc((N_CELLS+1) * 5 * sizeof(double));
     if(*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL){
         printf("Memory allocation failed!\n");
     }
@@ -36,7 +36,7 @@ double CPU_Compute_MAX_CFL(double *p0, double *p1, double *p2, float dx, float d
             printf("Error: Negative temperature in cell %d: T = %f\n. Aborting.", cell, T);
             exit(1);
         }
-        double a = sqrt(1.4 * 1.0 *T); // GAMMA = 1.4, R = 1.0
+        double a = sqrt(1.4 * 1.0 * T); // GAMMA = 1.4, R = 1.0
         double CFL = (fabs(u) + a) * (dt / dx);
         if (CFL>MAX_CFL){
             MAX_CFL = CFL;
@@ -760,8 +760,8 @@ int main(){
     		double QR_ux  = p1[i+1];
     		double QL_T   = p2[i];
     		double QR_T   = p2[i+1];
-			double QL_cRT = R * QL_T;
-    		double QR_cRT = R * QR_T;
+			double QL_cRT = sqrt(R * QL_T);
+    		double QR_cRT = sqrt(R  * QR_T);
 			CPU_Calc_rho_u_P_T(&interface_p[i*5], &flux[i*5], //因為flux跟interface_p都有5個物理量需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
     		QL_rho, QL_ux, QL_vy, QL_vz, QL_cRT,
     		QR_rho, QR_ux, QR_vy, QR_vz, QR_cRT, R, GAMMA,
@@ -812,11 +812,13 @@ int main(){
 
 		t += dt;
 	}
+	
 	FILE * pFile = fopen("Results_of_200_cells.txt","w");
     for (int i=0; i<N_CELLS; i++){  
         fprintf(pFile, "%.3f\t%.6f\t%.6f\t%.6f\t%.2f\n", x[i], p0[i], p1[i], p2[i], t);
     }
     fclose(pFile);
+
     Free_memory(x, p0, p1, p2, interface_p, flux);
 	return 0;
 }
