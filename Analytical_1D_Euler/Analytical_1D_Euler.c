@@ -2,24 +2,26 @@
 #include <stdlib.h>
 #include <math.h>
 
-void Allocate_memory(double **array1, double **array2, double **array3, double **array4, double **array5, int N_CELLS){
+void Allocate_memory(double **array1, double **array2, double **array3, double **array4, double **array5, double **array6, int N_CELLS){
     *array1 = (double*)malloc(N_CELLS * sizeof(double));
     *array2 = (double*)malloc(N_CELLS * sizeof(double));
     *array3 = (double*)malloc(N_CELLS * sizeof(double));
 	*array4 = (double*)malloc(N_CELLS * sizeof(double));
 	*array5 = (double*)malloc((N_CELLS+1) * sizeof(double));
-    if(*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL, *array5 == NULL){
+	*array6 = (double*)malloc((N_CELLS+1) * sizeof(double));
+    if(*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL){
         printf("Memory allocation failed!\n");
     }
         printf("Memory allocation successfully for %d elements!\n", N_CELLS);
 }
 
-void Free_memory(double *array1, double *array2, double *array3, double *array4, double *array5){
+void Free_memory(double *array1, double *array2, double *array3, double *array4, double *array5, double *array6){
     free(array1);
     free(array2);
     free(array3);
 	free(array4);
 	free(array5);
+	free(array6);
     printf("Memory freed successfully!\n");
 }
 
@@ -52,7 +54,6 @@ double CPU_Compute_MAX_CFL(double *p0, double *p1, double *p2, float dx, float d
 void CPU_Calc_rho_u_P_T(double *interface_p, double *flux,
     double QL_rho, double QL_ux, double QL_vy, double QL_vz, double QL_cRT,
     double QR_rho, double QR_ux, double QR_vy, double QR_vz, double QR_cRT, double R, double GAMMA,
-	double flxnmn, double flxpmn, double flxqmn,
     double nx, double ny, double nz,
     double px, double py, double pz,
     double qx, double qy, double qz, int wall_flag){
@@ -72,6 +73,7 @@ void CPU_Calc_rho_u_P_T(double *interface_p, double *flux,
 	double PMIN = EMIN*RHOMIN*(GAMMA - 1.0); // 壓力的最小值
 	double CV = R/(GAMMA - 1.0);
 	double TMIN = EMIN/CV; //溫度的最小值
+	double flxnmn, flxpmn, flxqmn;
     double mflx, pxflx, pyflx, pzflx, eflx; 
 	int option;
 
@@ -724,12 +726,13 @@ int main(){
 	double R = 1.0;
 	double GAMMA = 1.4;
 	int wall_flag = 0; 
-    double *p0, *p1, *p2, *interface_p, *flux;
+    double *x, *p0, *p1, *p2, *interface_p, *flux;
 	double flxnmn, flxpmn, flxqmn;
 
-	Allocate_memory(&p0, &p1, &p2, &interface_p, &flux, N_CELLS);
+	Allocate_memory(&x, &p0, &p1, &p2, &interface_p, &flux, N_CELLS);
 	//Initial condition
 	for ( int i = 0; i<N_CELLS; i++){
+		x[i] = (i+0.5) * dx;
 		if (i<N_CELLS/2){
 			p0[i] = 10.0; //rho_L = 10
 			p1[i] = 0; //u_L = 0
@@ -762,7 +765,6 @@ int main(){
 			CPU_Calc_rho_u_P_T(&interface_p[i*5], &flux[i*5], //因為flux跟interface_p都有5個物理量需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
     		QL_rho, QL_ux, QL_vy, QL_vz, QL_cRT,
     		QR_rho, QR_ux, QR_vy, QR_vz, QR_cRT, R, GAMMA,
-			flxnmn, flxpmn, flxqmn,
      		nx, ny, nz,
      		px, py, pz,
      		qx, qy, qz, wall_flag);
@@ -772,36 +774,49 @@ int main(){
     		// 我們是 i*5，所以左界面是 (i-1)*5，右界面是 i*5
     		int L_interface = (i - 1) * 5;
     		int R_interface = i * 5;
-
+			double CV = R / (GAMMA - 1.0);
+			// 先將舊的值儲存起來
+    		double rho_old = p0[i];
+    		double u_old   = p1[i];
+    		double T_old   = p2[i];
 			// p1 存的是速度 u，我們要先算動量 rho*u 的變化再去除以rho得到u。
-    		double old_momentum = p0[i] * p1[i]; // 這裡用簡化更新，實務上可用舊值
-    		double new_momentum = old_momentum + (dt / dx) * (flux[L_interface + 1] - flux[R_interface + 1]);
+    		double Mom_old = rho_old * u_old; // p0[i] * p1[i]
+			// 先從溫度算總能 E，更新完 E 再扣掉動能回算 T
+    		double E_old   = rho_old * (CV * T_old + 0.5 * u_old * u_old); //p0[i] * (CV * p2[i] + 0.5 * p1[i] * p1[i])
+    	
 
-    		// 先從溫度算總能 E，更新完 E 再扣掉動能回算 T
-    		double CV = R / (GAMMA - 1.0);
-    		double old_E = p0[i] * (CV * p2[i] + 0.5 * p1[i] * p1[i]);
-    		double new_E = old_E + (dt / dx) * (flux[L_interface + 4] - flux[R_interface + 4]);
+			// 使用FVM計算新的值，參考程式碼712～716行，interface_p[0]是密度、[1]是u、[2]是v、[3]是w、[4]是溫度。
+    		double rho_new = rho_old + (dt / dx) * (flux[L_interface + 0] - flux[R_interface + 0]);
+    		double Mom_new = Mom_old + (dt / dx) * (flux[L_interface + 1] - flux[R_interface + 1]);
+    		double E_new   = E_old   + (dt / dx) * (flux[L_interface + 4] - flux[R_interface + 4]);
 
     		//更新密度 (p0)
-    		p0[i] = p0[i] + (dt / dx) * (flux[L_interface + 0] - flux[R_interface + 0]);
+    		p0[i] = rho_new;
     		// 更新動量並回推速度 (p1)
-    		p1[i] = new_momentum / p0[i]; // 得到新的速度 u
+    		p1[i] = Mom_new / rho_new;
     		// 更新能量並回推溫度 (p2)
-			double new_internal_energy = (new_E / p0[i]) - 0.5 * p1[i] * p1[i];
-    		p2[i] = new_internal_energy / CV;
+			double internal_e = (E_new / rho_new) - 0.5 * (p1[i] * p1[i]);
+			p2[i] = internal_e / CV;
 		}
+
 		// Boundary condition for compute flux.	
-		// 左邊界 (Inlet/Ghost 1)
+		// 左邊界
 		p0[0] = p0[1];
 		p1[0] = p1[1];
 		p2[0] = p2[1];
 
-		// 右邊界 (Outlet/Ghost 2)
+		// 右邊界
 		p0[N_CELLS-1] = p0[N_CELLS-2];
 		p1[N_CELLS-1] = p1[N_CELLS-2];
 		p2[N_CELLS-1] = p2[N_CELLS-2];
+
 		t += dt;
 	}
-    Free_memory(p0, p1, p2, interface_p, flux);
+	FILE * pFile = fopen("Results_of_200_cells.txt","w");
+    for (int i=0; i<N_CELLS; i++){  
+        fprintf(pFile, "%.3f\t%.6f\t%.6f\t%.6f\t%.2f\n", x[i], p0[i], p1[i], p2[i], t);
+    }
+    fclose(pFile);
+    Free_memory(x, p0, p1, p2, interface_p, flux);
 	return 0;
 }
