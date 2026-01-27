@@ -2,26 +2,28 @@
 #include <stdlib.h>
 #include <math.h>
 
-void Allocate_memory(double **array1, double **array2, double **array3, double **array4, double **array5, double **array6, int N_CELLS){
+void Allocate_memory(double **array1, double **array2, double **array3, double **array4, double **array5, double **array6, double **array7, int N_CELLS){
     *array1 = (double*)malloc(N_CELLS * sizeof(double));
     *array2 = (double*)malloc(N_CELLS * sizeof(double));
     *array3 = (double*)malloc(N_CELLS * sizeof(double));
 	*array4 = (double*)malloc(N_CELLS * sizeof(double));
-	*array5 = (double*)malloc((N_CELLS+1) * 5 * sizeof(double));
-	*array6 = (double*)malloc((N_CELLS+1) * 5 * sizeof(double));
-    if(*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL){
+	*array5 = (double*)malloc(N_CELLS * sizeof(double));
+	*array6 = (double*)malloc((N_CELLS+1) * 6 * sizeof(double)); // interface_p have 6 output
+	*array7 = (double*)malloc((N_CELLS+1) * 5 * sizeof(double)); // flux have 5 ouuput
+    if(*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL || *array7 == NULL){
         printf("Memory allocation failed!\n");
     }
         printf("Memory allocation successfully for %d elements!\n", N_CELLS);
 }
 
-void Free_memory(double *array1, double *array2, double *array3, double *array4, double *array5, double *array6){
+void Free_memory(double *array1, double *array2, double *array3, double *array4, double *array5, double *array6, double *array7){
     free(array1);
     free(array2);
     free(array3);
 	free(array4);
 	free(array5);
 	free(array6);
+	free(array7);
     printf("Memory freed successfully!\n");
 }
 
@@ -713,7 +715,8 @@ void CPU_Calc_rho_u_P_T(double *interface_p, double *flux,
 	interface_p[1] = QI_u;
 	interface_p[2] = QI_v;
 	interface_p[3] = QI_w;
-	interface_p[4] = QI_T;	
+	interface_p[4] = QI_T;
+	interface_p[5] = QI_p;	
 }
 
 int main(){
@@ -726,10 +729,10 @@ int main(){
 	double R = 1.0;
 	double GAMMA = 1.4;
 	int wall_flag = 0; 
-    double *x, *p0, *p1, *p2, *interface_p, *flux;
+    double *x, *p0, *p1, *p2, *p3, *interface_p, *flux;
 	double flxnmn, flxpmn, flxqmn;
 
-	Allocate_memory(&x, &p0, &p1, &p2, &interface_p, &flux, N_CELLS);
+	Allocate_memory(&x, &p0, &p1, &p2, &p3, &interface_p, &flux, N_CELLS);
 	//Initial condition
 	for ( int i = 0; i<N_CELLS; i++){
 		x[i] = (i+0.5) * dx;
@@ -797,6 +800,9 @@ int main(){
     		// 更新能量並回推溫度 (p2)
 			double internal_e = (E_new / rho_new) - 0.5 * (p1[i] * p1[i]);
 			p2[i] = internal_e / CV;
+			// 更新壓力 (p3)
+			double P_new = p0[i] * R * p2[i];
+			p3[i] = P_new;
 		}
 
 		// Boundary condition for compute flux.	
@@ -815,10 +821,10 @@ int main(){
 	
 	FILE * pFile = fopen("Results_of_200_cells.txt","w");
     for (int i=0; i<N_CELLS; i++){  
-        fprintf(pFile, "%.3f\t%.6f\t%.6f\t%.6f\t%.2f\n", x[i], p0[i], p1[i], p2[i], t);
+        fprintf(pFile, "%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.2f\n", x[i], p0[i], p1[i], p2[i], p3[i], t);
     }
     fclose(pFile);
 
-    Free_memory(x, p0, p1, p2, interface_p, flux);
+    Free_memory(x, p0, p1, p2, p3, interface_p, flux);
 	return 0;
 }
