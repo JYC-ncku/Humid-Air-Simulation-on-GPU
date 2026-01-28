@@ -425,7 +425,6 @@ void CPU_Calc_rho_u_P_T(double *interface_p, double *flux,
 		} else {
 		    pstar = 0.1*pstar;
 		}
-
 		//           --- Velocity ---
 		ustar = QL_u-QL_a/geff*(pstar/QL_p-1.0)/term1;
 	    }
@@ -654,8 +653,8 @@ void CPU_Calc_rho_u_P_T(double *interface_p, double *flux,
 	    frac = (-VB)/(VA-VB);
 	    QI_u = ustar+frac*(QR_u-ustar);
 	    //        Take the easy way out and linearly interpolate. 
-		//在膨脹波內部，壓力、密度、速度的變化其實是等熵且非線性的（通常是冪次定律）。
-		//為了省計算量，直接用「連連看」的方式，在 ustar（波尾的值）與 QR_u（波頭的值）之間一條直線，按比例 frac 取值。
+		//在膨脹波內部，壓力、密度、速度的變化其實是等熵且非線性的。
+		//為了省計算量，在 ustar（波尾的值）與 QR_u（波頭的值）之間一條直線，按比例 frac 取值。
 		//在膨脹波內部有一套非常漂亮的等熵公式，但那要用到更複雜的次方運算。這裡選擇用線性插值，是因為算的快，且在網格夠細時精確度通常已經夠用了。
 	    QI_a   = aRstar   + frac * (QR_a - aRstar);
 	    QI_rho = rhoRstar + frac * (QR_rho - rhoRstar);
@@ -765,7 +764,7 @@ int main(){
     		double QR_T   = p2[i+1];
 			double QL_cRT = sqrt(R * QL_T);
     		double QR_cRT = sqrt(R  * QR_T);
-			CPU_Calc_rho_u_P_T(&interface_p[i*5], &flux[i*5], //因為flux跟interface_p都有5個物理量需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
+			CPU_Calc_rho_u_P_T(&interface_p[i*6], &flux[i*5], //因為flux跟interface_p都有5個物理量需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
     		QL_rho, QL_ux, QL_vy, QL_vz, QL_cRT,
     		QR_rho, QR_ux, QR_vy, QR_vz, QR_cRT, R, GAMMA,
      		nx, ny, nz,
@@ -810,15 +809,16 @@ int main(){
 		p0[0] = p0[1];
 		p1[0] = p1[1];
 		p2[0] = p2[1];
+		p3[0] = p3[1];
 
 		// 右邊界
 		p0[N_CELLS-1] = p0[N_CELLS-2];
 		p1[N_CELLS-1] = p1[N_CELLS-2];
 		p2[N_CELLS-1] = p2[N_CELLS-2];
+		p3[N_CELLS-1] = p3[N_CELLS-2];
 
 		t += dt;
 	}
-	
 	FILE * pFile = fopen("Results_of_200_cells.txt","w");
     for (int i=0; i<N_CELLS; i++){  
         fprintf(pFile, "%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.2f\n", x[i], p0[i], p1[i], p2[i], p3[i], t);
