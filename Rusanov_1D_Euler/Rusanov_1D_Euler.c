@@ -24,46 +24,34 @@ void Free_memory(double *array1, double *array2, double *array3, double *array4,
     printf("Memory freed successfully!\n");
 }
 
-double MAX_CFL(double *p0, double *p1, double *p2, float dX, float dt, float N_CELLS) {
-	float MAX_CFL = -1.0;
-	for (int cell = 0; cell < N_CELLS; cell++) {
-		// Extract rho, u and T out from the arrays
-		double rho = p0[cell];
-		double u = p1[cell];
-		double T = p2[cell];
-		// Check the temperature
-		if (T < 0) {
-			printf("Error: Negative temperature in cell %d: T = %f\n. Aborting.", cell, T);
-			exit(1);
-		}
-		double a = sqrt(1.4 * 1.0 * T); // GAMMA = 1.4, R = 1.0
-		double CFL = (fabs(u) + a) * (dt / dX);
-		if (CFL > MAX_CFL) {
-			MAX_CFL = CFL;
-		}
-	}
-
-	// Check the return value
-	if (MAX_CFL < 0) {
-		printf("Error: MAX_CFL is negative!. Aborting. \n");
-		exit(1);
-	} else {
-		return MAX_CFL;
-	}
-}
-
-
-
-int main(){
-    int N_CELLS = 200;
+void Rusanov_1D_Euler(int N_CELLS, double *x,double *p0, double *p1, double *p2,double *flux){
     float L = 1.0;
     float R = 1.0;
     float GAMMA = 1.4;
     float t = 0;
     float t_FINAL = 0.2;
-    float dt = 0.0001;
-    double dx = L/N_CELLS;
-    double *x, *p0, *p1, *p2, *flux;
+    double CFL = 0.5;
+     double dx = L/N_CELLS;
+
+    // Set initial condition
+    for (int i = 0; i < N_CELLS; i++){
+        x[i] = (i+0.5) * dx;
+        if (i <= N_CELLS/2){
+            p0[i] = 10;
+            p1[i] = 0;
+            p2[i] = 1;
+        } else {
+            p0[i] = 1;
+            p1[i] = 0;
+            p2[i] = 1;
+        }
+    }
+}
+
+int main(){
+    int N_CELLS = 200;
+    int N_INTERFACES = N_CELLS+1;
+    double *x, *p0, *p1, *p2, *flux; // p0 is density, p1 is velocity, p2 is temperature
     Allocate_memory(&x, &p0, &p1, &p2, &flux, N_CELLS);
     Free_memory(x, p0, p1, p2, flux);
 }
