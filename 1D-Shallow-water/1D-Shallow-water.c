@@ -11,7 +11,7 @@ void Allocate_memory(double **array1, double **array2, double **array3, double *
     *array6 = (double*)malloc(N_CELLS * sizeof(double));
     *array7 = (double*)malloc(N_CELLS * sizeof(double));
     if(*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL || *array7 == NULL){
-        printf("Memory allocation faild!\n");
+        printf("Memory allocation failed!\n");
         exit(1);
     }
     printf("Memory allocation successfully for %d elements\n", N_CELLS);
