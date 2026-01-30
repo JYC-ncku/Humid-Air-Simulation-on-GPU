@@ -2,27 +2,31 @@
 #include <stdlib.h>
 #include <math.h>
 
-void Allocate_memory(double **array1, double **array2, double **array3, double **array4, double **array5, double **array6, int N_CELLS){
+void Allocate_memory(double **array1, double **array2, double **array3, double **array4, double **array5, double **array6, double **array7, double **array8, int N_CELLS){
     *array1 = (double*)malloc(N_CELLS * sizeof(double));
     *array2 = (double*)malloc(N_CELLS * sizeof(double));
     *array3 = (double*)malloc(N_CELLS * sizeof(double));
     *array4 = (double*)malloc(N_CELLS * sizeof(double));
     *array5 = (double*)malloc(N_CELLS * sizeof(double));
     *array6 = (double*)malloc((N_CELLS+1) * sizeof(double));
-    if (*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL ){
+    *array7 = (double*)malloc((N_CELLS+1) * sizeof(double));
+    *array8 = (double*)malloc((N_CELLS+1) * sizeof(double));    
+    if (*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL || *array7 == NULL || *array8 == NULL ){
         printf("Memory allocation failed!\n");
         exit(1);
     }
         printf("Memory allocation successfully for %d elements!\n", N_CELLS);
 }
 
-void Free_memory(double *array1, double *array2, double *array3, double *array4, double *array5, double *array6){
+void Free_memory(double *array1, double *array2, double *array3, double *array4, double *array5, double *array6, double *array7, double *array8){
     free(array1);
     free(array2);
     free(array3);
     free(array4);
     free(array5);
     free(array6);
+    free(array7);
+    free(array8);
     printf("Memory freed successfully!\n");
 }
 
@@ -46,20 +50,41 @@ double MAX_Wave_Speed(double u_L, double u_R, double a_L, double a_R){
     }
 }
 
-void Calc_Flux(double rho_L, double rho_R, double u_L, double u_R, double T_L, double T_R, double p_L, double p_R, double e_L, double e_R, double GAMMA, double *flux){
-        double mass_flux_L = rho_L * u_L;
-        double mass_flux_R = rho_R * u_R;
-        double momentum_flux_L = rho_L * u_L * u_L + p_L;
-        double momentum_flux_R = rho_R * u_R * u_R + p_R;
-        double energy_flux_L = (e_L + p_L) * u_L;
-        double energy_flux_R = (e_R + p_R) * u_R;
-}
+void Calc_Rusanov_Flux(double rho_L, double rho_R, double u_L, double u_R, double T_L, double T_R, double p_L, double p_R, double e_L, double e_R, double W_LOCAL_MAX,
+                       double *mass_flux, double *momentum_flux, double *energy_flux, int N_CELLS){
+    double mass_L = rho_L;
+    double momentum_L = rho_L * u_L;
+    double energy_L = e_L;
+    double mass_R = rho_R;
+    double momentum_R = rho_R * u_R;
+    double energy_R = e_R;
 
+    double mass_flux_L = rho_L * u_L;
+    double mass_flux_R = rho_R * u_R;
+    double momentum_flux_L = rho_L * u_L * u_L + p_L;
+    double momentum_flux_R = rho_R * u_R * u_R + p_R;
+    double energy_flux_L = (e_L + p_L) * u_L;
+    double energy_flux_R = (e_R + p_R) * u_R;
+
+    for (int j = 1; j < N_CELLS; j++){
+        mass_flux[j] = 0.5 * (mass_flux_L + mass_flux_R) - 0.5 * W_LOCAL_MAX * (mass_R - mass_L);
+        momentum_flux[j] = 0.5 * (momentum_flux_L + momentum_flux_R) - 0.5 * W_LOCAL_MAX * (momentum_R - momentum_L);
+        energy_flux[j] = 0.5 * (energy_flux_L + energy_flux_R) - 0.5 * W_LOCAL_MAX * (energy_R - energy_L);
+    }
+
+    //Set boundary condition
+    mass_flux[0] = mass_flux[1];
+    momentum_flux[0] = momentum_flux[1];
+    energy_flux[0] = energy_flux[1];
+    mass_flux[N_CELLS] = mass_flux[N_CELLS - 1];
+    momentum_flux[N_CELLS] = momentum_flux[N_CELLS - 1];
+    energy_flux[N_CELLS] = energy_flux[N_CELLS - 1];
+}
+    
 
 int main(){
     int N_CELLS = 200;
-    int N_INTERFACES = N_CELLS+1;
-    double *x, *p0, *p1, *p2, *p3, *flux; // p0 is density, p1 is velocity, p2 is temperature
+    double *x, *p0, *p1, *p2, *p3, *mass_flux, *momentum_flux, *energy_flux; // p0 is density, p1 is velocity, p2 is temperature
     float L = 1.0;
     float t = 0;
     float t_FINAL = 0.2;
@@ -68,7 +93,7 @@ int main(){
     double CFL = 0.5;
     double dx = L/N_CELLS;
 
-    Allocate_memory(&x, &p0, &p1, &p2, &p3, &flux, N_CELLS);
+    Allocate_memory(&x, &p0, &p1, &p2, &p3, &mass_flux, &momentum_flux, &energy_flux, N_CELLS);
     // Set initial condition
     for (int i = 0; i < N_CELLS; i++){
         x[i] = (i+0.5) * dx;
@@ -86,30 +111,30 @@ int main(){
     }
    while (t<t_FINAL){
         // In order to compute dt, need to find the Max wave speed first.
-        double W_MAX = 1e-10;
-        for (int i = 0; i < N_CELLS-1; i++){
-			double rho_L = p0[i];
-    		double rho_R = p0[i+1];
-    		double u_L = p1[i];
-    		double u_R = p1[i+1];
-    		double T_L = p2[i];
-    		double T_R = p2[i+1];
-            double p_L = p3[i];
-            double p_R = p3[i+1];
+        double W_GLOBAL_MAX = 1e-10;
+        for (int j = 1; j < N_CELLS; j++){
+			double rho_L = p0[j-1];
+    		double rho_R = p0[j];
+    		double u_L = p1[j-1];
+    		double u_R = p1[j];
+    		double T_L = p2[j-1];
+    		double T_R = p2[j];
+            double p_L = p3[j-1];
+            double p_R = p3[j];
             double e_L = 0.5 * rho_L * u_L * u_L + (p_L / (GAMMA - 1));
             double e_R = 0.5 * rho_R * u_R * u_R + (p_R / (GAMMA - 1));    
             double a_L = sqrt(GAMMA * R * T_L); // Sound speed a = (R*T)^0.5
             double a_R = sqrt(GAMMA * R * T_R);
-            double W_LOCAL = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
+            double W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
             // 這裡要呼叫計算flux的function
-            if (W_LOCAL>W_MAX){
-                W_MAX = W_LOCAL;
+            if (W_LOCAL_MAX > W_GLOBAL_MAX){
+                W_GLOBAL_MAX = W_LOCAL_MAX;
             }
         }
-        double dt = CFL * (dx/W_MAX);
+        double dt = CFL * (dx / W_GLOBAL_MAX);
         t += dt;
     }
 
-    Free_memory(x, p0, p1, p2, p3, flux);
+    Free_memory(x, p0, p1, p2, p3, mass_flux, momentum_flux, energy_flux);
     return 0;
 }
