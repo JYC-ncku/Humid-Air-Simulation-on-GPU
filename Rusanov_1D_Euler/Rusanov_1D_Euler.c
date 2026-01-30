@@ -2,25 +2,27 @@
 #include <stdlib.h>
 #include <math.h>
 
-void Allocate_memory(double **array1, double **array2, double **array3, double **array4, double **array5, int N_CELLS){
+void Allocate_memory(double **array1, double **array2, double **array3, double **array4, double **array5, double **array6, int N_CELLS){
     *array1 = (double*)malloc(N_CELLS * sizeof(double));
     *array2 = (double*)malloc(N_CELLS * sizeof(double));
     *array3 = (double*)malloc(N_CELLS * sizeof(double));
     *array4 = (double*)malloc(N_CELLS * sizeof(double));
-    *array5 = (double*)malloc((N_CELLS+1) * sizeof(double));
-    if (*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL ){
+    *array5 = (double*)malloc(N_CELLS * sizeof(double));
+    *array6 = (double*)malloc((N_CELLS+1) * sizeof(double));
+    if (*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL ){
         printf("Memory allocation failed!\n");
         exit(1);
     }
         printf("Memory allocation successfully for %d elements!\n", N_CELLS);
 }
 
-void Free_memory(double *array1, double *array2, double *array3, double *array4, double *array5){
+void Free_memory(double *array1, double *array2, double *array3, double *array4, double *array5, double *array6){
     free(array1);
     free(array2);
     free(array3);
     free(array4);
     free(array5);
+    free(array6);
     printf("Memory freed successfully!\n");
 }
 
@@ -44,11 +46,20 @@ double MAX_Wave_Speed(double u_L, double u_R, double a_L, double a_R){
     }
 }
 
+void Calc_Flux(double rho_L, double rho_R, double u_L, double u_R, double T_L, double T_R, double p_L, double p_R, double e_L, double e_R, double GAMMA, double *flux){
+        double mass_flux_L = rho_L * u_L;
+        double mass_flux_R = rho_R * u_R;
+        double momentum_flux_L = rho_L * u_L * u_L + p_L;
+        double momentum_flux_R = rho_R * u_R * u_R + p_R;
+        double energy_flux_L = (e_L + p_L) * u_L;
+        double energy_flux_R = (e_R + p_R) * u_R;
+}
+
 
 int main(){
     int N_CELLS = 200;
     int N_INTERFACES = N_CELLS+1;
-    double *x, *p0, *p1, *p2, *flux; // p0 is density, p1 is velocity, p2 is temperature
+    double *x, *p0, *p1, *p2, *p3, *flux; // p0 is density, p1 is velocity, p2 is temperature
     float L = 1.0;
     float t = 0;
     float t_FINAL = 0.2;
@@ -57,7 +68,7 @@ int main(){
     double CFL = 0.5;
     double dx = L/N_CELLS;
 
-    Allocate_memory(&x, &p0, &p1, &p2, &flux, N_CELLS);
+    Allocate_memory(&x, &p0, &p1, &p2, &p3, &flux, N_CELLS);
     // Set initial condition
     for (int i = 0; i < N_CELLS; i++){
         x[i] = (i+0.5) * dx;
@@ -65,10 +76,12 @@ int main(){
             p0[i] = 10;
             p1[i] = 0;
             p2[i] = 1;
+            p3[i] = 10;
         } else {
             p0[i] = 1;
             p1[i] = 0;
             p2[i] = 1;
+            p3[i] = 1;
         }
     }
    while (t<t_FINAL){
@@ -77,14 +90,18 @@ int main(){
         for (int i = 0; i < N_CELLS-1; i++){
 			double rho_L = p0[i];
     		double rho_R = p0[i+1];
-    		double u_L  = p1[i];
-    		double u_R  = p1[i+1];
-    		double T_L  = p2[i];
-    		double T_R  = p2[i+1];      
+    		double u_L = p1[i];
+    		double u_R = p1[i+1];
+    		double T_L = p2[i];
+    		double T_R = p2[i+1];
+            double p_L = p3[i];
+            double p_R = p3[i+1];
+            double e_L = 0.5 * rho_L * u_L * u_L + (p_L / (GAMMA - 1));
+            double e_R = 0.5 * rho_R * u_R * u_R + (p_R / (GAMMA - 1));    
             double a_L = sqrt(GAMMA * R * T_L); // Sound speed a = (R*T)^0.5
             double a_R = sqrt(GAMMA * R * T_R);
             double W_LOCAL = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
-
+            // 這裡要呼叫計算flux的function
             if (W_LOCAL>W_MAX){
                 W_MAX = W_LOCAL;
             }
@@ -93,42 +110,6 @@ int main(){
         t += dt;
     }
 
-    Free_memory(x, p0, p1, p2, flux);
+    Free_memory(x, p0, p1, p2, p3, flux);
     return 0;
 }
-
-
-
-/*
-    while (t<t_FINAL){
-        // In order to compute dt, need to find the Max wave speed first.
-        double W_MAX, W_LOCAL, W_L, W_R;
-        for (int i = 0; i < N_CELLS; i++){
-			double QL_rho = p0[i];
-    		double QR_rho = p0[i+1];
-    		double QL_u  = p1[i];
-    		double QR_u  = p1[i+1];
-    		double QL_T   = p2[i];
-    		double QR_T   = p2[i+1];      
-            double a_L = sqrt(R * QL_T); // Sound speed a = (R*T)^0.5
-            double a_R = sqrt(R * QR_T);
-        }
-            // Calculate MAX Wave Speed 
-        for (int j = 1; j<N_CELLS; j++){
-            W_L = fabs(p1[j-1]) + a_L;
-            W_R = fabs(p1[j]) - a_R;
-            }
-        if (W_L > W_R){
-            W_LOCAL = W_L;
-        }else {
-            W_LOCAL = W_R;
-        }
-        if (W_LOCAL>W_MAX){
-            W_MAX = W_LOCAL;
-        }
-
-        double dt = CFL * (dx/W_MAX);
-        t += dt;
-    }
-}
-*/
