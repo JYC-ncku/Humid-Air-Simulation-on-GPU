@@ -51,7 +51,7 @@ double MAX_Wave_Speed(double u_L, double u_R, double a_L, double a_R){
 }
 
 void Calc_Rusanov_Flux(double rho_L, double rho_R, double u_L, double u_R, double T_L, double T_R, double p_L, double p_R, double e_L, double e_R, double W_LOCAL_MAX,
-                       double *mass_flux, double *momentum_flux, double *energy_flux, int N_CELLS){
+                       double *mass_flux, double *momentum_flux, double *energy_flux, int N_CELLS, int j){
     double mass_L = rho_L;
     double momentum_L = rho_L * u_L;
     double energy_L = e_L;
@@ -66,19 +66,9 @@ void Calc_Rusanov_Flux(double rho_L, double rho_R, double u_L, double u_R, doubl
     double energy_flux_L = (e_L + p_L) * u_L;
     double energy_flux_R = (e_R + p_R) * u_R;
 
-    for (int j = 1; j < N_CELLS; j++){
-        mass_flux[j] = 0.5 * (mass_flux_L + mass_flux_R) - 0.5 * W_LOCAL_MAX * (mass_R - mass_L);
-        momentum_flux[j] = 0.5 * (momentum_flux_L + momentum_flux_R) - 0.5 * W_LOCAL_MAX * (momentum_R - momentum_L);
-        energy_flux[j] = 0.5 * (energy_flux_L + energy_flux_R) - 0.5 * W_LOCAL_MAX * (energy_R - energy_L);
-    }
-
-    //Set boundary condition
-    mass_flux[0] = mass_flux[1];
-    momentum_flux[0] = momentum_flux[1];
-    energy_flux[0] = energy_flux[1];
-    mass_flux[N_CELLS] = mass_flux[N_CELLS - 1];
-    momentum_flux[N_CELLS] = momentum_flux[N_CELLS - 1];
-    energy_flux[N_CELLS] = energy_flux[N_CELLS - 1];
+    mass_flux[j] = 0.5 * (mass_flux_L + mass_flux_R) - 0.5 * W_LOCAL_MAX * (mass_R - mass_L);
+    momentum_flux[j] = 0.5 * (momentum_flux_L + momentum_flux_R) - 0.5 * W_LOCAL_MAX * (momentum_R - momentum_L);
+    energy_flux[j] = 0.5 * (energy_flux_L + energy_flux_R) - 0.5 * W_LOCAL_MAX * (energy_R - energy_L);
 }
     
 
@@ -126,11 +116,20 @@ int main(){
             double a_L = sqrt(GAMMA * R * T_L); // Sound speed a = (R*T)^0.5
             double a_R = sqrt(GAMMA * R * T_R);
             double W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
-            // 這裡要呼叫計算flux的function
+            Calc_Rusanov_Flux(rho_L, rho_R, u_L, u_R, T_L, T_R, p_L, p_R, e_L, e_R, W_LOCAL_MAX,
+                              mass_flux, momentum_flux, energy_flux, N_CELLS, j);
             if (W_LOCAL_MAX > W_GLOBAL_MAX){
                 W_GLOBAL_MAX = W_LOCAL_MAX;
             }
         }
+        //Set boundary condition
+        mass_flux[0] = mass_flux[1];
+        momentum_flux[0] = momentum_flux[1];
+        energy_flux[0] = energy_flux[1];
+        mass_flux[N_CELLS] = mass_flux[N_CELLS - 1];
+        momentum_flux[N_CELLS] = momentum_flux[N_CELLS - 1];
+        energy_flux[N_CELLS] = energy_flux[N_CELLS - 1];
+    
         double dt = CFL * (dx / W_GLOBAL_MAX);
         t += dt;
     }
