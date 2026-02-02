@@ -157,7 +157,11 @@ int main(){
             p3[i] =  p0[i] * R * p2[i];
         }
     }
-
+    FILE * pFile = fopen("Results_of_200_cells.txt","w");
+    for (int i = 0; i<N_CELLS; i++){
+        fprintf(pFile, "%.3f\t%.6f\t%.6f\t%.6f\t%.6f\n", x[i], p0[i], p1[i], p2[i], p3[i]);
+    }
+    fclose(pFile);
     Free_memory(x, p0, p1, p2, p3, mass, momentum, energy, mass_flux, momentum_flux, energy_flux);
     return 0;
 }
