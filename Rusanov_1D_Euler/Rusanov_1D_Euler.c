@@ -2,23 +2,29 @@
 #include <stdlib.h>
 #include <math.h>
 
-void Allocate_memory(double **array1, double **array2, double **array3, double **array4, double **array5, double **array6, double **array7, double **array8, int N_CELLS){
+void Allocate_memory(double **array1, double **array2, double **array3, double **array4, double **array5, double **array6,
+                     double **array7, double **array8, double **array9, double **array10, double **array11, int N_CELLS){
     *array1 = (double*)malloc(N_CELLS * sizeof(double));
     *array2 = (double*)malloc(N_CELLS * sizeof(double));
     *array3 = (double*)malloc(N_CELLS * sizeof(double));
     *array4 = (double*)malloc(N_CELLS * sizeof(double));
     *array5 = (double*)malloc(N_CELLS * sizeof(double));
-    *array6 = (double*)malloc((N_CELLS+1) * sizeof(double));
-    *array7 = (double*)malloc((N_CELLS+1) * sizeof(double));
-    *array8 = (double*)malloc((N_CELLS+1) * sizeof(double));    
-    if (*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL || *array7 == NULL || *array8 == NULL ){
+    *array6 = (double*)malloc(N_CELLS * sizeof(double));
+    *array7 = (double*)malloc(N_CELLS * sizeof(double));
+    *array8 = (double*)malloc(N_CELLS * sizeof(double));
+    *array9 = (double*)malloc((N_CELLS+1) * sizeof(double));
+    *array10 = (double*)malloc((N_CELLS+1) * sizeof(double));
+    *array11 = (double*)malloc((N_CELLS+1) * sizeof(double));    
+    if (*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL || 
+        *array7 == NULL || *array8 == NULL || *array9 == NULL || *array10 == NULL || *array11 == NULL ){
         printf("Memory allocation failed!\n");
         exit(1);
     }
         printf("Memory allocation successfully for %d elements!\n", N_CELLS);
 }
 
-void Free_memory(double *array1, double *array2, double *array3, double *array4, double *array5, double *array6, double *array7, double *array8){
+void Free_memory(double *array1, double *array2, double *array3, double *array4, double *array5, double *array6,
+                 double *array7, double *array8, double *array9, double *array10, double *array11){
     free(array1);
     free(array2);
     free(array3);
@@ -27,6 +33,9 @@ void Free_memory(double *array1, double *array2, double *array3, double *array4,
     free(array6);
     free(array7);
     free(array8);
+    free(array9);
+    free(array10);
+    free(array11);
     printf("Memory freed successfully!\n");
 }
 
@@ -74,7 +83,7 @@ void Calc_Rusanov_Flux(double rho_L, double rho_R, double u_L, double u_R, doubl
 
 int main(){
     int N_CELLS = 200;
-    double *x, *p0, *p1, *p2, *p3, *mass_flux, *momentum_flux, *energy_flux; // p0 is density, p1 is velocity, p2 is temperature
+    double *x, *p0, *p1, *p2, *p3, *mass, *momentum, *energy, *mass_flux, *momentum_flux, *energy_flux; // p0 is density, p1 is velocity, p2 is temperature, p3 is pressure
     float L = 1.0;
     float t = 0;
     float t_FINAL = 0.2;
@@ -83,7 +92,7 @@ int main(){
     double CFL = 0.5;
     double dx = L/N_CELLS;
 
-    Allocate_memory(&x, &p0, &p1, &p2, &p3, &mass_flux, &momentum_flux, &energy_flux, N_CELLS);
+    Allocate_memory(&x, &p0, &p1, &p2, &p3, &mass, &momentum, &energy, &mass_flux, &momentum_flux, &energy_flux, N_CELLS);
     // Set initial condition
     for (int i = 0; i < N_CELLS; i++){
         x[i] = (i+0.5) * dx;
@@ -122,6 +131,7 @@ int main(){
                 W_GLOBAL_MAX = W_LOCAL_MAX;
             }
         }
+
         //Set boundary condition
         mass_flux[0] = mass_flux[1];
         momentum_flux[0] = momentum_flux[1];
@@ -129,11 +139,25 @@ int main(){
         mass_flux[N_CELLS] = mass_flux[N_CELLS - 1];
         momentum_flux[N_CELLS] = momentum_flux[N_CELLS - 1];
         energy_flux[N_CELLS] = energy_flux[N_CELLS - 1];
-    
+
         double dt = CFL * (dx / W_GLOBAL_MAX);
         t += dt;
+    
+        // Use FVM to get new conservation values
+        for (int i=0; i<N_CELLS; i++){
+            mass[i] = mass[i] - (dt / dx)*(mass_flux[i+1] - mass_flux[i]);
+            momentum[i] = momentum[i] - (dt / dx)*(momentum_flux[i+1] - momentum_flux[i]);
+            energy[i] = energy[i] - (dt / dx)*(energy_flux[i+1] - energy_flux[i]);
+        }
+
+        for (int i = 0; i<N_CELLS; i++){
+            p0[i] = mass[i];
+            p1[i] = momentum[i] / mass[i];
+            p2[i] = 0.5 * p0[i] * p1[i] * p1[i] + (p3[i] / (GAMMA - 1));
+            p3[i] =  p0[i] * R * p2[i];
+        }
     }
 
-    Free_memory(x, p0, p1, p2, p3, mass_flux, momentum_flux, energy_flux);
+    Free_memory(x, p0, p1, p2, p3, mass, momentum, energy, mass_flux, momentum_flux, energy_flux);
     return 0;
 }
