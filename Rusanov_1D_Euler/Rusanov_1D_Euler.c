@@ -52,11 +52,13 @@ void Free_memory(double *array1, double *array2, double *array3, double *array4,
 double MAX_Wave_Speed(double u_L, double u_R, double a_L, double a_R){
     double W_L = fabs(u_L) + a_L;
     double W_R = fabs(u_R) + a_R;
+    double W_LOCAL_MAX;
     if (W_L > W_R){
-        return W_L;
+        W_LOCAL_MAX = W_L;
     }else {
-        return W_R;
+        W_LOCAL_MAX = W_R;
     }
+    return W_LOCAL_MAX;
 }
 
 void Calc_Rusanov_Flux(double rho_L, double rho_R, double u_L, double u_R, double T_L, double T_R, double p_L, double p_R, double e_L, double e_R, double W_LOCAL_MAX,
@@ -82,7 +84,7 @@ void Calc_Rusanov_Flux(double rho_L, double rho_R, double u_L, double u_R, doubl
     
 
 int main(){
-    int N_CELLS = 200;
+    int N_CELLS = 800;
     double *x, *p0, *p1, *p2, *p3, *mass, *momentum, *energy, *mass_flux, *momentum_flux, *energy_flux; // p0 is density, p1 is velocity, p2 is temperature, p3 is pressure
     float L = 1.0;
     float t = 0;
@@ -91,6 +93,7 @@ int main(){
     double GAMMA = 1.4;
     double CFL = 0.5;
     double dx = L/N_CELLS;
+    double W_GLOBAL_MAX;
 
     Allocate_memory(&x, &p0, &p1, &p2, &p3, &mass, &momentum, &energy, &mass_flux, &momentum_flux, &energy_flux, N_CELLS);
     // Set initial condition
@@ -108,6 +111,13 @@ int main(){
             p3[i] = 1;
         }
     }
+
+    for (int i=0; i<N_CELLS; i++){
+    mass[i] = p0[i];
+    momentum[i] = p0[i] * p1[i];
+    energy[i] = 0.5 * p0[i] * p1[i] * p1[i] + (p3[i] / (GAMMA - 1));
+    }
+
    while (t<t_FINAL){
         // In order to compute dt, need to find the Max wave speed first.
         double W_GLOBAL_MAX = 1e-10;
@@ -132,6 +142,8 @@ int main(){
             }
         }
 
+        double dt = CFL * (dx / W_GLOBAL_MAX);
+
         //Set boundary condition
         mass_flux[0] = mass_flux[1];
         momentum_flux[0] = momentum_flux[1];
@@ -139,9 +151,6 @@ int main(){
         mass_flux[N_CELLS] = mass_flux[N_CELLS - 1];
         momentum_flux[N_CELLS] = momentum_flux[N_CELLS - 1];
         energy_flux[N_CELLS] = energy_flux[N_CELLS - 1];
-
-        double dt = CFL * (dx / W_GLOBAL_MAX);
-        t += dt;
     
         // Use FVM to get new conservation values
         for (int i=0; i<N_CELLS; i++){
@@ -153,15 +162,19 @@ int main(){
         for (int i = 0; i<N_CELLS; i++){
             p0[i] = mass[i];
             p1[i] = momentum[i] / mass[i];
-            p2[i] = 0.5 * p0[i] * p1[i] * p1[i] + (p3[i] / (GAMMA - 1));
-            p3[i] =  p0[i] * R * p2[i];
+            p3[i] = (GAMMA - 1) * (energy[i] - 0.5 * p0[i] * p1[i] * p1[i]);
+            p2[i] = p3[i] / (p0[i] * R);
         }
+
+        t += dt;        
     }
-    FILE * pFile = fopen("Results_of_200_cells.txt","w");
+
+    FILE * pFile = fopen("Results_of_800_cells.txt","w");
     for (int i = 0; i<N_CELLS; i++){
         fprintf(pFile, "%.3f\t%.6f\t%.6f\t%.6f\t%.6f\n", x[i], p0[i], p1[i], p2[i], p3[i]);
     }
     fclose(pFile);
+
     Free_memory(x, p0, p1, p2, p3, mass, momentum, energy, mass_flux, momentum_flux, energy_flux);
     return 0;
 }
