@@ -62,7 +62,7 @@ xline(x3, '--r')
 xline(x4, '--r')
 print('Results_of_200_cells_for_Pressure_vs_Location', '-dpng', '-r1000')
 ```
-Final results for each number of cells:
+Final results for each number of cells (The red dashed lines from left to right represent x_Expansion_L、x_Expansion_R、x_contact、x_shock):
 
 Density of each cell:
 ![Results_of_200_cells_for_Density_vs_Location.png](./Results_of_200_cells_for_Density_vs_Location.png)
