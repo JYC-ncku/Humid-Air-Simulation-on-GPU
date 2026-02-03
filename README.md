@@ -17,3 +17,11 @@ Information on the 1D Humidity simulation of air can be found [here](./Perform_1
 ## 1D_Shallow_Water
 This code uses c language to simulation 1D Shallow water problem, and use Rusanov method to calculate flux.
 More informations are in [here](./1D-Shallow-water/README.md)
+
+## Exact_Riemann_Solver_1D_Euler
+The flux computation part of this code was provided by Prof. Smith. Its purpose is to obtain the exact solution to the 1D Euler equation, allowing for cross-comparison with results from other solvers later on.
+More informations are in [here](Exact_Riemann_Solver_1D_Euler)
+
+## Rusanov_1D_Euler
+This code utilizes the Rusanov method to calculate flux and compares the results against the Exact Riemann solver.
+More informations are in [here](Rusanov_1D_Euler)
