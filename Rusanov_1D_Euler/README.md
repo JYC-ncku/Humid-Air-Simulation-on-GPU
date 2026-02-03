@@ -15,7 +15,7 @@ compile this code using :
 gcc Analytical_1D_Euler.c -O3 -lm -o Analytical_1D_Euler.exe
 ```
 
-Final results for each number of cells:
+Final results for each number of cells(The red dashed lines from left to right represent x_Expansion_L、x_Expansion_R、x_contact、x_shock):
 
 Density of each cell:
 ![Rusanov_vs_ExactRiemann_for_200_cells_of_Density.png](./Rusanov_vs_ExactRiemann_for_200_cells_of_Density.png)
