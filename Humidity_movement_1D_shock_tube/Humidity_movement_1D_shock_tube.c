@@ -84,21 +84,13 @@ void Calc_Rusanov_Flux(double rho_L, double rho_R, double u_L, double u_R, doubl
     
 
 int main(){
-    int N_CELLS = 800;
+    int N_CELLS = 200;
     double *x, *p0, *p1, *p2, *p3, *mass, *momentum, *energy, *mass_flux, *momentum_flux, *energy_flux; // p0 is density, p1 is velocity, p2 is temperature, p3 is pressure
     float L = 1.0;
     float t = 0;
     float t_FINAL = 0.2;
-    double R_bar = 8.315; // unti:J/(mol*K)
-    double MW_H2O = 0.01802; // unit:kg/mol
-    double MW_air = 0.02897; // unit:kg/mol
-    double R_v = R_bar / MW_H2O; // unit:J/(kg*k)
-    double R_dry = R_bar / MW_air;
-    double R_mix = (1 - H_v) * R_dry + H_v * R_v;
-    double Cv_v = 1410; // unit:J/(kg*K)
-    double Cv_dry = 717.5;
-    double Cv_mix = (1 - H_v) * Cv_dry + H_v * Cv_v;
-    double GAMMA = 1 + (R_mix / Cv_mix);
+    double R = 1.0;
+    double GAMMA = 1.4;
     double CFL = 0.5;
     double dx = L/N_CELLS;
     double W_GLOBAL_MAX;
@@ -140,8 +132,8 @@ int main(){
             double p_R = p3[j];
             double e_L = 0.5 * rho_L * u_L * u_L + (p_L / (GAMMA - 1));
             double e_R = 0.5 * rho_R * u_R * u_R + (p_R / (GAMMA - 1));    
-            double a_L = sqrt(GAMMA * R_mix * T_L); // Sound speed a = (R*T)^0.5
-            double a_R = sqrt(GAMMA * R_mix * T_R);
+            double a_L = sqrt(GAMMA * R * T_L); // Sound speed a = (R*T)^0.5
+            double a_R = sqrt(GAMMA * R * T_R);
             double W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
             Calc_Rusanov_Flux(rho_L, rho_R, u_L, u_R, T_L, T_R, p_L, p_R, e_L, e_R, W_LOCAL_MAX,
                               mass_flux, momentum_flux, energy_flux, N_CELLS, j);
@@ -177,7 +169,7 @@ int main(){
         t += dt;        
     }
 
-    FILE * pFile = fopen("Results_of_800_cells.txt","w");
+    FILE * pFile = fopen("Results_of_200_cells.txt","w");
     for (int i = 0; i<N_CELLS; i++){
         fprintf(pFile, "%.3f\t%.6f\t%.6f\t%.6f\t%.6f\n", x[i], p0[i], p1[i], p2[i], p3[i]);
     }
