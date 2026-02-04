@@ -3,7 +3,8 @@
 #include <math.h>
 
 void Allocate_memory(double **array1, double **array2, double **array3, double **array4, double **array5, double **array6,
-                     double **array7, double **array8, double **array9, double **array10, double **array11, int N_CELLS){
+                     double **array7, double **array8, double **array9, double **array10, double **array11, double **array12, 
+                     double **array13, double **array14, double **array15, double **array16, int N_CELLS){
     *array1 = (double*)malloc(N_CELLS * sizeof(double));
     *array2 = (double*)malloc(N_CELLS * sizeof(double));
     *array3 = (double*)malloc(N_CELLS * sizeof(double));
@@ -12,11 +13,17 @@ void Allocate_memory(double **array1, double **array2, double **array3, double *
     *array6 = (double*)malloc(N_CELLS * sizeof(double));
     *array7 = (double*)malloc(N_CELLS * sizeof(double));
     *array8 = (double*)malloc(N_CELLS * sizeof(double));
-    *array9 = (double*)malloc((N_CELLS+1) * sizeof(double));
-    *array10 = (double*)malloc((N_CELLS+1) * sizeof(double));
-    *array11 = (double*)malloc((N_CELLS+1) * sizeof(double));    
+    *array9 = (double*)malloc(N_CELLS * sizeof(double));
+    *array10 = (double*)malloc(N_CELLS * sizeof(double));
+    *array11 = (double*)malloc(N_CELLS * sizeof(double));
+    *array12 = (double*)malloc(N_CELLS * sizeof(double));
+    *array13 = (double*)malloc(N_CELLS * sizeof(double));
+    *array14 = (double*)malloc((N_CELLS+1) * sizeof(double));
+    *array15 = (double*)malloc((N_CELLS+1) * sizeof(double));
+    *array16 = (double*)malloc((N_CELLS+1) * sizeof(double));    
     if (*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL || 
-        *array7 == NULL || *array8 == NULL || *array9 == NULL || *array10 == NULL || *array11 == NULL ){
+        *array7 == NULL || *array8 == NULL || *array9 == NULL || *array10 == NULL || *array11 == NULL || *array12 == NULL ||
+        *array13 == NULL || *array14 == NULL || *array15 == NULL || *array16 == NULL ){
         printf("Memory allocation failed!\n");
         exit(1);
     }
@@ -24,7 +31,8 @@ void Allocate_memory(double **array1, double **array2, double **array3, double *
 }
 
 void Free_memory(double *array1, double *array2, double *array3, double *array4, double *array5, double *array6,
-                 double *array7, double *array8, double *array9, double *array10, double *array11){
+                 double *array7, double *array8, double *array9, double *array10, double *array11, double *array12,
+                 double *array13, double *array14, double *array15, double *array16){
     free(array1);
     free(array2);
     free(array3);
@@ -36,6 +44,10 @@ void Free_memory(double *array1, double *array2, double *array3, double *array4,
     free(array9);
     free(array10);
     free(array11);
+    free(array13);
+    free(array14);
+    free(array15);
+    free(array16);
     printf("Memory freed successfully!\n");
 }
 
@@ -85,17 +97,17 @@ void Calc_Rusanov_Flux(double rho_L, double rho_R, double u_L, double u_R, doubl
 
 int main(){
     int N_CELLS = 200;
-    double *x, *p0, *p1, *p2, *p3, *mass, *momentum, *energy, *mass_flux, *momentum_flux, *energy_flux; // p0 is density, p1 is velocity, p2 is temperature, p3 is pressure
+    double *x, *p0, *p1, *p2, *p3, *p4, *R, *CV, *GAMMA, *a, // p0 is density, p1 is velocity, p2 is temperature, p3 is pressure, p4 is humidity, a is sound speed
+           *mass, *momentum, *energy, 
+           *mass_flux, *momentum_flux, *energy_flux;
     float L = 1.0;
     float t = 0;
     float t_FINAL = 0.2;
-    double R = 1.0;
-    double GAMMA = 1.4;
     double CFL = 0.5;
     double dx = L/N_CELLS;
     double W_GLOBAL_MAX;
 
-    Allocate_memory(&x, &p0, &p1, &p2, &p3, &mass, &momentum, &energy, &mass_flux, &momentum_flux, &energy_flux, N_CELLS);
+    Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &R, &CV, &GAMMA, &a, &mass, &momentum, &energy, &mass_flux, &momentum_flux, &energy_flux, N_CELLS);
     // Set initial condition
     for (int i = 0; i < N_CELLS; i++){
         x[i] = (i+0.5) * dx;
@@ -175,6 +187,6 @@ int main(){
     }
     fclose(pFile);
 
-    Free_memory(x, p0, p1, p2, p3, mass, momentum, energy, mass_flux, momentum_flux, energy_flux);
+    Free_memory(x, p0, p1, p2, p3, p4, R, CV, GAMMA, a, mass, momentum, energy, mass_flux, momentum_flux, energy_flux);
     return 0;
 }
