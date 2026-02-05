@@ -116,16 +116,16 @@ int main(){
     double R_bar = 8.315; // unti:J/(mol*K)
     double MW_H2O = 0.01802; // unit:kg/mol
     double MW_air = 0.02897; // unit:kg/mol
-    double R_v = R_bar / MW_H2O; // unit:J/(kg*k)
+    double R_v = R_bar / MW_H2O; // unit:J/(kg*k) R = R_bar / Molecular weight
     double R_dry = R_bar / MW_air;
-    double CV_v = 1410; // unit:J/(kg*K)
+    double CV_v = 1410; // unit:J/(kg*K) // H2O的定容比熱
     double CV_dry = 717.5;
     double CFL = 0.5;
     double dx = L/N_CELLS;
     double W_GLOBAL_MAX;
 
     Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &R, &CV, &GAMMA, &a, &mass, &momentum, &energy, &rhov, &mass_flux, &momentum_flux, &energy_flux, &rhov_flux, N_CELLS);
-    // Set initial condition
+    // Set initial condition (Because R will change, so P_L and P_R can not equal 10 and 1 directly)
     for (int i = 0; i < N_CELLS; i++){
         x[i] = (i+0.5) * dx;
         if (i < N_CELLS/2){
@@ -145,7 +145,7 @@ int main(){
         R[i] = ((1 - p4[i]) * (R_dry / R_dry) + p4[i] * (R_v / R_dry)); // 所有參數都(密度、速度、溫度、壓力)都是用無因次化去做計算，所以R跟CV也要無因次化，通常以dry air為基準。
         CV[i] = (1 - p4[i]) * (CV_dry / CV_dry) + p4[i] * (CV_v / CV_dry);
         GAMMA[i] = 1 + (R[i] / CV[i]);
-        p3[i] = p0[i] * R[i] * p2[i];
+        p3[i] = p0[i] * R[i] * p2[i]; // Pressure = rho * R * T
     }    
 
     for (int i=0; i<N_CELLS; i++){
