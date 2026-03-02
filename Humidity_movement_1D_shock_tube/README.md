@@ -8,8 +8,8 @@ u = velocity = 0 m/s (everywhere),   T = temperature = 1 K (everywhere)
 
 Density = 10m  (x < 0.5L)
            1m  (x >= 0.5L)
-
-L = 1m. Computed time = 0.2s.
+L = 1m.
+Computed time = 0.2s.
 ```
 
 compile this code using :
