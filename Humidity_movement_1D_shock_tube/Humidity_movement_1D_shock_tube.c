@@ -112,6 +112,7 @@ int main(){
            *mass_flux, *momentum_flux, *energy_flux, *rhov_flux;
     float L = 1.0;
     float t = 0;
+    float D = 2.0e-5; //Diffusivity of water vapor
     float t_FINAL = 0.2;
     double R_bar = 8.315; // unti:J/(mol*K)
     double MW_H2O = 0.01802; // unit:kg/mol
@@ -142,7 +143,7 @@ int main(){
     }
 
     for (int i = 0; i<N_CELLS; i++){
-        R[i] = ((1 - p4[i]) * (R_dry / R_dry) + p4[i] * (R_v / R_dry)); // 所有參數都(密度、速度、溫度、壓力)都是用無因次化去做計算，所以R跟CV也要無因次化，通常以dry air為基準。
+        R[i] = ((1 - p4[i]) * (R_dry / R_dry) + p4[i] * (R_v / R_dry)); // 所有參數(密度、速度、溫度、壓力)都是用無因次化去做計算，所以R跟CV也要無因次化，通常以dry air為基準。
         CV[i] = (1 - p4[i]) * (CV_dry / CV_dry) + p4[i] * (CV_v / CV_dry);
         GAMMA[i] = 1 + (R[i] / CV[i]);
         p3[i] = p0[i] * R[i] * p2[i]; // Pressure = rho * R * T
@@ -194,20 +195,23 @@ int main(){
         momentum_flux[0] = momentum_flux[1];
         energy_flux[0] = energy_flux[1];
         rhov_flux[0] = rhov_flux[1];
+	rhov[0] = rhov[1];
         mass_flux[N_CELLS] = mass_flux[N_CELLS - 1];
         momentum_flux[N_CELLS] = momentum_flux[N_CELLS - 1];
         energy_flux[N_CELLS] = energy_flux[N_CELLS - 1];
         rhov_flux[N_CELLS] = rhov_flux[N_CELLS - 1];
+	rhov[N_CELLS] = rhov[N_CELLS - 1];
+        
     
         // Use FVM to get new conservation values
-        for (int i=0; i<N_CELLS; i++){
+        for (int i = 1; i<=N_CELLS; i++){
             mass[i] = mass[i] - (dt / dx) * (mass_flux[i+1] - mass_flux[i]);
             momentum[i] = momentum[i] - (dt / dx) * (momentum_flux[i+1] - momentum_flux[i]);
             energy[i] = energy[i] - (dt / dx) * (energy_flux[i+1] - energy_flux[i]);
-            rhov[i] = rhov[i] - (dt/dx) * (rhov_flux[i+1] - rhov_flux[i]);
+            rhov[i] = rhov[i] - (dt/dx) * (rhov_flux[i+1] - rhov_flux[i]) + (dt/(dx*dx)) * D * (rhov[i+1] - 2 * rhov[i] + rhov[i-1]);
         }
 
-        for (int i = 0; i<N_CELLS; i++){
+        for (int i = 1; i<=N_CELLS; i++){
             p0[i] = mass[i];
             p1[i] = momentum[i] / mass[i];
             p4[i] = rhov[i]/p0[i];
