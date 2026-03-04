@@ -161,25 +161,26 @@ int main(){
         double W_GLOBAL_MAX = 1.0e-10;
         
         for (int j = 1; j < N_CELLS; j++){
-			double rho_L = p0[j-1];
+		double rho_L = p0[j-1];
     		double rho_R = p0[j];
     		double u_L = p1[j-1];
     		double u_R = p1[j];
     		double T_L = p2[j-1];
     		double T_R = p2[j];
-            double p_L = p3[j-1];
-            double p_R = p3[j];
-            double H_L = p4[j-1];
-            double H_R = p4[j];
-            double GAMMA_L = GAMMA[j-1];
-            double GAMMA_R = GAMMA[j];
-            double e_L = 0.5 * rho_L * u_L * u_L + (p_L / (GAMMA_L - 1));
-            double e_R = 0.5 * rho_R * u_R * u_R + (p_R / (GAMMA_R - 1));
-            double R_L = R[j-1];
-            double R_R = R[j];
-            double a_L = sqrt(GAMMA_L * R_L * T_L);
-            double a_R = sqrt(GAMMA_R * R_R * T_R);
-            double W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
+    		double p_L = p3[j-1];
+            	double p_R = p3[j];
+            	double H_L = p4[j-1];
+            	double H_R = p4[j];
+            	double GAMMA_L = GAMMA[j-1];
+            	double GAMMA_R = GAMMA[j];
+            	double e_L = 0.5 * rho_L * u_L * u_L + (p_L / (GAMMA_L - 1));
+            	double e_R = 0.5 * rho_R * u_R * u_R + (p_R / (GAMMA_R - 1));
+            	double R_L = R[j-1];
+            	double R_R = R[j];
+            	double a_L = sqrt(GAMMA_L * R_L * T_L);
+            	double a_R = sqrt(GAMMA_R * R_R * T_R);
+            	double W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
+            	double D = 
             Calc_Rusanov_Flux(rho_L, rho_R, u_L, u_R, T_L, T_R, p_L, p_R, e_L, e_R, W_LOCAL_MAX,
                               mass_flux, momentum_flux, energy_flux, rhov_flux,  H_L, H_R, j);
             if (W_LOCAL_MAX > W_GLOBAL_MAX){
@@ -194,20 +195,22 @@ int main(){
         momentum_flux[0] = momentum_flux[1];
         energy_flux[0] = energy_flux[1];
         rhov_flux[0] = rhov_flux[1];
+       	rhov[0] = rhovp[1];
         mass_flux[N_CELLS] = mass_flux[N_CELLS - 1];
         momentum_flux[N_CELLS] = momentum_flux[N_CELLS - 1];
         energy_flux[N_CELLS] = energy_flux[N_CELLS - 1];
         rhov_flux[N_CELLS] = rhov_flux[N_CELLS - 1];
+        rhov[N_CELLS] = rhov[N_CELLS - 1];
     
         // Use FVM to get new conservation values
-        for (int i=0; i<N_CELLS; i++){
+        for (int i=1; i<=N_CELLS; i++){
             mass[i] = mass[i] - (dt / dx) * (mass_flux[i+1] - mass_flux[i]);
             momentum[i] = momentum[i] - (dt / dx) * (momentum_flux[i+1] - momentum_flux[i]);
             energy[i] = energy[i] - (dt / dx) * (energy_flux[i+1] - energy_flux[i]);
-            rhov[i] = rhov[i] - (dt/dx) * (rhov_flux[i+1] - rhov_flux[i]);
+            rhov[i] = rhov[i] - (dt/dx) * (rhov_flux[i+1] - rhov_flux[i]) + (dt/(dx*dx) * D * (rhov[i+1] - 2 * rhov[i] + rhov[i-1]);
         }
 
-        for (int i = 0; i<N_CELLS; i++){
+        for (int i = 1; i<=N_CELLS; i++){
             p0[i] = mass[i];
             p1[i] = momentum[i] / mass[i];
             p4[i] = rhov[i]/p0[i];
