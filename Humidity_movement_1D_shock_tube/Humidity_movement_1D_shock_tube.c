@@ -106,13 +106,13 @@ void Calc_Rusanov_Flux(double rho_L, double rho_R, double u_L, double u_R, doubl
     
 
 int main(){
-    int N_CELLS = 800;
+    int N_CELLS = 200;
     double *x, *p0, *p1, *p2, *p3, *p4, *R, *CV, *GAMMA, *a, // p0 is density, p1 is velocity, p2 is temperature, p3 is pressure, p4 is humidity, a is sound speed
            *mass, *momentum, *energy, *rhov,
            *mass_flux, *momentum_flux, *energy_flux, *rhov_flux;
     float L = 1.0;
     float t = 0;
-    float D = 2.0e-5; //Diffusivity of water vapor
+    float D = 1.837e-5; //Diffusivity of water vapor. unit:(m^2/s)
     float t_FINAL = 0.2;
     double R_bar = 8.315; // unti:J/(mol*K)
     double MW_H2O = 0.01802; // unit:kg/mol
@@ -222,7 +222,7 @@ int main(){
         t += dt;        
     }
 
-    FILE * pFile = fopen("Results_of_800_cells.txt","w");
+    FILE * pFile = fopen("Results_of_200_cells.txt","w");
     for (int i = 0; i<N_CELLS; i++){
         fprintf(pFile, "%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", x[i], p0[i], p1[i], p2[i], p3[i], p4[i]);
     }
