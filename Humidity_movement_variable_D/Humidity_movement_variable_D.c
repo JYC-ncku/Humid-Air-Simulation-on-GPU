@@ -4,8 +4,8 @@
 
 void Allocate_memory(double **array1, double **array2, double **array3, double **array4, double **array5, double **array6,
                      double **array7, double **array8, double **array9, double **array10, double **array11, double **array12, 
-                     double **array13, double **array14, double **array15, double **array16, double **array17, double **array18, 
-                     int N_CELLS){
+                     double **array13, double **array14, double **array15, double **array16, double **array17, double **array18,
+                     double **array19, int N_CELLS){
     *array1 = (double*)malloc(N_CELLS * sizeof(double));
     *array2 = (double*)malloc(N_CELLS * sizeof(double));
     *array3 = (double*)malloc(N_CELLS * sizeof(double));
@@ -20,13 +20,15 @@ void Allocate_memory(double **array1, double **array2, double **array3, double *
     *array12 = (double*)malloc(N_CELLS * sizeof(double));
     *array13 = (double*)malloc(N_CELLS * sizeof(double));
     *array14 = (double*)malloc(N_CELLS * sizeof(double));
-    *array15 = (double*)malloc((N_CELLS+1) * sizeof(double));
+    *array15 = (double*)malloc((N_CELLS) * sizeof(double));
     *array16 = (double*)malloc((N_CELLS+1) * sizeof(double));
     *array17 = (double*)malloc((N_CELLS+1) * sizeof(double));
-    *array18 = (double*)malloc((N_CELLS+1) * sizeof(double)); 
+    *array18 = (double*)malloc((N_CELLS+1) * sizeof(double));
+    *array19 = (double*)malloc((N_CELLS+1) * sizeof(double));
     if (*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL || 
         *array7 == NULL || *array8 == NULL || *array9 == NULL || *array10 == NULL || *array11 == NULL || *array12 == NULL ||
-        *array13 == NULL || *array14 == NULL || *array15 == NULL || *array16 == NULL || *array17 == NULL || *array18 == NULL){
+        *array13 == NULL || *array14 == NULL || *array15 == NULL || *array16 == NULL || *array17 == NULL || *array18 == NULL || 
+        *array19 == NULL){
         printf("Memory allocation failed!\n");
         exit(1);
     }
@@ -35,7 +37,8 @@ void Allocate_memory(double **array1, double **array2, double **array3, double *
 
 void Free_memory(double *array1, double *array2, double *array3, double *array4, double *array5, double *array6,
                  double *array7, double *array8, double *array9, double *array10, double *array11, double *array12,
-                 double *array13, double *array14, double *array15, double *array16, double *array17, double *array18){
+                 double *array13, double *array14, double *array15, double *array16, double *array17, double *array18,
+                 double *array19){
     free(array1);
     free(array2);
     free(array3);
@@ -53,6 +56,7 @@ void Free_memory(double *array1, double *array2, double *array3, double *array4,
     free(array16);
     free(array17);
     free(array18);
+    free(array19);
     printf("Memory freed successfully!\n");
 }
 
@@ -107,7 +111,7 @@ void Calc_Rusanov_Flux(double rho_L, double rho_R, double u_L, double u_R, doubl
 
 int main(){
     int N_CELLS = 200;
-    double *x, *p0, *p1, *p2, *p3, *p4, *R, *CV, *GAMMA, *a, // p0 is density, p1 is velocity, p2 is temperature, p3 is pressure, p4 is humidity, a is sound speed
+    double *x, *p0, *p1, *p2, *p3, *p4, *p5, *R, *CV, *GAMMA, *a, // p0 is density, p1 is velocity, p2 is temperature, p3 is pressure, p4 is humidity, a is sound speed
            *mass, *momentum, *energy, *rhov,
            *mass_flux, *momentum_flux, *energy_flux, *rhov_flux;
     float L = 1.0;
@@ -124,7 +128,7 @@ int main(){
     double dx = L/N_CELLS;
     double W_GLOBAL_MAX;
 
-    Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &R, &CV, &GAMMA, &a, &mass, &momentum, &energy, &rhov, &mass_flux, &momentum_flux, &energy_flux, &rhov_flux, N_CELLS);
+    Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &R, &CV, &GAMMA, &a, &mass, &momentum, &energy, &rhov, &mass_flux, &momentum_flux, &energy_flux, &rhov_flux, N_CELLS);
     // Set initial condition (Because R will change, so P_L and P_R can not equal 10 and 1 directly)
     for (int i = 0; i < N_CELLS; i++){
         x[i] = (i+0.5) * dx;
@@ -146,7 +150,8 @@ int main(){
         CV[i] = (1 - p4[i]) * (CV_dry / CV_dry) + p4[i] * (CV_v / CV_dry);
         GAMMA[i] = 1 + (R[i] / CV[i]);
         p3[i] = p0[i] * R[i] * p2[i]; // Pressure = rho * R * T
-    }    
+        
+    }
 
     for (int i=0; i<N_CELLS; i++){
         mass[i] = p0[i];
@@ -159,7 +164,7 @@ int main(){
 
         // In order to compute dt, need to find the Max wave speed first.
         double W_GLOBAL_MAX = 1.0e-10;
-        
+
         for (int j = 1; j < N_CELLS; j++){
 		double rho_L = p0[j-1];
     		double rho_R = p0[j];
@@ -180,8 +185,8 @@ int main(){
             	double a_L = sqrt(GAMMA_L * R_L * T_L);
             	double a_R = sqrt(GAMMA_R * R_R * T_R);
             	double W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
-            	double D = 
-            Calc_Rusanov_Flux(rho_L, rho_R, u_L, u_R, T_L, T_R, p_L, p_R, e_L, e_R, W_LOCAL_MAX,
+
+        Calc_Rusanov_Flux(rho_L, rho_R, u_L, u_R, T_L, T_R, p_L, p_R, e_L, e_R, W_LOCAL_MAX,
                               mass_flux, momentum_flux, energy_flux, rhov_flux,  H_L, H_R, j);
             if (W_LOCAL_MAX > W_GLOBAL_MAX){
                 W_GLOBAL_MAX = W_LOCAL_MAX;
@@ -195,19 +200,19 @@ int main(){
         momentum_flux[0] = momentum_flux[1];
         energy_flux[0] = energy_flux[1];
         rhov_flux[0] = rhov_flux[1];
-       	rhov[0] = rhovp[1];
+       	rhov[0] = rhov[1];
         mass_flux[N_CELLS] = mass_flux[N_CELLS - 1];
         momentum_flux[N_CELLS] = momentum_flux[N_CELLS - 1];
         energy_flux[N_CELLS] = energy_flux[N_CELLS - 1];
         rhov_flux[N_CELLS] = rhov_flux[N_CELLS - 1];
         rhov[N_CELLS] = rhov[N_CELLS - 1];
-    
+
         // Use FVM to get new conservation values
         for (int i=1; i<=N_CELLS; i++){
             mass[i] = mass[i] - (dt / dx) * (mass_flux[i+1] - mass_flux[i]);
             momentum[i] = momentum[i] - (dt / dx) * (momentum_flux[i+1] - momentum_flux[i]);
             energy[i] = energy[i] - (dt / dx) * (energy_flux[i+1] - energy_flux[i]);
-            rhov[i] = rhov[i] - (dt/dx) * (rhov_flux[i+1] - rhov_flux[i]) + (dt/(dx*dx) * D * (rhov[i+1] - 2 * rhov[i] + rhov[i-1]);
+            rhov[i] = rhov[i] - (dt/dx) * (rhov_flux[i+1] - rhov_flux[i]) + (dt/(dx*dx)) * p5[i] * (rhov[i+1] - 2 * rhov[i] + rhov[i-1]);
         }
 
         for (int i = 1; i<=N_CELLS; i++){
@@ -216,17 +221,18 @@ int main(){
             p4[i] = rhov[i]/p0[i];
             p3[i] = (GAMMA[i] - 1) * (energy[i] - 0.5 * p0[i] * p1[i] * p1[i]);
             p2[i] = p3[i] / (p0[i] * R[i]);
-        }
+            p5[i] = 2.2e-5 * (101325 / p0[i]) * pow((p2[i] / 273.15) , 1.81); // p5 is coefficient diffusivity of H2O in air.
+         }
 
-        t += dt;        
+        t += dt;
     }
 
     FILE * pFile = fopen("Results_of_200_cells.txt","w");
     for (int i = 0; i<N_CELLS; i++){
-        fprintf(pFile, "%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", x[i], p0[i], p1[i], p2[i], p3[i], p4[i]);
+        fprintf(pFile, "%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", x[i], p0[i], p1[i], p2[i], p3[i], p4[i], p5[i]);
     }
     fclose(pFile);
 
-    Free_memory(x, p0, p1, p2, p3, p4, rhov, R, CV, GAMMA, a, mass, momentum, energy, mass_flux, momentum_flux, energy_flux, rhov_flux);
+    Free_memory(x, p0, p1, p2, p3, p4, p5, rhov, R, CV, GAMMA, a, mass, momentum, energy, mass_flux, momentum_flux, energy_flux, rhov_flux);
     return 0;
 }
