@@ -6,20 +6,20 @@ void Allocate_memory(double **array1, double **array2, double **array3, double *
                      double **array7, double **array8, double **array9, double **array10, double **array11, double **array12, 
                      double **array13, double **array14, double **array15, double **array16, double **array17, double **array18,
                      double **array19, int N_CELLS){
-    *array1 = (double*)malloc(N_CELLS * sizeof(double));
-    *array2 = (double*)malloc(N_CELLS * sizeof(double));
-    *array3 = (double*)malloc(N_CELLS * sizeof(double));
-    *array4 = (double*)malloc(N_CELLS * sizeof(double));
-    *array5 = (double*)malloc(N_CELLS * sizeof(double));
-    *array6 = (double*)malloc(N_CELLS * sizeof(double));
-    *array7 = (double*)malloc(N_CELLS * sizeof(double));
-    *array8 = (double*)malloc(N_CELLS * sizeof(double));
-    *array9 = (double*)malloc(N_CELLS * sizeof(double));
-    *array10 = (double*)malloc(N_CELLS * sizeof(double));
-    *array11 = (double*)malloc(N_CELLS * sizeof(double));
-    *array12 = (double*)malloc(N_CELLS * sizeof(double));
-    *array13 = (double*)malloc(N_CELLS * sizeof(double));
-    *array14 = (double*)malloc(N_CELLS * sizeof(double));
+    *array1 = (double*)malloc((N_CELLS) * sizeof(double));
+    *array2 = (double*)malloc((N_CELLS) * sizeof(double));
+    *array3 = (double*)malloc((N_CELLS) * sizeof(double));
+    *array4 = (double*)malloc((N_CELLS) * sizeof(double));
+    *array5 = (double*)malloc((N_CELLS) * sizeof(double));
+    *array6 = (double*)malloc((N_CELLS) * sizeof(double));
+    *array7 = (double*)malloc((N_CELLS) * sizeof(double));
+    *array8 = (double*)malloc((N_CELLS) * sizeof(double));
+    *array9 = (double*)malloc((N_CELLS) * sizeof(double));
+    *array10 = (double*)malloc((N_CELLS) * sizeof(double));
+    *array11 = (double*)malloc((N_CELLS) * sizeof(double));
+    *array12 = (double*)malloc((N_CELLS) * sizeof(double));
+    *array13 = (double*)malloc((N_CELLS) * sizeof(double));
+    *array14 = (double*)malloc((N_CELLS) * sizeof(double));
     *array15 = (double*)malloc((N_CELLS) * sizeof(double));
     *array16 = (double*)malloc((N_CELLS+1) * sizeof(double));
     *array17 = (double*)malloc((N_CELLS+1) * sizeof(double));
@@ -64,7 +64,7 @@ void Free_memory(double *array1, double *array2, double *array3, double *array4,
     ----------------------------
     |        |        |        |
     |   0    |  ...   |    N   |   ===>   Have total N cells and N+1 interface. (because N is from 0)
-    |        |        |        | 
+    |        |        |        |
     ----------------------------
     0        1       N        N+1
 */
@@ -107,7 +107,6 @@ void Calc_Rusanov_Flux(double rho_L, double rho_R, double u_L, double u_R, doubl
     energy_flux[j] = 0.5 * (energy_flux_L + energy_flux_R) - 0.5 * W_LOCAL_MAX * (energy_R - energy_L);
     rhov_flux[j] = 0.5 * (rhov_flux_L + rhov_flux_R) - 0.5 * W_LOCAL_MAX * (rhov_R - rhov_L);
 }
-    
 
 int main(){
     int N_CELLS = 200;
@@ -145,15 +144,14 @@ int main(){
         }
     }
 
-    for (int i = 0; i<N_CELLS; i++){
+    for (int i = 0; i < N_CELLS; i++){
         R[i] = ((1 - p4[i]) * (R_dry / R_dry) + p4[i] * (R_v / R_dry)); // 所有參數都(密度、速度、溫度、壓力)都是用無因次化去做計算，所以R跟CV也要無因次化，通常以dry air為基準。
         CV[i] = (1 - p4[i]) * (CV_dry / CV_dry) + p4[i] * (CV_v / CV_dry);
         GAMMA[i] = 1 + (R[i] / CV[i]);
         p3[i] = p0[i] * R[i] * p2[i]; // Pressure = rho * R * T
-        
     }
 
-    for (int i=0; i<N_CELLS; i++){
+    for (int i = 0; i < N_CELLS; i++){
         mass[i] = p0[i];
         momentum[i] = p0[i] * p1[i];
         energy[i] = 0.5 * p0[i] * p1[i] * p1[i] + (p3[i] / (GAMMA[i] - 1));
@@ -195,40 +193,44 @@ int main(){
 
         double dt = CFL * (dx / W_GLOBAL_MAX);
 
+	for (int i = 0; i<N_CELLS; i++){
+	    p5[i] = 2.2e-5 * (101325 / p3[i]) * pow((p2[i] / 273.15) , 1.81); // p5 is coefficient diffusivity of H2O in air.
+	}
+	
         //Set boundary condition
         mass_flux[0] = mass_flux[1];
         momentum_flux[0] = momentum_flux[1];
         energy_flux[0] = energy_flux[1];
         rhov_flux[0] = rhov_flux[1];
-       	rhov[0] = rhov[1];
         mass_flux[N_CELLS] = mass_flux[N_CELLS - 1];
         momentum_flux[N_CELLS] = momentum_flux[N_CELLS - 1];
         energy_flux[N_CELLS] = energy_flux[N_CELLS - 1];
         rhov_flux[N_CELLS] = rhov_flux[N_CELLS - 1];
-        rhov[N_CELLS] = rhov[N_CELLS - 1];
 
         // Use FVM to get new conservation values
-        for (int i=1; i<=N_CELLS; i++){
+        for (int i = 0; i < N_CELLS; i++){
             mass[i] = mass[i] - (dt / dx) * (mass_flux[i+1] - mass_flux[i]);
             momentum[i] = momentum[i] - (dt / dx) * (momentum_flux[i+1] - momentum_flux[i]);
             energy[i] = energy[i] - (dt / dx) * (energy_flux[i+1] - energy_flux[i]);
+        }
+
+        for (int i = 1; i < N_CELLS; i++){
             rhov[i] = rhov[i] - (dt/dx) * (rhov_flux[i+1] - rhov_flux[i]) + (dt/(dx*dx)) * p5[i] * (rhov[i+1] - 2 * rhov[i] + rhov[i-1]);
         }
 
-        for (int i = 1; i<=N_CELLS; i++){
+        for (int i = 0; i < N_CELLS; i++){
             p0[i] = mass[i];
             p1[i] = momentum[i] / mass[i];
             p4[i] = rhov[i]/p0[i];
             p3[i] = (GAMMA[i] - 1) * (energy[i] - 0.5 * p0[i] * p1[i] * p1[i]);
             p2[i] = p3[i] / (p0[i] * R[i]);
-            p5[i] = 2.2e-5 * (101325 / p0[i]) * pow((p2[i] / 273.15) , 1.81); // p5 is coefficient diffusivity of H2O in air.
          }
 
         t += dt;
     }
 
     FILE * pFile = fopen("Results_of_200_cells.txt","w");
-    for (int i = 0; i<N_CELLS; i++){
+    for (int i = 0; i < N_CELLS; i++){
         fprintf(pFile, "%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", x[i], p0[i], p1[i], p2[i], p3[i], p4[i], p5[i]);
     }
     fclose(pFile);
