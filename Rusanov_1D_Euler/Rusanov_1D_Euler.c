@@ -62,7 +62,7 @@ double MAX_Wave_Speed(double u_L, double u_R, double a_L, double a_R){
 }
 
 void Calc_Rusanov_Flux(double rho_L, double rho_R, double u_L, double u_R, double T_L, double T_R, double p_L, double p_R, double e_L, double e_R, double W_LOCAL_MAX,
-                       double *mass_flux, double *momentum_flux, double *energy_flux, int N_CELLS, int j){
+                       double *mass_flux, double *momentum_flux, double *energy_flux, int j){
     double mass_L = rho_L;
     double momentum_L = rho_L * u_L;
     double energy_L = e_L;
@@ -136,7 +136,7 @@ int main(){
             double a_R = sqrt(GAMMA * R * T_R);
             double W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
             Calc_Rusanov_Flux(rho_L, rho_R, u_L, u_R, T_L, T_R, p_L, p_R, e_L, e_R, W_LOCAL_MAX,
-                              mass_flux, momentum_flux, energy_flux, N_CELLS, j);
+                              mass_flux, momentum_flux, energy_flux, j);
             if (W_LOCAL_MAX > W_GLOBAL_MAX){
                 W_GLOBAL_MAX = W_LOCAL_MAX;
             }
