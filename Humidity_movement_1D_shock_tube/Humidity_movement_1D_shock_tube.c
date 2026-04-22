@@ -112,7 +112,6 @@ int main(){
     float L = 1.0;
     float t = 0;
     float D = 1.837e-5; //Diffusivity of water vapor. unit:(m^2/s)
-    float t_FINAL = 0.2;
     float R_bar = 8.315; // unti:kJ/(mol*K)
     float MW_H2O = 18.02; // unit:kg/kmol
     float MW_air = 28.97; // unit:kg/kmol
@@ -123,27 +122,34 @@ int main(){
     float CFL = 0.5;
     float dx = L/N_CELLS;
     float W_GLOBAL_MAX;
+    float t_target = L / (0.2 * sqrt((R_dry/1000) * 298.15));
 
     Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &R, &CV, &GAMMA, &a, &mass, &momentum, &energy, &rhov, &mass_flux, &momentum_flux, &energy_flux, &rhov_flux, N_CELLS);
     // Set initial condition (Because R will change, so P_L and P_R can not equal 10 and 1 directly)
     for (int i = 0; i < N_CELLS; i++){
 	x[i] = (i+0.5) * dx;
         if (i < N_CELLS/2){
-            p0[i] = 10.0;
-            p1[i] = 0.0;
-            p2[i] = 1.0;
+            //p0[i] = 10.0;
+            p0[i] = 12.55; //unti: kg/m^3
+            p1[i] = 0.0; //unit: m/s
+            //p2[i] = 1.0;
+            p2[i] = 298.15; //unit: K
             p4[i] = 1.0;
         } else {
-            p0[i] = 1.0;
+            //p0[i] = 1.0;
+            p0[i] = 1.225; // density of air
             p1[i] = 0.0;
-            p2[i] = 1.0;
+            //p2[i] = 1.0;
+            p2[i] = 298.15; // room temperature
             p4[i] = 1.0;
         }
     }
 
     for (int i = 0; i<N_CELLS; i++){
-        R[i] = ((1 - p4[i]) * (R_dry/R_dry) + p4[i] * (R_v/R_dry)); // 所有參數(密度、速度、溫度、壓力)都是用無因次化去做計算，所以R跟CV也要無因次化，通常以dry air為基準。
-        CV[i] = (1 - p4[i]) * (CV_dry/R_dry) + p4[i] * (CV_v/R_dry);
+//        R[i] = ((1 - p4[i]) * (R_dry/R_dry) + p4[i] * (R_v/R_dry)); // 所有參數(密度、速度、溫度、壓力)都是用無因次化去做計算，所以R跟CV也要無因次化，通常以dry air為基準。
+//        CV[i] = (1 - p4[i]) * (CV_dry/R_dry) + p4[i] * (CV_v/R_dry);
+        R[i] = (1 - p4[i]) * R_dry + p4[i] * R_v;
+        CV[i] = (1 - p4[i]) * CV_dry + p4[i] * CV_v;
         GAMMA[i] = 1 + (R[i] / CV[i]);
         p3[i] = p0[i] * R[i] * p2[i]; // Pressure = rho * R * T
     }
@@ -155,7 +161,7 @@ int main(){
         rhov[i] = p0[i] * p4[i];
     }
 
-   while (t<t_FINAL){
+   while (t<t_target){
 
         // In order to compute dt, need to find the Max wave speed first.
         float W_GLOBAL_MAX = 1.0e-10;
