@@ -3,8 +3,8 @@
 #include <math.h>
 
 void Allocate_memory(float **array1, float **array2, float **array3, float **array4, float **array5, float **array6,
-                     float **array7, float **array8, float **array9, float **array10, float **array11, float **array12, 
-                     float **array13, float **array14, float **array15, float **array16, float **array17, float **array18, 
+                     float **array7, float **array8, float **array9, float **array10, float **array11, float **array12,
+                     float **array13, float **array14, float **array15, float **array16, float **array17, float **array18,
                      int N_CELLS){
     *array1 = (float*)malloc(N_CELLS * sizeof(float));
     *array2 = (float*)malloc(N_CELLS * sizeof(float));
@@ -24,7 +24,7 @@ void Allocate_memory(float **array1, float **array2, float **array3, float **arr
     *array16 = (float*)malloc((N_CELLS+1) * sizeof(float));
     *array17 = (float*)malloc((N_CELLS+1) * sizeof(float));
     *array18 = (float*)malloc((N_CELLS+1) * sizeof(float));
-    if (*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL || 
+    if (*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL ||
         *array7 == NULL || *array8 == NULL || *array9 == NULL || *array10 == NULL || *array11 == NULL || *array12 == NULL ||
         *array13 == NULL || *array14 == NULL || *array15 == NULL || *array16 == NULL || *array17 == NULL || *array18 == NULL){
         printf("Memory allocation failed!\n");
@@ -127,23 +127,23 @@ int main(){
     Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &R, &CV, &GAMMA, &a, &mass, &momentum, &energy, &rhov, &mass_flux, &momentum_flux, &energy_flux, &rhov_flux, N_CELLS);
     // Set initial condition (Because R will change, so P_L and P_R can not equal 10 and 1 directly)
     for (int i = 0; i < N_CELLS; i++){
-        x[i] = (i+0.5) * dx;
+	x[i] = (i+0.5) * dx;
         if (i < N_CELLS/2){
-            p0[i] = 10;
-            p1[i] = 0;
-            p2[i] = 1;
-            p4[i] = 0;
+            p0[i] = 10.0;
+            p1[i] = 0.0;
+            p2[i] = 1.0;
+            p4[i] = 1.0;
         } else {
-            p0[i] = 1;
-            p1[i] = 0;
-            p2[i] = 1;
-            p4[i] = 0;
+            p0[i] = 1.0;
+            p1[i] = 0.0;
+            p2[i] = 1.0;
+            p4[i] = 1.0;
         }
     }
 
     for (int i = 0; i<N_CELLS; i++){
-        R[i] = ((1 - p4[i]) * (R_dry / R_dry) + p4[i] * (R_v / R_dry)); // 所有參數(密度、速度、溫度、壓力)都是用無因次化去做計算，所以R跟CV也要無因次化，通常以dry air為基準。
-        CV[i] = (1 - p4[i]) * (CV_dry / CV_dry) + p4[i] * (CV_v / CV_dry);
+        R[i] = ((1 - p4[i]) * (R_dry/R_dry) + p4[i] * (R_v/R_dry)); // 所有參數(密度、速度、溫度、壓力)都是用無因次化去做計算，所以R跟CV也要無因次化，通常以dry air為基準。
+        CV[i] = (1 - p4[i]) * (CV_dry/R_dry) + p4[i] * (CV_v/R_dry);
         GAMMA[i] = 1 + (R[i] / CV[i]);
         p3[i] = p0[i] * R[i] * p2[i]; // Pressure = rho * R * T
     }
