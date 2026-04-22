@@ -77,16 +77,17 @@ float MAX_Wave_Speed(float u_L, float u_R, float u_T, float u_B, float a_L, floa
 	}else if (W_R > W_L && W_R > W_T && W_R > W_B){
 		W_LOCAL_MAX = W_R;
 	}else if (W_T > W_L && W_T > W_R && W_T > W_B){
-		W_LOCAL_MAX = W_P;
-	}else if (W_B > W_L && W_B > W_R && W_B > W_T
+		W_LOCAL_MAX = W_T;
+	}else if (W_B > W_L && W_B > W_R && W_B > W_T){
 		W_LOCAL_MAX = W_B;
 	}
 return W_LOCAL_MAX;
 }
 
 void Calc_Rusanov_Flux(float rho_L, float rho_R, float rho_T, float rho_B, float u_L, float u_R, float u_T, float u_B, float T_L, float T_R, float T_T, float T_B,
-		       float p_L, float p_R, float p_T, float p_B, float e_L, float e_R, float e_T, float e_B, float W_LOCAL_MAX,
-                       float *mass_flux, float *momentum_flux, float *energy_flux, float *rhov_flux, float H_L, float H_R, float H_T, float H_B){
+		       float p_L, float p_R, float p_T, float p_B, float e_L, float e_R, float e_T, float e_B, float rhov_L, float rhov_R, float rhov_T, float rhov_B,
+		       float W_LOCAL_MAX,  float H_L, float H_R, float H_T, float H_B,
+                       float *mass_flux, float *momentum_flux, float *energy_flux, float *rhov_flux,){
 	float mass_L, mass_R, mass_T, mass_B, momentum_L, momentum_R, momentum_T, momentum_B, energy_L, energy_R, energy_T, energy_B, rhov_L, rhov_R, rhov_T, rhov_B,
 	      mass_flux_L, mass_flux_R, mass_flux_T, mass_flux_B, momentum_flux_L, momentum__flux_R, momentum_flux_T, momentum_flux_B,
 	      energy_flux_L, energy_flux_R, energy_flux_T, energy_flux_B, rhov_L, rhov_R, rhov_T, rhov_B;
@@ -153,33 +154,34 @@ int main(){
 	      *mass, *momentum, *energy, *rhov,
 	      *mass_flux, *momentum_flux, *energy_flux, *rhov_flux;
 	float t = 0;
-	float D = 1.837e-5; //Diffusivity of water vapor, unit:(m^2/s)
 	float t_FINAL = 0.2;
 	float R_bar = 8.315; // Ideal gas constant, unti:kJ/(kmol*K)
 	float MW_H2O = 18.02; // Molecular weigh, unit:kg/kmol
 	float MW_air = 28.97; // Molecular weigh, unit:kg/kmol
 	float R_v = R_bar / MW_H2O; // Specific gas constant of H2O, unit:kJ/(kg*k); R = R_bar / Molecular weight
 	float R_dry = R_bar / MW_air;// Specific gas constand of air.
-	float CV_v = 4.184; // unit:kJ/(kg*K) // H2O的定容比熱
+	float CV_v = 4.184; // unit:kJ/(kg*K) // specific heat volume of H2O
 	float CV_dry = 0.718;
+	float D = 1.837e-5; //Diffusivity of water vapor, unit:(m^2/s)
 	float CFL = 0.5;
-	float dx = L/N_CELLS;
 	float W_GLOBAL_MAX;
 
-	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &R, &CV, &GAMMA, &a, &mass, &momentum, &energy, &rhov, &mass_flux, &momentum_flux, &energy_flux, &rhov_flux, N_CELLS);
+	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &R, &CV, &GAMMA, &a, &mass, &momentum, &energy, &rhov, &mass_flux, &momentum_flux, &energy_flux, &rhov_flux, N);
 	// Set initial condition (Because R will change, so P_L and P_R can not equal 10 and 1 directly)
-	for (int i = 0; i < N_CELLS; i++){
-		x[i] = (i+0.5) * dx;
-		if (i < N_CELLS/2){
-			p0[i] = 10;
-			p1[i] = 0;
-			p2[i] = 1;
-			p4[i] = 1;
-		} else {
-			p0[i] = 1;
-			p1[i] = 0;
-			p2[i] = 1;
-			p4[i] = 0;
+	for (int i = 0; i < NX; i++){
+		for (int j = 0; j < NY; j++){
+			int INDEX = (i * NY) + j;
+			if (i < NX/2){
+				p0[INDEX] = 10.0;
+				p1[INDEX] = 0.0;
+				p2[INDEX] = 1.0;
+				p4[INDEX] = 1.0;
+			} else {
+				p0[INDEX] = 1.0;
+				p1[INDEX] = 0.0;
+				p2[INDEX] = 1.0;
+				p4[INDEX] = 0.0;
+			}
 		}
 	}
 
@@ -210,7 +212,7 @@ int main(){
 	        	for (int j = 0; j < NY; j++){
 	        		float rho_L, rho_R, rho_T, rho_B, u_L, u_R, u_T, u_B, T_L, T_R, T_P, T_B, P_L, P_R, P_T, P_B,
 	        		      H_L, H_R, H_T, H_P, GAMMA_L, GAMMA_R, GAMMA_T, GAMMA_B, e_L, e_R, e_T, e_B,
-	        		      R_L, R_R, R_T, R_B, a_L, a_R, a_T, a_B; // L = LEFT, R = RIGHT, T = TOP, B = BOTTOM
+	        		      R_L, R_R, R_T, R_B, a_L, a_R, a_T, a_B, rhov_L, rhov_R, rhov_T, rhov_B; // L = LEFT, R = RIGHT, T = TOP, B = BOTTOM
         			int INDEX = (i * NY) + j;
 				rho_L = p0[INDEX - NY];
 				rho_R = p0[INDEX + NY];
@@ -218,44 +220,49 @@ int main(){
 				rho_B = p0[INDEX - 1];
 				u_L = p1[INDEX - NY];
 				u_R = p1[INDEX + NY];
-				u_T = p1[INDEX + 1;
+				u_T = p1[INDEX + 1];
 				u_B = p1[INDEX - 1];
 				T_L = p2[INDEX - NY];
 				T_R = p2[INDEX + NY];
-				T_T = p2[INDEX + 1;
+				T_T = p2[INDEX + 1];
 				T_B = p2[INDEX - 1];
-				p_L = p3[INDEX - NY];
-				p_R = p3[INDEX + NY];
-				p_T = p3[INDEX + 1;
-				p_B = p3[INDEX - 1];
+				P_L = p3[INDEX - NY];
+				P_R = p3[INDEX + NY];
+				P_T = p3[INDEX + 1];
+				P_B = p3[INDEX - 1];
 				H_L = p4[INDEX - NY];
 				H_R = p4[INDEX + NY];
-				H_T = p4[INDEX + 1;
+				H_T = p4[INDEX + 1];
 				H_B = p4[INDEX - 1];
 				GAMMA_L = GAMMA[INDEX - NY];
 				GAMMA_R = GAMMA[INDEX + NY];
-				GAMMA_T = GAMMA[INDEX + 1;
+				GAMMA_T = GAMMA[INDEX + 1];
 				GAMMA_B = GAMMA[INDEX - 1];
 				R_L = R[INDEX + NY];
 				R_R = R[INDEX - NY];
 				R_T = R[INDEX + 1];
 				R_B = R[INDEX - 1];
-				e_L = 0.5 * rho_L * u_L * u_L + (p_L / (GAMMA_L - 1));
-				e_R = 0.5 * rho_R * u_R * u_R + (p_R / (GAMMA_R - 1));
-				e_T = 0.5 * rho_T * u_T * u_T + (p_T / (GAMMA_T - 1));
-				e_B = 0.5 * rho_B * u_B * u_B + (p_B / (GAMMA_B - 1));
+				e_L = 0.5 * rho_L * u_L * u_L + (P_L / (GAMMA_L - 1));
+				e_R = 0.5 * rho_R * u_R * u_R + (P_R / (GAMMA_R - 1));
+				e_T = 0.5 * rho_T * u_T * u_T + (P_T / (GAMMA_T - 1));
+				e_B = 0.5 * rho_B * u_B * u_B + (P_B / (GAMMA_B - 1));
 				a_L = sqrt(GAMMA_L * R_L * T_L);
 				a_R = sqrt(GAMMA_R * R_R * T_R);
 				a_T = sqrt(GAMMA_T * R_T * T_T);
 				a_B = sqrt(GAMMA_B * R_B * T_B);
+				rhov_L = rho_L * H_L;
+				rhov_R = rho_R * H_R;
+				rhov_T = rho_T * H_T;
+				rhov_B = rho_B * H_B;
 			float W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, u_T, u_B, a_L, a_R, a_T, a_B);
-			Calc_Rusanov_Flux(rho_L, rho_R, rho_T, rho_B, u_L, u_R, u_T, u_B, T_L, T_R, T_T, T_B, p_L, p_R, p_T, p_B, e_L, e_R, e_T, e_B, W_LOCAL_MAX,
-					  mass_flux, momentum_flux, energy_flux, rhov_flux, H_L, H_R, H_T, H_B );
+			Calc_Rusanov_Flux(rho_L, rho_R, rho_T, rho_B, u_L, u_R, u_T, u_B, T_L, T_R, T_T, T_B, P_L, P_R, P_T, P_B, e_L, e_R, e_T, e_B,
+					  rhov_L, rhov_R, rhov_T,rhov_B, H_L, H_R, H_T, H_B, W_LOCAL_MAX,
+					  mass_flux, momentum_flux, energy_flux, rhov_flux);
 			if (W_LOCAL_MAX > W_GLOBAL_MAX){
 				W_GLOBAL_MAX = W_LOCAL_MAX;
 			}
 		}
-	float dt = CFL * (dx / W_GLOBAL_MAX);
+	float dt = CFL * (dx / W_GLOBAL_MAX); //待修改
 
 	//Set boundary condition 待修改
 	mass_flux[0] = mass_flux[1];
