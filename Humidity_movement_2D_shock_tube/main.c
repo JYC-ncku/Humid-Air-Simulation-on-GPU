@@ -65,7 +65,7 @@ void Free_memory(float *array1, float *array2, float *array3, float *array4, flo
     0        1       N        N+1
 */
 
-// In order to compute dt, need to find the Max wave speed first.
+// In order to compute DT, need to find the Max wave speed first.
 float MAX_Wave_Speed(float u_L, float u_R, float u_T, float u_B, float a_L, float a_R, float a_T, float a_B){
 	float W_L = fabs(u_L) + a_L;
 	float W_R = fabs(u_R) + a_R;
@@ -189,7 +189,7 @@ int main(){
 		for (int j = 0; j < N; j++){
 			int INDEX = (i * NY) + j;
 			R[INDEX] = ((1 - p4[INDEX]) * (R_dry / R_dry) + p4[INDEX] * (R_v / R_dry)); // 所有參數(密度、速度、溫度、壓力)都是用無因次化去做計算，所以R跟CV也要無因次化，通常以dry air為基準。
-			CV[INDEX] = (1 - p4[INDEX]) * (CV_dry / CV_dry) + p4[INDEX] * (CV_v / CV_dry);
+			CV[INDEX] = (1 - p4[INDEX]) * (CV_dry / R_dry) + p4[INDEX] * (CV_v / R_dry);
 			GAMMA[INDEX] = 1 + (R[INDEX] / CV[INDEX]);
 			p3[INDEX] = p0[INDEX] * R[INDEX] * p2[INDEX]; // Pressure = rho * R * T
 		}
@@ -206,7 +206,7 @@ int main(){
 	}
 
 	while (t<t_FINAL){
-	// In order to compute dt, need to find the Max wave speed first.
+	// In order to compute DT, need to find the Max wave speed first.
 	float W_GLOBAL_MAX = 1.0e-10;
 		for (int i = 0; i < NX; i++){
 	        	for (int j = 0; j < NY; j++){
@@ -262,7 +262,7 @@ int main(){
 				W_GLOBAL_MAX = W_LOCAL_MAX;
 			}
 		}
-	float dt = CFL * (dx / W_GLOBAL_MAX); //待修改
+	float DT = CFL_X * (DX / W_GLOBAL_MAX) + CFL_Y * (DY / W_GLOBAL_MAX) ;
 
 	//Set boundary condition 待修改
 	mass_flux[0] = mass_flux[1];
@@ -277,11 +277,14 @@ int main(){
 	rhov[N_CELLS] = rhov[N_CELLS - 1];
 
         // Use FVM to get new conservation values 待修改
-		for (int i = 1; i<=N_CELLS; i++){
-			mass[i] = mass[i] - (dt / dx) * (mass_flux[i+1] - mass_flux[i]);
-			momentum[i] = momentum[i] - (dt / dx) * (momentum_flux[i+1] - momentum_flux[i]);
-			energy[i] = energy[i] - (dt / dx) * (energy_flux[i+1] - energy_flux[i]);
-			rhov[i] = rhov[i] - (dt/dx) * (rhov_flux[i+1] - rhov_flux[i]) + (dt/(dx*dx)) * D * (rhov[i+1] - 2 * rhov[i] + rhov[i-1]);
+		for (int i = 0; i < NX; i++){
+			for (int j = 0; j < NY; j++){
+			int INDEX = (i * NY) + j;
+				mass[i] = mass[i] - (DT / DX) * (mass_flux[i+1] - mass_flux[i]) - (DT / DY);
+				momentum[i] = momentum[i] - (DT / DX) * (momentum_flux[i+1] - momentum_flux[i]);
+				energy[i] = energy[i] - (DT / DX) * (energy_flux[i+1] - energy_flux[i]);
+				rhov[i] = rhov[i] - (DT / DX) * (rhov_flux[i+1] - rhov_flux[i]) + (DT/(DX*DX)) * D * (rhov[i+1] - 2 * rhov[i] + rhov[i-1]);
+			}
 		}
 
 		for (int i = 1; i<=N_CELLS; i++){
@@ -291,7 +294,7 @@ int main(){
 			p3[i] = (GAMMA[i] - 1) * (energy[i] - 0.5 * p0[i] * p1[i] * p1[i]);
 			p2[i] = p3[i] / (p0[i] * R[i]);
 		}
-	t += dt;
+	t += DT;
 	}
 /*
 FILE * pFile = fopen("Results_of_200_cells.txt","w");
