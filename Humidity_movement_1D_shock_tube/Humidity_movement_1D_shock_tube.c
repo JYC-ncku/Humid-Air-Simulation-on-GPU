@@ -122,7 +122,9 @@ int main(){
     float CFL = 0.5;
     float dx = L/N_CELLS;
     float W_GLOBAL_MAX;
-    float t_target = L / (0.2 * sqrt((R_dry/1000) * 298.15));
+    float t_target = L / (0.2 * sqrt((R_dry*1000) * 300));
+    //float t_target = 0.2;
+    printf("t_target = %gs\n", t_target);
 
     Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &R, &CV, &GAMMA, &a, &mass, &momentum, &energy, &rhov, &mass_flux, &momentum_flux, &energy_flux, &rhov_flux, N_CELLS);
     // Set initial condition (Because R will change, so P_L and P_R can not equal 10 and 1 directly)
@@ -130,18 +132,18 @@ int main(){
 	x[i] = (i+0.5) * dx;
         if (i < N_CELLS/2){
             //p0[i] = 10.0;
-            p0[i] = 12.55; //unti: kg/m^3
+            p0[i] = 11.614; //unti: kg/m^3
             p1[i] = 0.0; //unit: m/s
             //p2[i] = 1.0;
-            p2[i] = 298.15; //unit: K
-            p4[i] = 1.0;
+            p2[i] = 300.0; //unit: K
+            p4[i] = 0.0;
         } else {
             //p0[i] = 1.0;
-            p0[i] = 1.225; // density of air
+            p0[i] = 1.1614; // density of air
             p1[i] = 0.0;
             //p2[i] = 1.0;
-            p2[i] = 298.15; // room temperature
-            p4[i] = 1.0;
+            p2[i] = 300.0; // room temperature
+            p4[i] = 0.0;
         }
     }
 
