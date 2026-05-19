@@ -62,7 +62,7 @@ void Free_memory(float *array1, float *array2, float *array3, float *array4, flo
     |   0    |  ...   |    N   |   ===>   Have total N cells and N+1 interface. (because N is from 0)
     |        |        |        |
     ----------------------------
-    0        1       N        N+1
+    0        1        N       N+1
 */
 
 // In order to compute dt, need to find the Max wave speed first.
@@ -105,7 +105,7 @@ void Calc_Rusanov_Flux(float rho_L, float rho_R, float u_L, float u_R, float T_L
 }
 
 int main(){
-    int N_CELLS = 200;
+    int N_CELLS = 2000;
     float *x, *p0, *p1, *p2, *p3, *p4, *R, *CV, *GAMMA, *a, // p0 is density, p1 is velocity, p2 is temperature, p3 is pressure, p4 is humidity, a is sound speed
            *mass, *momentum, *energy, *rhov,
            *mass_flux, *momentum_flux, *energy_flux, *rhov_flux;
@@ -122,8 +122,11 @@ int main(){
     float CFL = 0.5;
     float dx = L/N_CELLS;
     float W_GLOBAL_MAX;
-    float t_target = L / (0.2 * sqrt((R_dry*1000) * 300));
-    //float t_target = 0.2;
+
+	float Lv = 2260; //unit: kJ/kg
+
+    //float t_target = L / (0.2 * sqrt((R_dry*1000) * 300));
+    float t_target = 0.2;
     printf("t_target = %gs\n", t_target);
 
     Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &R, &CV, &GAMMA, &a, &mass, &momentum, &energy, &rhov, &mass_flux, &momentum_flux, &energy_flux, &rhov_flux, N_CELLS);
@@ -131,27 +134,27 @@ int main(){
     for (int i = 0; i < N_CELLS; i++){
 	x[i] = (i+0.5) * dx;
         if (i < N_CELLS/2){
-            //p0[i] = 10.0;
-            p0[i] = 11.614; //unti: kg/m^3
+            p0[i] = 10.0;
+          //p0[i] = 11.614; //unti: kg/m^3
             p1[i] = 0.0; //unit: m/s
-            //p2[i] = 1.0;
-            p2[i] = 300.0; //unit: K
-            p4[i] = 0.0;
+            p2[i] = 1.0;
+            //p2[i] = 300.0; //unit: K
+            p4[i] = 1.0;
         } else {
-            //p0[i] = 1.0;
-            p0[i] = 1.1614; // density of air
+            p0[i] = 1.0;
+            //p0[i] = 1.1614; // density of air
             p1[i] = 0.0;
-            //p2[i] = 1.0;
-            p2[i] = 300.0; // room temperature
-            p4[i] = 0.0;
+            p2[i] = 1.0;
+            //p2[i] = 300.0; // room temperature
+            p4[i] = 1.0;
         }
     }
 
     for (int i = 0; i<N_CELLS; i++){
-//        R[i] = ((1 - p4[i]) * (R_dry/R_dry) + p4[i] * (R_v/R_dry)); // 所有參數(密度、速度、溫度、壓力)都是用無因次化去做計算，所以R跟CV也要無因次化，通常以dry air為基準。
-//        CV[i] = (1 - p4[i]) * (CV_dry/R_dry) + p4[i] * (CV_v/R_dry);
-        R[i] = (1 - p4[i]) * R_dry + p4[i] * R_v;
-        CV[i] = (1 - p4[i]) * CV_dry + p4[i] * CV_v;
+        R[i] = ((1 - p4[i]) * (R_dry/R_dry) + p4[i] * (R_v/R_dry)); // 所有參數(密度、速度、溫度、壓力)都是用無因次化去做計算，所以R跟CV也要無因次化，通常以dry air為基準。
+        CV[i] = (1 - p4[i]) * (CV_dry/R_dry) + p4[i] * (CV_v/R_dry);
+        //R[i] = (1 - p4[i]) * R_dry + p4[i] * R_v;
+        //CV[i] = (1 - p4[i]) * CV_dry + p4[i] * CV_v;
         GAMMA[i] = 1 + (R[i] / CV[i]);
         p3[i] = p0[i] * R[i] * p2[i]; // Pressure = rho * R * T
     }
@@ -229,7 +232,7 @@ int main(){
         t += dt;
     }
 
-    FILE * pFile = fopen("Results_of_200_cells.txt","w");
+    FILE * pFile = fopen("Results_of_2000_cells.txt","w");
     for (int i = 0; i<N_CELLS; i++){
         fprintf(pFile, "%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", x[i], p0[i], p1[i], p2[i], p3[i], p4[i]);
     }
