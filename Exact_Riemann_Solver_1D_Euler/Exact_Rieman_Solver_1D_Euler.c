@@ -715,19 +715,19 @@ void CPU_Calc_rho_u_P_T(double *interface_p, double *flux,
 	interface_p[2] = QI_v;
 	interface_p[3] = QI_w;
 	interface_p[4] = QI_T;
-	interface_p[5] = QI_p;	
+	interface_p[5] = QI_p;
 }
 
 int main(){
-    int N_CELLS = 200;
+    int N_CELLS = 202;
 	float L = 1.0;
-    float dx = L/N_CELLS; 
+    float dx = L/N_CELLS;
     float dt = 0.0001; //隨便設，如果CFL有error就調整dt值。
 	float t = 0;
 	float t_FINAL = 0.2;
 	double R = 1.0;
 	double GAMMA = 1.4;
-	int wall_flag = 0; 
+	int wall_flag = 0;
     double *x, *p0, *p1, *p2, *p3, *interface_p, *flux;
 	double flxnmn, flxpmn, flxqmn;
 
@@ -750,7 +750,7 @@ int main(){
 	double QR_vy = 0, QR_vz = 0;
     double nx = 1.0, ny = 0.0, nz = 0.0;
     double px = 0.0, py = 1.0, pz = 0.0;
-    double qx = 0.0, qy = 0.0, qz = 1.0; 
+    double qx = 0.0, qy = 0.0, qz = 1.0;
 
 	while (t<t_FINAL){
     	double MAX_CFL = CPU_Compute_MAX_CFL(p0, p1, p2, dx, dt, N_CELLS);
@@ -785,7 +785,7 @@ int main(){
     		double Mom_old = rho_old * u_old; // p0[i] * p1[i]
 			// 先從溫度算總能 E，更新完 E 再扣掉動能回算 T
     		double E_old   = rho_old * (CV * T_old + 0.5 * u_old * u_old); //p0[i] * (CV * p2[i] + 0.5 * p1[i] * p1[i])
-    	
+
 
 			// 使用FVM計算新的值，參考程式碼712～716行，interface_p[0]是密度、[1]是u、[2]是v、[3]是w、[4]是溫度。
     		double rho_new = rho_old + (dt / dx) * (flux[L_interface + 0] - flux[R_interface + 0]);
@@ -804,7 +804,7 @@ int main(){
 			p3[i] = P_new;
 		}
 
-		// Boundary condition for compute flux.	
+		// Boundary condition for compute flux.
 		// 左邊界
 		p0[0] = p0[1];
 		p1[0] = p1[1];
@@ -820,7 +820,7 @@ int main(){
 		t += dt;
 	}
 	FILE * pFile = fopen("Results_of_200_cells.txt","w");
-    for (int i=0; i<N_CELLS; i++){  
+    for (int i=0; i<N_CELLS; i++){
         fprintf(pFile, "%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.2f\n", x[i], p0[i], p1[i], p2[i], p3[i], t);
     }
     fclose(pFile);
