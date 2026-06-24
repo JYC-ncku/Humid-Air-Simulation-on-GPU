@@ -14,7 +14,7 @@ void Allocate_memory(double **array1, double **array2, double **array3, double *
     *array8 = (double*)malloc(N_CELLS * sizeof(double));
     *array9 = (double*)malloc((N_CELLS+1) * sizeof(double));
     *array10 = (double*)malloc((N_CELLS+1) * sizeof(double));
-    *array11 = (double*)malloc((N_CELLS+1) * sizeof(double));    
+    *array11 = (double*)malloc((N_CELLS+1) * sizeof(double));
     if (*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL || 
         *array7 == NULL || *array8 == NULL || *array9 == NULL || *array10 == NULL || *array11 == NULL ){
         printf("Memory allocation failed!\n");
@@ -43,7 +43,7 @@ void Free_memory(double *array1, double *array2, double *array3, double *array4,
     ----------------------------
     |        |        |        |
     |   0    |  ...   |    N   |   ===>   Have total N cells and N+1 interface. (because N is from 0)
-    |        |        |        | 
+    |        |        |        |
     ----------------------------
     0        1       N        N+1
 */
@@ -81,10 +81,10 @@ void Calc_Rusanov_Flux(double rho_L, double rho_R, double u_L, double u_R, doubl
     momentum_flux[j] = 0.5 * (momentum_flux_L + momentum_flux_R) - 0.5 * W_LOCAL_MAX * (momentum_R - momentum_L);
     energy_flux[j] = 0.5 * (energy_flux_L + energy_flux_R) - 0.5 * W_LOCAL_MAX * (energy_R - energy_L);
 }
-    
+
 
 int main(){
-    int N_CELLS = 800;
+    int N_CELLS = 200;
     double *x, *p0, *p1, *p2, *p3, *mass, *momentum, *energy, *mass_flux, *momentum_flux, *energy_flux; // p0 is density, p1 is velocity, p2 is temperature, p3 is pressure
     float L = 1.0;
     float t = 0;
@@ -100,15 +100,15 @@ int main(){
     for (int i = 0; i < N_CELLS; i++){
         x[i] = (i+0.5) * dx;
         if (i < N_CELLS/2){
-            p0[i] = 10;
-            p1[i] = 0;
-            p2[i] = 1;
-            p3[i] = 10;
+            p0[i] = 10.0;
+            p1[i] = 0.0;
+            p2[i] = 1.0;
+            p3[i] = 10.0;
         } else {
-            p0[i] = 1;
-            p1[i] = 0;
-            p2[i] = 1;
-            p3[i] = 1;
+            p0[i] = 1.0;
+            p1[i] = 0.0;
+            p2[i] = 1.0;
+            p3[i] = 1.0;
         }
     }
 
@@ -131,7 +131,7 @@ int main(){
             double p_L = p3[j-1];
             double p_R = p3[j];
             double e_L = 0.5 * rho_L * u_L * u_L + (p_L / (GAMMA - 1));
-            double e_R = 0.5 * rho_R * u_R * u_R + (p_R / (GAMMA - 1));    
+            double e_R = 0.5 * rho_R * u_R * u_R + (p_R / (GAMMA - 1));
             double a_L = sqrt(GAMMA * R * T_L); // Sound speed a = (R*T)^0.5
             double a_R = sqrt(GAMMA * R * T_R);
             double W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
@@ -151,7 +151,7 @@ int main(){
         mass_flux[N_CELLS] = mass_flux[N_CELLS - 1];
         momentum_flux[N_CELLS] = momentum_flux[N_CELLS - 1];
         energy_flux[N_CELLS] = energy_flux[N_CELLS - 1];
-    
+
         // Use FVM to get new conservation values
         for (int i=0; i<N_CELLS; i++){
             mass[i] = mass[i] - (dt / dx)*(mass_flux[i+1] - mass_flux[i]);
@@ -166,10 +166,10 @@ int main(){
             p2[i] = p3[i] / (p0[i] * R);
         }
 
-        t += dt;        
+        t += dt;
     }
 
-    FILE * pFile = fopen("Results_of_800_cells.txt","w");
+    FILE * pFile = fopen("Results_of_200_cells.txt","w");
     for (int i = 0; i<N_CELLS; i++){
         fprintf(pFile, "%.3f\t%.6f\t%.6f\t%.6f\t%.6f\n", x[i], p0[i], p1[i], p2[i], p3[i]);
     }
