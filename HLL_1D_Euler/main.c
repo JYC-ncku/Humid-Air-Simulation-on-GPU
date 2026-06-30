@@ -18,7 +18,7 @@ float MAX_Wave_Speed(double u_L, double u_R, double a_L, double a_R){
 }
 
 int main(){
-	int N_CELLS = 200;
+	int N_CELLS = 800;
 	float *x, *p0, *p1, *p2, *p3, *mass, *momentum, *energy, *mass_flux, *momentum_flux, *energy_flux;
 	float L = 1.0;
 	float t = 0;
@@ -77,7 +77,7 @@ int main(){
 		t += dt;
 	}
 
-	FILE *pFile = fopen("Results_of_200_cells.txt", "w");
+	FILE *pFile = fopen("Results_of_800_cells.txt", "w");
 	for (int i = 0; i < N_CELLS; i++){
 		fprintf(pFile, "%g\t%g\t%g\t%g\t%g\n", x[i], p0[i], p1[i], p2[i], p3[i]);
 	}
