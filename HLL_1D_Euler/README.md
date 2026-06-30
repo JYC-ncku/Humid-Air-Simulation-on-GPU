@@ -4,7 +4,7 @@ Initial condition:
 ```
 u = velocity = 0 m/s (everywhere),   T = temperature = 1 K (everywhere)
 Density = 10m  (x < 0.5L)
-	   1m  (x >= 0.5L)
+	       1m  (x >= 0.5L)
 Ratio of specific heats = 1.4, R = 1, L = 1m. Computed time = 0.2s.
 
 ```
