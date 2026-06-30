@@ -32,6 +32,6 @@ Temperature of each cells:
 ![HLL_vs_Rusanov_for_800_cells_of_Temperature.png](./HLL_vs_Rusanov_for_800_cells_of_Temperature.png)
 
 Pressure of each cells:
-![HLL_vs_Rusanov_for_200_cells_of_Pressure.png](./Rusanov_vs_ExactRiemann_for_200_cells_of_Pressure.png)
-![HLL_vs_Rusanov_for_400_cells_of_Pressure.png](./Rusanov_vs_ExactRiemann_for_400_cells_of_Pressure.png)
-![HLL_vs_Rusanovn_for_800_cells_of_Pressure.png](./Rusanov_vs_ExactRiemann_for_800_cells_of_Pressure.png)
+![HLL_vs_Rusanov_for_200_cells_of_Pressure.png](./HLL_vs_Rusanov_for_200_cells_of_Pressure.png)
+![HLL_vs_Rusanov_for_400_cells_of_Pressure.png](./HLL_vs_Rusanov_for_400_cells_of_Pressure.png)
+![HLL_vs_Rusanovn_for_800_cells_of_Pressure.png](./HLL_vs_Rusanov_for_800_cells_of_Pressure.png)
