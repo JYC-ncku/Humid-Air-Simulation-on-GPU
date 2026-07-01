@@ -43,3 +43,13 @@ void Free_memory(float **array1, float **array2, float **array3, float **array4,
     cudaFree(*array11);
     printf("Memory freed successfully!\n");
 }
+
+void Send_To_Device(float **d_a, float **h_a, int N_CELLS){
+	size_t size = N_CELLS * sizeof(float);
+	cudaMemcpy(*d_a, *h_a, size, cudaMemcpyHostToDevice);
+}
+
+void Get_From_Device(float **h_a, float **d_a, int N_CELLS){
+	size_t size = N_CELLS * sizeof(float);
+	cudaMemcpy(*h_a, *d_a, size, cudaMemcpyDeviceToHost);
+}
