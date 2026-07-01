@@ -16,11 +16,17 @@ int main(){
 	float CFL = 0.5;
 	float dx = L/N_CELLS;
 	Allocate_memory(&h_x, &h_p0, &h_p1, &h_p2, &h_p3, &h_mass, &h_momentum, &h_energy,
-			&d_x, &d_p0, &d_p1, &d_p2, &d_p3, &d_mass, &d_momentum, &d_energy, &d_mass_flux, &d_momentum_flux, &d_energy_flux, N_CELLS);
+			&d_p0, &d_p1, &d_p2, &d_p3, &d_mass, &d_momentum, &d_energy, &d_mass_flux, &d_momentum_flux, &d_energy_flux, N_CELLS);
 	Initial(h_x, h_p0, h_p1, h_p2, h_p3, h_mass, h_momentum, h_energy, GAMMA, dx, N_CELLS);
-//	Send_To_Device();
+	Send_To_Device(&d_p0, &h_p0, N_CELLS);
+	Send_To_Device(&d_p1, &h_p1, N_CELLS);
+	Send_To_Device(&d_p2, &h_p2, N_CELLS);
+	Send_To_Device(&d_p3, &h_p3, N_CELLS);
+	Send_To_Device(&d_mass, &h_mass, N_CELLS);
+	Send_To_Device(&d_momentum, &h_momentum, N_CELLS);
+	Send_To_Device(&d_energy, &h_energy, N_CELLS);
 
 	printf("Hello world!\n");
 	Free_memory(&h_x, &h_p0, &h_p1, &h_p2, &h_p3, &h_mass, &h_momentum, &h_energy,
-		    &d_x, &d_p0, &d_p1, &d_p2, &d_p3, &d_mass, &d_momentum, &d_energy, &d_mass_flux, &d_momentum_flux, &d_energy_flux);
+		    &d_p0, &d_p1, &d_p2, &d_p3, &d_mass, &d_momentum, &d_energy, &d_mass_flux, &d_momentum_flux, &d_energy_flux);
 }
