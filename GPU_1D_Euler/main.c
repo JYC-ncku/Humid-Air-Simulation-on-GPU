@@ -5,7 +5,9 @@
 
 int main(){
 	int N_CELLS = 200;
-	float *x, *p0, *p1, *p2, *p3, *mass, *momentum, *energy, *mass_flux, *momentum_flux, *energy_flux; // p0 is density, p1 is velocity, p2 is temperature, p3 is pressure
+	float *h_x, *h_p0, *h_p1, *h_p2, *h_p3, *h_mass, *h_momentum, *h_energy,
+	      *d_x, *d_p0, *d_p1, *d_p2, *d_p3, *d_mass, *d_momentum, *d_energy,
+	      *d_mass_flux, *d_momentum_flux, *d_energy_flux; // p0 is density, p1 is velocity, p2 is temperature, p3 is pressure, h mean host, d mean device.
 	float L = 1.0;
 	float t = 0;
 	float t_FINAL = 0.2;
@@ -13,11 +15,12 @@ int main(){
 	float GAMMA = 1.4;
 	float CFL = 0.5;
 	float dx = L/N_CELLS;
-	Allocate_memory(&x, &p0, &p1, &p2, &p3, &mass, &momentum, &energy, &mass_flux, &momentum_flux, &energy_flux, N_CELLS);
-	Initial(x, p0, p1, p2, p3, mass, momentum, energy, GAMMA, dx, N_CELLS);
-	for (int i = 0; i < N_CELLS; i++){
-		printf("p0[%d] = %g\n", i, p0[i]);
-	}
+	Allocate_memory(&h_x, &h_p0, &h_p1, &h_p2, &h_p3, &h_mass, &h_momentum, &h_energy,
+			&d_x, &d_p0, &d_p1, &d_p2, &d_p3, &d_mass, &d_momentum, &d_energy, &d_mass_flux, &d_momentum_flux, &d_energy_flux, N_CELLS);
+	Initial(h_x, h_p0, h_p1, h_p2, h_p3, h_mass, h_momentum, h_energy, GAMMA, dx, N_CELLS);
+//	Send_To_Device();
+
 	printf("Hello world!\n");
-	Free_memory(&x, &p0, &p1, &p2, &p3, &mass, &momentum, &energy, &mass_flux, &momentum_flux, &energy_flux);
+	Free_memory(&h_x, &h_p0, &h_p1, &h_p2, &h_p3, &h_mass, &h_momentum, &h_energy,
+		    &d_x, &d_p0, &d_p1, &d_p2, &d_p3, &d_mass, &d_momentum, &d_energy, &d_mass_flux, &d_momentum_flux, &d_energy_flux);
 }

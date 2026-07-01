@@ -2,7 +2,9 @@
 #include <stdio.h>
 
 void Allocate_memory(float **array1, float **array2, float **array3, float **array4, float **array5, float **array6,
-                     float **array7, float **array8, float **array9, float **array10, float **array11, int N_CELLS){
+                     float **array7, float **array8, float **array9, float **array10, float **array11, float **array12,
+                     float **array13, float **array14, float **array15, float **array16, float **array17, float **array18,
+                     float **array19, int N_CELLS){
 	//HOST
 	*array1 = (float*)malloc(N_CELLS * sizeof(float));
 	*array2 = (float*)malloc(N_CELLS * sizeof(float));
@@ -20,27 +22,53 @@ void Allocate_memory(float **array1, float **array2, float **array3, float **arr
 	printf("Memory allocation successfully for %d elements!\n", N_CELLS);
 	//Device
 	cudaError_t Error;
-	Error = cudaMalloc((void**)array9, (N_CELLS+1) * sizeof(float));
+	Error = cudaMalloc((void**)array9, (N_CELLS) * sizeof(float));
 	printf("CUDA error (malloc array9) = %s\n", cudaGetErrorString(Error));
-	Error = cudaMalloc((void**)array10, (N_CELLS+1) * sizeof(float));
+	Error = cudaMalloc((void**)array10, (N_CELLS) * sizeof(float));
 	printf("CUDA error (malloc array10) = %s\n", cudaGetErrorString(Error));
-	Error = cudaMalloc((void**)array11, (N_CELLS+1) * sizeof(float));
+	Error = cudaMalloc((void**)array11, (N_CELLS) * sizeof(float));
 	printf("CUDA error (malloc array11) = %s\n", cudaGetErrorString(Error));
+	Error = cudaMalloc((void**)array12, (N_CELLS) * sizeof(float));
+	printf("CUDA error (malloc array9) = %s\n", cudaGetErrorString(Error));
+	Error = cudaMalloc((void**)array13, (N_CELLS) * sizeof(float));
+	printf("CUDA error (malloc array10) = %s\n", cudaGetErrorString(Error));
+	Error = cudaMalloc((void**)array14, (N_CELLS) * sizeof(float));
+	printf("CUDA error (malloc array11) = %s\n", cudaGetErrorString(Error));
+	Error = cudaMalloc((void**)array15, (N_CELLS) * sizeof(float));
+	printf("CUDA error (malloc array9) = %s\n", cudaGetErrorString(Error));
+	Error = cudaMalloc((void**)array16, (N_CELLS) * sizeof(float));
+	printf("CUDA error (malloc array10) = %s\n", cudaGetErrorString(Error));
+	Error = cudaMalloc((void**)array17, (N_CELLS+1) * sizeof(float));	//mass flux
+	printf("CUDA error (malloc array11) = %s\n", cudaGetErrorString(Error));
+	Error = cudaMalloc((void**)array18, (N_CELLS+1) * sizeof(float));	//momentum flux
+	printf("CUDA error (malloc array9) = %s\n", cudaGetErrorString(Error));
+	Error = cudaMalloc((void**)array19, (N_CELLS+1) * sizeof(float));	//energy flux
+	printf("CUDA error (malloc array10) = %s\n", cudaGetErrorString(Error));
 }
 
 void Free_memory(float **array1, float **array2, float **array3, float **array4, float **array5, float **array6,
-                 float **array7, float **array8, float **array9, float **array10, float **array11){
-    free(*array1);
-    free(*array2);
-    free(*array3);
-    free(*array4);
-    free(*array5);
-    free(*array6);
-    free(*array7);
-    free(*array8);
-    cudaFree(*array9);
-    cudaFree(*array10);
-    cudaFree(*array11);
+		 float **array7, float **array8, float **array9, float **array10, float **array11, float **array12,
+		 float **array13, float **array14, float **array15, float **array16, float **array17, float **array18,
+		 float **array19){
+	free(*array1);
+	free(*array2);
+	free(*array3);
+	free(*array4);
+	free(*array5);
+	free(*array6);
+	free(*array7);
+	free(*array8);
+	cudaFree(*array9);
+	cudaFree(*array10);
+	cudaFree(*array11);
+	cudaFree(*array12);
+	cudaFree(*array13);
+	cudaFree(*array14);
+	cudaFree(*array15);
+	cudaFree(*array16);
+	cudaFree(*array17);
+	cudaFree(*array18);
+	cudaFree(*array19);
     printf("Memory freed successfully!\n");
 }
 
