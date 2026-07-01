@@ -11,9 +11,9 @@ void Allocate_memory(float **array1, float **array2, float **array3, float **arr
 	*array6 = (float*)malloc(N_CELLS * sizeof(float));
 	*array7 = (float*)malloc(N_CELLS * sizeof(float));
 	*array8 = (float*)malloc(N_CELLS * sizeof(float));
-	*array9 = (float*)malloc(N_CELLS * sizeof(float));
-	*array10 = (float*)malloc(N_CELLS * sizeof(float));
-	*array11 = (float*)malloc(N_CELLS * sizeof(float));
+	*array9 = (float*)malloc((N_CELLS+1) * sizeof(float));
+	*array10 = (float*)malloc((N_CELLS+1) * sizeof(float));
+	*array11 = (float*)malloc((N_CELLS+1) * sizeof(float));
 	if (*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL ||
 	    *array7 == NULL || *array8 == NULL || *array9 == NULL || *array10 == NULL || *array11 == NULL){
 		printf("Memory allocation failed!\n");
