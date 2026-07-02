@@ -13,7 +13,7 @@ __device__ float MAX_Wave_Speed(float u_L, float u_R, float a_L, float a_R){
     return W_LOCAL_MAX;
 }
 
-__global__ void GPU_Calc_flux(float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_mass_flux, float *d_momentum_flux, float *d_energy_flux,
+__global__ void GPU_Calc_flux(float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_mass_flux, float *d_momentum_flux, float *d_energy_flux, float *d_W_LOCAL_MAX,
 			      float GAMMA, float R, int N_CELLS){
 	int i = threadIdx.x + blockIdx.x * blockDim.x;
 	if (i < N_CELLS){
@@ -30,7 +30,10 @@ __global__ void GPU_Calc_flux(float *d_p0, float *d_p1, float *d_p2, float *d_p3
 			float e_R = 0.5 * rho_R * u_R * u_R + (P_R / (GAMMA - 1));
 			float a_L = sqrt(GAMMA * R * T_L);
 			float a_R = sqrt(GAMMA * R * T_R);
+
 			float W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
+			d_W_LOCAL_MAX[i] = W_LOCAL_MAX;
+
 			float mass_L = rho_L;
 			float momentum_L = rho_L * u_L;
 			float energy_L = e_L;
@@ -52,8 +55,9 @@ __global__ void GPU_Calc_flux(float *d_p0, float *d_p1, float *d_p2, float *d_p3
 	}
 }
 
-void Calc_flux(float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *mass_flux, float *momentum_flux, float *energy_flux, float GAMMA, float R, int N_CELLS){
+void Calc_flux(float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_mass_flux, float *d_momentum_flux, float *d_energy_flux, float *d_W_LOCAL_MAX,
+	       float GAMMA, float R, int N_CELLS){
 	int TPB = 128;
 	int GPB = (N_CELLS + TPB - 1) / TPB;
-	GPU_Calc_flux<<<GPB, TPB>>>(d_p0, d_p1, d_p2, d_p3, mass_flux, momentum_flux, energy_flux, GAMMA, R, N_CELLS);
+	GPU_Calc_flux<<<GPB, TPB>>>(d_p0, d_p1, d_p2, d_p3, d_mass_flux, d_momentum_flux, d_energy_flux, d_W_LOCAL_MAX, GAMMA, R, N_CELLS);
 }
