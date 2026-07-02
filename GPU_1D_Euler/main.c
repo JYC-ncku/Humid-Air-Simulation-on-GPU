@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "memory.h"
 #include "Initial.h"
+#include "GPU_calc_flux.h"
 
 int main(){
 	int N_CELLS = 200;
@@ -26,6 +27,10 @@ int main(){
 	Send_To_Device(&d_momentum, &h_momentum, N_CELLS);
 	Send_To_Device(&d_energy, &h_energy, N_CELLS);
 
+	while (t < t_FINAL){
+		Calc_flux(d_p0, d_p1, d_p2, d_p3, d_mass_flux, d_momentum_flux, d_energy_flux, GAMMA, R, N_CELLS);
+		t += dt;
+	}
 	printf("Hello world!\n");
 	Free_memory(&h_x, &h_p0, &h_p1, &h_p2, &h_p3, &h_mass, &h_momentum, &h_energy,
 		    &d_p0, &d_p1, &d_p2, &d_p3, &d_mass, &d_momentum, &d_energy, &d_mass_flux, &d_momentum_flux, &d_energy_flux);
