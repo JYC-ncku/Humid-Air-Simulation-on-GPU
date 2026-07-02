@@ -3,6 +3,7 @@
 #include "memory.h"
 #include "Initial.h"
 #include "GPU_calc_flux.h"
+#include "Calc_conserved.h"
 
 int main(){
 	int N_CELLS = 200;
@@ -31,12 +32,15 @@ int main(){
 	while (t < t_FINAL){
 		Calc_flux(d_p0, d_p1, d_p2, d_p3, d_mass_flux, d_momentum_flux, d_energy_flux, d_W_LOCAL_MAX, GAMMA, R, N_CELLS);
 		Get_From_Device(&h_W_LOCAL_MAX, &d_W_LOCAL_MAX, N_CELLS);
+
 		for (int i = 1; i < N_CELLS; i++){
 			if (h_W_LOCAL_MAX[i] > W_GLOBAL_MAX){
 				W_GLOBAL_MAX = h_W_LOCAL_MAX[i];
 			}
 		}
 		float dt = CFL * (dx / W_GLOBAL_MAX);
+
+		Calc_conserved(d_mass, d_momentum, d_energy, d_mass_flux, d_momentum_flux, d_energy_flux, dt, dx, N_CELLS);
 		t += dt;
 	}
 	printf("Hello world!\n");
