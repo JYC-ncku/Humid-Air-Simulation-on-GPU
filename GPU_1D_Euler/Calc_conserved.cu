@@ -15,5 +15,5 @@ __global__ void GPU_Calc_conserved(float *d_mass, float *d_momentum, float *d_en
 void Calc_conserved(float *d_mass, float *d_momentum, float *d_energy, float *d_mass_flux, float *d_momentum_flux, float *d_energy_flux, float dt, float dx, int N_CELLS){
 	int TPB = 128;
 	int GPB = (N_CELLS + TPB - 1) / TPB;
-	GPU_Calc_conserved<<<TPB, GPB>>>(d_mass, d_momentum, d_energy, d_mass_flux, d_momentum_flux, d_energy_flux, dt, dx, N_CELLS);
+	GPU_Calc_conserved<<<GPB, TPB>>>(d_mass, d_momentum, d_energy, d_mass_flux, d_momentum_flux, d_energy_flux, dt, dx, N_CELLS);
 }

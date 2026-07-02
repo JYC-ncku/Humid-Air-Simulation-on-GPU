@@ -8,7 +8,7 @@
 #include "Boundary.h"
 
 int main(){
-	int N_CELLS = 200;
+	int N_CELLS = 200000;
 	float *h_x, *h_p0, *h_p1, *h_p2, *h_p3, *h_mass, *h_momentum, *h_energy, *h_W_LOCAL_MAX,
 	      *d_x, *d_p0, *d_p1, *d_p2, *d_p3, *d_mass, *d_momentum, *d_energy, *d_W_LOCAL_MAX,
 	      *d_mass_flux, *d_momentum_flux, *d_energy_flux; // p0 is density, p1 is velocity, p2 is temperature, p3 is pressure, h mean host, d mean device.
@@ -54,7 +54,7 @@ int main(){
 	Get_From_Device(&h_p2, &d_p2, N_CELLS);
 	Get_From_Device(&h_p3, &d_p3, N_CELLS);
 
-	FILE *pFile = fopen("Reuslts_of_200_cells.txt", "w");
+	FILE *pFile = fopen("Reuslts_of_200000_cells.txt", "w");
 	for (int i = 0; i < N_CELLS; i++){
 		fprintf(pFile, "%g\t%g\t%g\t%g\t%g\n", h_x[i], h_p0[i], h_p1[i], h_p2[i], h_p3[i]);
 	}
