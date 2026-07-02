@@ -38,9 +38,4 @@ Pressure of each cell:
 ![Rusanov_CPU_vs_GPU_for_200000_cells_of_Pressure.png](./Rusanov_CPU_vs_GPU_for_200000_cells_of_Pressure.png)
 
 Speedup time:
-CPU:
-![Rusanov_CPU.png](./Rusanov_CPU.png)
-GPU:
-![Rusanov_GPU.png](./Rusanov_GPU.png)
-
 The speedup is 5.3592.
