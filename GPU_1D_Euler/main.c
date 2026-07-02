@@ -4,6 +4,7 @@
 #include "Initial.h"
 #include "GPU_calc_flux.h"
 #include "Calc_conserved.h"
+#include "Calc_variable.h"
 
 int main(){
 	int N_CELLS = 200;
@@ -41,6 +42,7 @@ int main(){
 		float dt = CFL * (dx / W_GLOBAL_MAX);
 
 		Calc_conserved(d_mass, d_momentum, d_energy, d_mass_flux, d_momentum_flux, d_energy_flux, dt, dx, N_CELLS);
+		Calc_variable(d_p0, d_p1, d_p2, d_p3, d_mass, d_momentum, d_energy, GAMMA, R, N_CELLS);
 		t += dt;
 	}
 	printf("Hello world!\n");
