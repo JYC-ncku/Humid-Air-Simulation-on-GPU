@@ -45,7 +45,17 @@ int main(){
 		Calc_variable(d_p0, d_p1, d_p2, d_p3, d_mass, d_momentum, d_energy, GAMMA, R, N_CELLS);
 		t += dt;
 	}
+	Get_From_Device(&h_p0, &d_p0, N_CELLS);
+	Get_From_Device(&h_p1, &d_p1, N_CELLS);
+	Get_From_Device(&h_p2, &d_p2, N_CELLS);
+	Get_From_Device(&h_p3, &d_p3, N_CELLS);
 	printf("Hello world!\n");
+	FILE *pFile = fopen("Reuslts_of_200_cells.txt", "w");
+	for (int i = 0; i < N_CELLS; i++){
+		fprintf(pFile, "%g\t%g\t%g\t%g\t%g\n", h_x[i], h_p0[i], h_p1[i], h_p2[i], h_p3[i]);
+	}
+	fclose(pFile);
+
 	Free_memory(&h_x, &h_p0, &h_p1, &h_p2, &h_p3, &h_mass, &h_momentum, &h_energy, &h_W_LOCAL_MAX,
 		    &d_p0, &d_p1, &d_p2, &d_p3, &d_mass, &d_momentum, &d_energy, &d_W_LOCAL_MAX, &d_mass_flux, &d_momentum_flux, &d_energy_flux);
 }
