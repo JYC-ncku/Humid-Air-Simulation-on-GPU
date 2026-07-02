@@ -5,6 +5,7 @@
 #include "GPU_calc_flux.h"
 #include "Calc_conserved.h"
 #include "Calc_variable.h"
+#include "Boundary.h"
 
 int main(){
 	int N_CELLS = 200;
@@ -32,8 +33,8 @@ int main(){
 
 	while (t < t_FINAL){
 		Calc_flux(d_p0, d_p1, d_p2, d_p3, d_mass_flux, d_momentum_flux, d_energy_flux, d_W_LOCAL_MAX, GAMMA, R, N_CELLS);
-		Get_From_Device(&h_W_LOCAL_MAX, &d_W_LOCAL_MAX, N_CELLS);
 
+		Get_From_Device(&h_W_LOCAL_MAX, &d_W_LOCAL_MAX, N_CELLS);
 		for (int i = 1; i < N_CELLS; i++){
 			if (h_W_LOCAL_MAX[i] > W_GLOBAL_MAX){
 				W_GLOBAL_MAX = h_W_LOCAL_MAX[i];
@@ -41,15 +42,18 @@ int main(){
 		}
 		float dt = CFL * (dx / W_GLOBAL_MAX);
 
+		Boundary(d_mass_flux, d_momentum_flux, d_energy_flux, N_CELLS);
 		Calc_conserved(d_mass, d_momentum, d_energy, d_mass_flux, d_momentum_flux, d_energy_flux, dt, dx, N_CELLS);
 		Calc_variable(d_p0, d_p1, d_p2, d_p3, d_mass, d_momentum, d_energy, GAMMA, R, N_CELLS);
+
 		t += dt;
 	}
+
 	Get_From_Device(&h_p0, &d_p0, N_CELLS);
 	Get_From_Device(&h_p1, &d_p1, N_CELLS);
 	Get_From_Device(&h_p2, &d_p2, N_CELLS);
 	Get_From_Device(&h_p3, &d_p3, N_CELLS);
-	printf("Hello world!\n");
+
 	FILE *pFile = fopen("Reuslts_of_200_cells.txt", "w");
 	for (int i = 0; i < N_CELLS; i++){
 		fprintf(pFile, "%g\t%g\t%g\t%g\t%g\n", h_x[i], h_p0[i], h_p1[i], h_p2[i], h_p3[i]);
