@@ -84,7 +84,7 @@ void Calc_Rusanov_Flux(double rho_L, double rho_R, double u_L, double u_R, doubl
 
 
 int main(){
-    int N_CELLS = 200;
+    int N_CELLS = 200000;
     double *x, *p0, *p1, *p2, *p3, *mass, *momentum, *energy, *mass_flux, *momentum_flux, *energy_flux; // p0 is density, p1 is velocity, p2 is temperature, p3 is pressure
     float L = 1.0;
     float t = 0;
@@ -169,7 +169,7 @@ int main(){
         t += dt;
     }
 
-    FILE * pFile = fopen("Results_of_200_cells.txt","w");
+    FILE * pFile = fopen("Results_of_200000_cells.txt","w");
     for (int i = 0; i<N_CELLS; i++){
         fprintf(pFile, "%.3f\t%.6f\t%.6f\t%.6f\t%.6f\n", x[i], p0[i], p1[i], p2[i], p3[i]);
     }
