@@ -11,3 +11,5 @@ void Free_memory(float **array1, float **array2, float **array3, float **array4,
 void Send_To_Device(float **d_a, float **h_a, int N_CELLS);
 
 void Get_From_Device(float **h_a, float **d_a, int N_CELLS);
+
+void Get_From_Device_for_block(float **h_a, float **d_a, int N_CELLS);

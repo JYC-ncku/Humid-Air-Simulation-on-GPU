@@ -5,6 +5,8 @@ void Allocate_memory(float **array1, float **array2, float **array3, float **arr
                      float **array7, float **array8, float **array9, float **array10, float **array11, float **array12,
                      float **array13, float **array14, float **array15, float **array16, float **array17, float **array18,
                      float **array19, float **array20, int N_CELLS){
+	int TPB = 128;
+	int BPG = (N_CELLS + TPB - 1) / TPB;
 	//HOST
 	*array1 = (float*)malloc(N_CELLS * sizeof(float));
 	*array2 = (float*)malloc(N_CELLS * sizeof(float));
@@ -14,7 +16,7 @@ void Allocate_memory(float **array1, float **array2, float **array3, float **arr
 	*array6 = (float*)malloc(N_CELLS * sizeof(float));
 	*array7 = (float*)malloc(N_CELLS * sizeof(float));
 	*array8 = (float*)malloc(N_CELLS * sizeof(float));
-	*array9 = (float*)malloc(N_CELLS * sizeof(float));
+	*array9 = (float*)malloc(BPG * sizeof(float)); //h_block_max
 	if (*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL ||
 	    *array7 == NULL || *array8 == NULL || *array9 == NULL){
 		printf("Memory allocation failed!\n");
@@ -37,9 +39,9 @@ void Allocate_memory(float **array1, float **array2, float **array3, float **arr
 	printf("CUDA error (malloc array15) = %s\n", cudaGetErrorString(Error));
 	Error = cudaMalloc((void**)array16, (N_CELLS) * sizeof(float));
 	printf("CUDA error (malloc array16) = %s\n", cudaGetErrorString(Error));
-	Error = cudaMalloc((void**)array17, (N_CELLS) * sizeof(float));
+	Error = cudaMalloc((void**)array17, (N_CELLS) * sizeof(float));		//d_block_max
 	printf("CUDA error (malloc array17) = %s\n", cudaGetErrorString(Error));
-	Error = cudaMalloc((void**)array18, (N_CELLS+1) * sizeof(float));	//mass flux
+	Error = cudaMalloc((void**)array18, BPG * sizeof(float));		//mass flux
 	printf("CUDA error (malloc array18) = %s\n", cudaGetErrorString(Error));
 	Error = cudaMalloc((void**)array19, (N_CELLS+1) * sizeof(float));	//momentum flux
 	printf("CUDA error (malloc array19) = %s\n", cudaGetErrorString(Error));
@@ -81,5 +83,12 @@ void Send_To_Device(float **d_a, float **h_a, int N_CELLS){
 
 void Get_From_Device(float **h_a, float **d_a, int N_CELLS){
 	size_t size = N_CELLS * sizeof(float);
+	cudaMemcpy(*h_a, *d_a, size, cudaMemcpyDeviceToHost);
+}
+
+void Get_From_Device_for_block(float **h_a, float **d_a, int N_CELLS){
+	int TPB = 128;
+	int BPG = (N_CELLS + TPB - 1) / TPB;
+	size_t size = BPG * sizeof(float);
 	cudaMemcpy(*h_a, *d_a, size, cudaMemcpyDeviceToHost);
 }
