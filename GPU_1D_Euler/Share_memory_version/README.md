@@ -4,6 +4,6 @@ The final result show that the code has 17 times fast.
 CPU:
 ![Rusanov_CPU.png](./Rusanov_CPU.png)
 GPU:
-![Rusanov_GPU.png](./Rusanov_GPU.png)
+![GPU_Share_Memory.png](./Rusanov_GPU.png)
 
 The speedup is 17.7360
