@@ -40,8 +40,12 @@ Pressure of each cell:
 Speedup time:
 
 CPU:
+
 ![Rusanov_CPU.png](./Rusanov_CPU.png)
+
 GPU:
+
 ![Rusanov_GPU.png](./Rusanov_GPU.png)
+
 
 The speedup is 5.3592.
