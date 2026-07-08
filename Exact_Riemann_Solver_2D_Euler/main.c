@@ -2,44 +2,48 @@
 #include <stdlib.h>
 #include <math.h>
 
-void Allocate_memory(float **array1, float **array2, float **array3, float **array4, float **array5, float **array6, float **array7, int N_CELLS){
+void Allocate_memory(float **array1, float **array2, float **array3, float **array4, float **array5, float **array6, float **array7, float **array8, int N_CELLS){
 	*array1 = (float*)malloc(N_CELLS * sizeof(float));
 	*array2 = (float*)malloc(N_CELLS * sizeof(float));
 	*array3 = (float*)malloc(N_CELLS * sizeof(float));
 	*array4 = (float*)malloc(N_CELLS * sizeof(float));
 	*array5 = (float*)malloc(N_CELLS * sizeof(float));
-	*array6 = (float*)malloc((N_CELLS+1) * 6 * sizeof(float)); // interface_p have 6 output
-	*array7 = (float*)malloc((N_CELLS+1) * 5 * sizeof(float)); // flux have 5 ouuput
-	if(*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL || *array7 == NULL){
+	*array6 = (float*)malloc(N_CELLS * sizeof(float));
+	*array7 = (float*)malloc((N_CELLS+1) * 6 * sizeof(float)); // interface_p have 6 output
+	*array8 = (float*)malloc((N_CELLS+1) * 5 * sizeof(float)); // flux have 5 ouuput
+	if(*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL || *array7 == NULL || *array8 == NULL){
 		printf("Memory allocation failed!\n");
 	}
 		printf("Memory allocation successfully for %d elements!\n", N_CELLS);
 }
 
-void Free_memory(float *array1, float *array2, float *array3, float *array4, float *array5, float *array6, float *array7){
-	free(array1);
-	free(array2);
-	free(array3);
-	free(array4);
-	free(array5);
-	free(array6);
-	free(array7);
+void Free_memory(float **array1, float **array2, float **array3, float **array4, float **array5, float **array6, float **array7, float **array8){
+	free(*array1);
+	free(*array2);
+	free(*array3);
+	free(*array4);
+	free(*array5);
+	free(*array6);
+	free(*array7);
+	free(*array8);
 	printf("Memory freed successfully!\n");
 }
 
 // Return the maximum CFL number across all cells
-float CPU_Compute_MAX_CFL(float *p0, float *p1, float *p2, float dx, float dt, int N_CELLS){
+float CPU_Compute_MAX_CFL(float *p0, float *p1, float *p2, float *p3, float dx, float dt, int N_CELLS){
 	float MAX_CFL = -1.0;
 	for (int cell=0; cell<N_CELLS; cell++){
 		float rho = p0[cell];
 		float u = p1[cell];
-		float T = p2[cell];
+		float v = p2[cell];
+		float T = p3[cell];
 		if (T<0){
 			printf("Error: Negative temperature in cell %d: T = %f\n. Aborting.", cell, T);
 		exit(1);
 		}
 		float a = sqrt(1.4 * 1.0 * T); // GAMMA = 1.4, R = 1.0
-		float CFL = (fabs(u) + a) * (dt / dx);
+		float CFL = (fabs(u) + a) * (dt / dx)
+		float ;
 		if (CFL>MAX_CFL){
 			MAX_CFL = CFL;
 		}
@@ -718,35 +722,42 @@ void CPU_Calc_rho_u_P_T(float *interface_p, float *flux,
 }
 
 int main(){
-	int N_CELLS = 200;
-	float L = 1.0;
-	float dx = L/N_CELLS;
+	int NX = 300;
+	int NY = 100;
+	int N_CELLS = NX * NY;
+	float L = 3.0;
+	float H = 1.0;
+	float dx = L/NX;
+	float dy = H/NY;
 	float dt = 0.0001; //隨便設，如果CFL有error就調整dt值。
 	float t = 0;
 	float t_FINAL = 0.2;
 	float R = 1.0;
 	float GAMMA = 1.4;
 	int wall_flag = 0;
-	float *x, *p0, *p1, *p2, *p3, *interface_p, *flux;
+	float *x, *p0, *p1, *p2, *p3, *p4, *interface_p, *flux; //p0 is density, p1 is x-dir velocity, p2 is y-dir veloctiy, p3 is temperature, p4 si pressure.
 	float flxnmn, flxpmn, flxqmn;
 
-	Allocate_memory(&x, &p0, &p1, &p2, &p3, &interface_p, &flux, N_CELLS);
+	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &interface_p, &flux, N_CELLS);
 	//Initial condition
 	for ( int i = 0; i<N_CELLS; i++){
 		x[i] = (i+0.5) * dx;
 		if (i<N_CELLS/2){
 			p0[i] = 10.0; //rho_L = 10
 			p1[i] = 0; //u_L = 0
-			p2[i] = 1.0; // T_L = 1
+			p2[i] = 0; //v_L = 0
+			p3[i] = 1.0; // T_L = 1
 		}else{
 			p0[i] = 1.0; //rho_R = 1
 			p1[i] = 0; //u_R = 0
-			p2[i] = 1.0; //T_R = 0
+			p2[i] = 0; //v_R = 0
+			p3[i] = 1.0; //T_R = 0
 		}
+		p4[i] = p0[i] * R * p3[i];
 	}
 	// Because this code only consider 1D, so let other two direction equal 0)
-	float QL_vy = 0, QL_vz = 0;
-	float QR_vy = 0, QR_vz = 0;
+	float QL_vy = 1.0, QL_vz = 0;
+	float QR_vy = 1.0, QR_vz = 0;
 	float nx = 1.0, ny = 0.0, nz = 0.0;
 	float px = 0.0, py = 1.0, pz = 0.0;
 	float qx = 0.0, qy = 0.0, qz = 1.0;
@@ -821,6 +832,6 @@ int main(){
 	}
 	fclose(pFile);
 
-	Free_memory(x, p0, p1, p2, p3, interface_p, flux);
+	Free_memory(&x, &p0, &p1, &p2, &p3, &p4, &interface_p, &flux);
 return 0;
 }
