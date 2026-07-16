@@ -1,4 +1,4 @@
-float CPU_Compute_MAX_CFL(float *p0, float *p1, float *p2, float *p3, float dx, float dy, float dt, int N_CELLS);
+float CPU_Compute_MAX_CFL(float *p0, float *p1, float *p2, float *p3, float dx, float dy, float dt, int NX, int NY);
 
 void CPU_Calc_rho_u_P_T(float *interface_p, float *flux,
 			float QL_rho, float QL_ux, float QL_vy, float QL_vz, float QL_cRT,
