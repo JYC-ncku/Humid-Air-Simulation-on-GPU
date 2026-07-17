@@ -3,7 +3,7 @@
 #include <math.h>
 
 // Return the maximum CFL number across all cells
-float CPU_Compute_MAX_CFL(float *p0, float *p1, float *p2, float *p3, float dx, float dy, float dt, int NX, int NY){
+float CPU_Compute_MAX_CFL(float *p0, float *p1, float *p2, float *p3, float dx, float dy, int NX, int NY){
 	float MAX_CFL = -1.0;
 	// Only care inner cells.
 	for (int i = 1; i < NX + 1; i++){
@@ -18,9 +18,9 @@ float CPU_Compute_MAX_CFL(float *p0, float *p1, float *p2, float *p3, float dx, 
 			exit(1);
 			}
 			float a = sqrt(1.4 * 1.0 * T); // GAMMA = 1.4, R = 1.0
-			float CFL_X = (fabs(u) + a) * (dt / dx);
-			float CFL_Y = (fabs(v) + a) * (dt / dy);
-			float CFL = (CFL_X + CFL_Y) * dt;
+			float CFL_X = (fabs(u) + a) / dx;
+			float CFL_Y = (fabs(v) + a) / dy;
+			float CFL = CFL_X + CFL_Y;
 			if (CFL>MAX_CFL){
 				MAX_CFL = CFL;
 			}

@@ -3,6 +3,7 @@
 #include <math.h>
 #include "memory.h"
 #include "Calc_rho_u_P_T.h"
+#include "Boundary.h"
 
 /*
 	  GHOST				  GHOST
@@ -15,14 +16,13 @@
 */
 
 int main(){
-	int NX = 300;
-	int NY = 100;
-	int N_CELLS = (NX+2) * (NY+2); //+2 is for Ghost cells
-	float L = 3.0;
-	float H = 1.0;
+	int NX = 1000;
+	int NY = 5;
+	int N_CELLS = (NX+2) * (NY+2); //+2 for Ghost cells
+	float L = 1.0;
+	float H = 0.005;
 	float dx = L/NX;
 	float dy = H/NY;
-	float dt = 0.001; //隨便設，如果CFL有error就調整dt值。
 	float t = 0;
 	float t_FINAL = 0.2;
 	float R = 1.0;
@@ -30,6 +30,7 @@ int main(){
 	int wall_flag = 0;
 	float *x, *p0, *p1, *p2, *p3, *p4, *interface_p, *flux_X, *flux_Y; //p0 is density, p1 is x-dir velocity, p2 is y-dir veloctiy, p3 is temperature, p4 si pressure.
 	float flxnmn, flxpmn, flxqmn;
+	float CFL = 0.65;
 
 	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &interface_p, &flux_X, &flux_Y, N_CELLS);
 	//Initial condition
@@ -70,45 +71,10 @@ int main(){
 */
 	while (t<t_FINAL){
 		// Boundary condition for compute flux.
-		// LEFT and RIGHT
-		for (int j = 1 ; j <= NY; j++){
-			int LEFT_GHOST = 0 * (NY+2) + j;
-			int RIGHT_GHOST = (NX+1) * (NY+2) + j;
-			int LEFT_INNER = 1 * (NY+2) + j;
-			int RIGHT_INNER = NX * (NY+2) + j;
-			p0[LEFT_GHOST] = p0[LEFT_INNER];
-			p0[RIGHT_GHOST] = p0[RIGHT_INNER];
-			p1[LEFT_GHOST] = p1[LEFT_INNER];
-			p1[RIGHT_GHOST] = p1[RIGHT_INNER];
-			p2[LEFT_GHOST] = p2[LEFT_INNER];
-			p2[RIGHT_GHOST] = p2[RIGHT_INNER];
-			p3[LEFT_GHOST] = p3[LEFT_INNER];
-			p3[RIGHT_GHOST] = p3[RIGHT_INNER];
-			p4[LEFT_GHOST] = p4[LEFT_INNER];
-			p4[RIGHT_GHOST] = p4[RIGHT_INNER];
-		}
-		//BOTTOM and TOP
-		for (int i = 1 ; i <= NX; i++){
-			int BOTTOM_GHOST = i * (NY+2) + 0;
-			int TOP_GHOST = i * (NY+2) + (NY+1);
-			int BOTTOM_INNER = i * (NY+2) + 1;
-			int TOP_INNER = i * (NY+2) + NY;
-			p0[BOTTOM_GHOST] = p0[BOTTOM_INNER];
-			p0[TOP_GHOST] = p0[TOP_INNER];
-			p1[BOTTOM_GHOST] = p1[BOTTOM_INNER];
-			p1[TOP_GHOST] = p1[TOP_INNER];
-			p2[BOTTOM_GHOST] = p2[BOTTOM_INNER];
-			p2[TOP_GHOST] = p2[TOP_INNER];
-			p3[BOTTOM_GHOST] = p3[BOTTOM_INNER];
-			p3[TOP_GHOST] = p3[TOP_INNER];
-			p4[BOTTOM_GHOST] = p4[BOTTOM_INNER];
-			p4[TOP_GHOST] = p4[TOP_INNER];
-			// Reflect boundary
-			p2[BOTTOM_GHOST] = -p2[BOTTOM_INNER];
-			p2[TOP_GHOST] = -p2[TOP_INNER];
-		}
+		Boundary(p0, p1, p2, p3, p4, NX, NY);
 
-	    	float MAX_CFL = CPU_Compute_MAX_CFL(p0, p1, p2, p3, dx, dy, dt, NX, NY);
+	    	float MAX_CFL = CPU_Compute_MAX_CFL(p0, p1, p2, p3, dx, dy, NX, NY);
+		float dt = CFL / MAX_CFL;
 	    	//X-dir (flux_X)
 		for (int i = 0; i < NX + 1; i++){		//N cells have N+1 interface
 			for (int j = 1; j < NY + 1; j++){
@@ -203,11 +169,11 @@ int main(){
 		}
 		t += dt;
 	}
-	FILE * pFile = fopen("Results_of_30000_cells.txt","w");
+	FILE * pFile = fopen("Results_of_5000_cells.txt","w");
 	for (int i = 1; i < NX + 1; i++){
 		for (int j = 1; j < NY + 1; j++){
 			int INDEX = i * (NY + 2) + j;
-			fprintf(pFile, "%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.2f\n", x[INDEX], p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], t);
+			fprintf(pFile, "%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.2f\n", x[INDEX], p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX]);
 		}
 	}
 	fclose(pFile);
