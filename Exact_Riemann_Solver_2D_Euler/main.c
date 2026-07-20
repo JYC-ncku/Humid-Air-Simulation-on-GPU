@@ -28,16 +28,16 @@ int main(){
 	float R = 1.0;
 	float GAMMA = 1.4;
 	int wall_flag = 0;
-	float *x, *p0, *p1, *p2, *p3, *p4, *interface_p, *flux_X, *flux_Y; //p0 is density, p1 is x-dir velocity, p2 is y-dir veloctiy, p3 is temperature, p4 si pressure.
+	float *x, *y, *p0, *p1, *p2, *p3, *p4, *interface_p, *flux_X, *flux_Y; //p0 is density, p1 is x-dir velocity, p2 is y-dir veloctiy, p3 is temperature, p4 si pressure.
 	float flxnmn, flxpmn, flxqmn;
 	float CFL = 0.5;
 
-	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &interface_p, &flux_X, &flux_Y, N_CELLS);
+	Allocate_memory(&x, &y, &p0, &p1, &p2, &p3, &p4, &interface_p, &flux_X, &flux_Y, N_CELLS);
 	//Initial condition
 	for ( int i = 1; i < NX + 1; i++){
 		for (int j = 1; j < NY + 1; j++){
+			//int INDEX = i * (NY + 2) + j;
 			int INDEX = i * (NY + 2) + j;
-			x[INDEX] = (i - 0.5) * dx;
 			if (i <= NX/2){
 				p0[INDEX] = 10.0; //rho_L = 10
 				p1[INDEX] = 0.0; //u_L = 0
@@ -169,15 +169,17 @@ int main(){
 		}
 		t += dt;
 	}
-	FILE * pFile = fopen("Results_of_5000_cells.txt","w");
+	FILE * pFile = fopen("Results_of_5000_cells_x_dir.txt","w");
 	for (int i = 1; i < NX + 1; i++){
 		for (int j = 1; j < NY + 1; j++){
 			int INDEX = i * (NY + 2) + j;
-			fprintf(pFile, "%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.2f\n", x[INDEX], p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX]);
+			float X = (i - 0.5) * dx;
+			float Y = (j - 0.5) * dy;
+			fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.2f\n", X, Y, p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX]);
 		}
 	}
 	fclose(pFile);
 
-	Free_memory(&x, &p0, &p1, &p2, &p3, &p4, &interface_p, &flux_X, &flux_Y);
+	Free_memory(&x, &y, &p0, &p1, &p2, &p3, &p4, &interface_p, &flux_X, &flux_Y);
 return 0;
 }
