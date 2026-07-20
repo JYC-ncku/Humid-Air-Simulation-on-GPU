@@ -30,7 +30,7 @@ int main(){
 	int wall_flag = 0;
 	float *x, *p0, *p1, *p2, *p3, *p4, *interface_p, *flux_X, *flux_Y; //p0 is density, p1 is x-dir velocity, p2 is y-dir veloctiy, p3 is temperature, p4 si pressure.
 	float flxnmn, flxpmn, flxqmn;
-	float CFL = 0.65;
+	float CFL = 0.5;
 
 	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &interface_p, &flux_X, &flux_Y, N_CELLS);
 	//Initial condition
