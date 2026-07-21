@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "memory.h"
+#include "Calc_Flux.h"
 
 int main(){
 	int NX = 1000;
@@ -36,16 +37,41 @@ int main(){
 			p4[INDEX] = p0[INDEX] * R * p3[INDEX];
 		}
 	}
+
+	for (int i = 0; i < NX + 1; i++){
+		for (int j = 1; j < NY + 1; j++){
+			int INDEX = i * (NY+2) + j;
+			int INDEX_R = (i+1) * (NY+2) + j;
+			float rho_L = p0[INDEX];
+			float rho_R = p0[INDEX_R];
+			float u_L = p1[INDEX];
+			float u_R = p1[INDEX_R];
+			float v_L = p2[INDEX];
+			float v_R = p2[INDEX_R];
+			float T_L = p3[INDEX];
+			float T_R = p3[INDEX_R];
+			float P_L = p4[INDEX];
+			float P_R = p4[INDEX_R];
+			float e_L = 0.5 * (u_L * u_L + v_L * v_L) + P_L / (GAMMA - 1);
+			float e_R = 0.5 * (u_R * u_R + v_R * v_R) + P_R / (GAMMA - 1);
+			float a_L = sqrt(GAMMA * R * T_L);
+			float a_R = sqrt(GAMMA * R * T_R);
+			float W_LOCAL_MAX = MAX_WAVE_SPEED(u_L, u_R, a_L, a_R);
+			Calc_flux(rho_L, rho_R, u_L, u_R, v_L, v_R, T_L, T_R, P_L, P_R, e_L, e_R, W_LOCAL_MAX, mass_flux, momentum_X_flux, momentum_Y_flux, energy_flux, INDEX);
+		}
+	}
+
 	FILE *pFile = fopen("Results_of_5000_cells", "w");
 	for (int i = 1; i < NX + 1; i++){
 		for (int j = 1; j < NY; j++){
 			int INDEX = i *(NY+2) + j;
-			float X = (i+0.5) * dx;
-			float Y = (j+0.5) * dy;
+			float X = (i - 0.5) * dx;
+			float Y = (j - 0.5) * dy;
 			fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, Y, p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX]);
 		}
 	}
-	fclose;
+	fclose(pFile);
+
 	Free_memory(&x, &y, &p0, &p1, &p2, &p3, &p4, &mass, &momentum_X, &momentum_Y, &energy, &mass_flux, &momentum_X_flux, &momentum_Y_flux, &energy_flux);
-return 0;
+	return 0;
 }
