@@ -7,15 +7,15 @@
 #include "Calc_variable.h"
 #include "Boundary.h"
 int main(){
-	int NX = 1000;
-	int NY = 5;
-//	int NX = 5;
-//	int NY = 1000;
+//	int NX = 1000;
+//	int NY = 5;
+	int NX = 5;
+	int NY = 1000;
 	int N_CELLS = (NX+2) * (NY+2);
-	float L = 1.0;
-	float H = 0.005;
-//	float L = 0.005;
-//	float H = 1.0;
+//	float L = 1.0;
+//	float H = 0.005;
+	float L = 0.005;
+	float H = 1.0;
 	float dx = L/NX;
 	float dy = H/NY;
 	float *x, *y, *p0, *p1, *p2, *p3, *p4, *mass, *momentum_X, *momentum_Y, *energy,
@@ -34,8 +34,8 @@ int main(){
 	for (int i = 1; i < NX + 1; i++){
 		for (int j = 1; j < NY + 1; j++){
 			int INDEX = i * (NY+2) + j;
-			if (i < NX/2){
-//			if (j < NY/2){
+//			if (i < NX/2){
+			if (j < NY/2){
 				p0[INDEX] = 10.0;
 				p1[INDEX] = 0.0;
 				p2[INDEX] = 0.0;
@@ -123,11 +123,11 @@ int main(){
 		t += dt;
 	}
 
-	FILE *pFile = fopen("Results_of_5000_cells_X_direction", "w");
-	for (int i = 1; i < NX + 1; i++){
-		for (int j = 1; j < NY + 1; j++){
-//	for (int j = 1; j < NY + 1; j++){
-//		for (int i = 1; i < NX + 1; i++){
+	FILE *pFile = fopen("Results_of_5000_cells_Y_direction", "w");
+//	for (int i = 1; i < NX + 1; i++){
+//		for (int j = 1; j < NY + 1; j++){
+	for (int j = 1; j < NY + 1; j++){
+		for (int i = 1; i < NX + 1; i++){
 			int INDEX = i *(NY+2) + j;
 			float X = (i - 0.5) * dx;
 			float Y = (j - 0.5) * dy;
