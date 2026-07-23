@@ -16,8 +16,8 @@
 */
 
 int main(){
-	int NX = 400;
-	int NY = 400;
+	int NX = 1000;
+	int NY = 1000;
 	int N_CELLS = (NX+2) * (NY+2); //+2 for Ghost cells
 	float L = 1.0;
 	float H = 1.0;
@@ -38,25 +38,25 @@ int main(){
 		for (int j = 1; j < NY + 1; j++){
 			//int INDEX = i * (NY + 2) + j;
 			int INDEX = i * (NY + 2) + j;
-			//Quadrant I (area A)
+			//Quadrant I (region A)
 			if (i >= NX/2 && j >= NY/2){
 				p0[INDEX] = 1.0;
 				p1[INDEX] = 0.75;
 				p2[INDEX] = -0.5;
 				p4[INDEX] = 1.0;
-			//Quadrant II (area B)
+			//Quadrant II (region B)
 			} else if (i < NX/2 && j >= NY/2){
 				p0[INDEX] = 2.0;
 				p1[INDEX] = 0.75;
 				p2[INDEX] = 0.5;
 				p4[INDEX] = 1.0;
-			//Quadrant III (area C)
+			//Quadrant III (region C)
 			} else if (i < NX/2 && j < NY/2){
 				p0[INDEX] = 1.0;
-				p1[INDEX] = 0.75;
+				p1[INDEX] = -0.75;
 				p2[INDEX] = 0.5;
 				p4[INDEX] = 1.0;
-			//Quadrant IV (area D)
+			//Quadrant IV (region D)
 			} else if (i >= NX/2 && j < NY/2){
 				p0[INDEX] = 3.0;
 				p1[INDEX] = -0.75;
@@ -177,7 +177,7 @@ int main(){
 		}
 		t += dt;
 	}
-	FILE * pFile = fopen("Results_of_160000_cells_x_dir.txt","w");
+	FILE * pFile = fopen("Results_of_1000000_cells_x_dir.txt","w");
 	for (int i = 1; i < NX + 1; i++){
 		for (int j = 1; j < NY + 1; j++){
 			int INDEX = i * (NY + 2) + j;
