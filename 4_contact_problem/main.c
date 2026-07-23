@@ -16,11 +16,11 @@
 */
 
 int main(){
-	int NX = 1000;
-	int NY = 5;
+	int NX = 400;
+	int NY = 400;
 	int N_CELLS = (NX+2) * (NY+2); //+2 for Ghost cells
 	float L = 1.0;
-	float H = 0.005;
+	float H = 1.0;
 	float dx = L/NX;
 	float dy = H/NY;
 	float t = 0;
@@ -38,18 +38,32 @@ int main(){
 		for (int j = 1; j < NY + 1; j++){
 			//int INDEX = i * (NY + 2) + j;
 			int INDEX = i * (NY + 2) + j;
-			if (i <= NX/2){
-				p0[INDEX] = 10.0; //rho_L = 10
-				p1[INDEX] = 0.0; //u_L = 0
-				p2[INDEX] = 0.0; //v_L = 0
-				p3[INDEX] = 1.0; // T_L = 1
-			}else{
-				p0[INDEX] = 1.0; //rho_R = 1
-				p1[INDEX] = 0.0; //u_R = 0
-				p2[INDEX] = 0.0; //v_R = 0
-				p3[INDEX] = 1.0; //T_R = 0
+			//Quadrant I (area A)
+			if (i >= NX/2 && j >= NY/2){
+				p0[INDEX] = 1.0;
+				p1[INDEX] = 0.75;
+				p2[INDEX] = -0.5;
+				p4[INDEX] = 1.0;
+			//Quadrant II (area B)
+			} else if (i < NX/2 && j >= NY/2){
+				p0[INDEX] = 2.0;
+				p1[INDEX] = 0.75;
+				p2[INDEX] = 0.5;
+				p4[INDEX] = 1.0;
+			//Quadrant III (area C)
+			} else if (i < NX/2 && j < NY/2){
+				p0[INDEX] = 1.0;
+				p1[INDEX] = 0.75;
+				p2[INDEX] = 0.5;
+				p4[INDEX] = 1.0;
+			//Quadrant IV (area D)
+			} else if (i >= NX/2 && j < NY/2){
+				p0[INDEX] = 3.0;
+				p1[INDEX] = -0.75;
+				p2[INDEX] = -0.5;
+				p4[INDEX] = 1.0;
 			}
-			p4[INDEX] = p0[INDEX] * R * p3[INDEX];
+			p3[INDEX] = p4[INDEX] / (R * p0[INDEX]);
 		}
 	}
 /* For x-dir
@@ -141,10 +155,8 @@ int main(){
 				float u_old   = p1[INDEX];
 				float v_old   = p2[INDEX];
 				float T_old   = p3[INDEX];
-				// p1 存的是速度 u，我們要先算動量 rho*u 的變化再去除以rho得到u。
 				float MomX_old = rho_old * u_old; // p0[INDEX] * p1[INDEX]
 				float MomY_old = rho_old * v_old; // p0[INDEX] * p1[INDEX]
-				// 先從溫度算總能 E，更新完 E 再扣掉動能回算 T
 				float E_old = rho_old * (CV * T_old + 0.5 * (u_old * u_old + v_old * v_old)); //p0[INDEX] * (CV * p2[INDEX] + 0.5 * (p1[INDEX] * p1[INDEX] + p2[INDEX] * p2[INDEX]))
 				// 使用FVM計算新的值，interface_p[0]是密度、[1]是u、[2]是v、[3]是w、[4]是溫度。
 				float rho_new = rho_old + (dt / dx) * (flux_X[L_interface + 0] - flux_X[R_interface + 0])
@@ -155,21 +167,17 @@ int main(){
 							 + (dt / dy) * (flux_Y[B_interface + 2] - flux_Y[T_interface + 2]);
 				float E_new = E_old + (dt / dx) * (flux_X[L_interface + 4] - flux_X[R_interface + 4])
 						    + (dt / dy) * (flux_Y[B_interface + 4] - flux_Y[T_interface + 4]);
-				//更新密度 (p0)
 		    		p0[INDEX] = rho_new;
-    				// 更新動量並回推速度 (p1, p2)
     				p1[INDEX] = MomX_new / rho_new;
     				p2[INDEX] = MomY_new / rho_new;
-		    		// 更新能量並回推溫度 (p3)
 				float internal_e = (E_new / rho_new) - 0.5 * (p1[INDEX] * p1[INDEX] + p2[INDEX] * p2[INDEX]);
 				p3[INDEX] = internal_e / CV;
-				// 更新壓力 (p4)
 				p4[INDEX] = p0[INDEX] * R * p3[INDEX];
 			}
 		}
 		t += dt;
 	}
-	FILE * pFile = fopen("Results_of_5000_cells_x_dir.txt","w");
+	FILE * pFile = fopen("Results_of_160000_cells_x_dir.txt","w");
 	for (int i = 1; i < NX + 1; i++){
 		for (int j = 1; j < NY + 1; j++){
 			int INDEX = i * (NY + 2) + j;

@@ -34,7 +34,7 @@ void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, int NX, int
 		p4[BOTTOM_GHOST] = p4[BOTTOM_INNER];
 		p4[TOP_GHOST] = p4[TOP_INNER];
 		// Reflect boundary
-		p2[BOTTOM_GHOST] = -p2[BOTTOM_INNER];
-		p2[TOP_GHOST] = -p2[TOP_INNER];
+//		p2[BOTTOM_GHOST] = -p2[BOTTOM_INNER];
+//		p2[TOP_GHOST] = -p2[TOP_INNER];
 	}
 }
