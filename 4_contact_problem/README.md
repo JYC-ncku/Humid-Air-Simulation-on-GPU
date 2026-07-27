@@ -52,10 +52,10 @@ Density vs location:
 ![Result_of_Density.png](./Result_of_Density.png)
 
 X-direction Velocity vs location:
-![Result_of_X-Dir_Velocity.png](./Result_of_X-Dir_Velocity.png)
+![Result_of_X-Dir_Velocity.png](./Result_of_X_Dir_Velocity.png)
 
 Y-direction Velocity vs location:
-![Result_of_Y-Dir_Velocity.png](./Result_of_Y-Dir_Velocity.png)
+![Result_of_Y-Dir_Velocity.png](./Result_of_Y_Dir_Velocity.png)
 
 Temperature vs location:
 ![Result_of_Temperature.png](./Result_of_Temperature.png)
