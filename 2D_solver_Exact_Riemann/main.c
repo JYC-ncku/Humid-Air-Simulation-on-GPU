@@ -15,6 +15,20 @@
 		0	1      ...	N
 */
 
+float MINMOD(float QL_rho, float QC_rho, float QR_rho, float dx){
+	float dU_dx;
+	float Forward = (QR_rho - QC_rho) / dx;
+	float Backward = (QC_rho - QL_rho) / dx;
+	if (Backward * Forward < 0){
+		dU_dx = 0;
+	} else if ( fabs(Forward) < fabs(Backward) ){
+			dU_dx = Forward;
+		} else {
+			dU_dx = Backward;
+	}
+	return dU_dx;
+}
+
 int main(){
 	int NX = 1000;
 	int NY = 5;
@@ -80,8 +94,14 @@ int main(){
 			for (int j = 1; j < NY + 1; j++){
 				int INDEX = i * (NY + 2) + j;
 				int INDEX_R = (i + 1) * (NY + 2) + j;
-				float QL_rho = p0[INDEX];
+				int INDEX_L = (i - 1) * (NY + 2) + j;
+				float QL_rho = p0[INDEX_L];
+				float QC_rho = p0[INDEX];
 		    		float QR_rho = p0[INDEX_R];
+		    		float dU_dx_L = MINMOD(QL_rho, QC_rho, QR_rho, dx);
+		    		float dU_dx_R = MINMOD(QL_rho, QC_rho, QR_rho, dx);
+		    		float QL_rho_star = QL_rho + 0.5 * dx * dU_dx_L;
+		    		float QR_rho_star = QR_rho - 0.5 * dx * dU_dx_R;
     				float QL_ux = p1[INDEX];
     				float QR_ux = p1[INDEX_R];
     				float QL_vy = p2[INDEX];
@@ -127,7 +147,7 @@ int main(){
 			}
 		}
 
-		for (int i = 1; i < NX + 1; i++){		//200 cells, the ghost cells on the left and right are not include in calculation.
+		for (int i = 1; i < NX + 1; i++){		//The ghost cells on the left and right are not include in calculation.
 			for (int j = 1; j < NY + 1; j++){
 				int INDEX = i * (NY + 2) + j;
 	    			// 我們是 i*5，所以左界面是 (i-1)*5，右界面是 i*5
@@ -150,9 +170,9 @@ int main(){
 				float rho_new = rho_old + (dt / dx) * (flux_X[L_interface + 0] - flux_X[R_interface + 0])
 							+ (dt / dy) * (flux_Y[B_interface + 0] - flux_Y[T_interface + 0]);
 				float MomX_new = MomX_old + (dt / dx) * (flux_X[L_interface + 1] - flux_X[R_interface + 1])
-							 + (dt / dy) * (flux_Y[B_interface + 1] - flux_Y[T_interface + 1]);
+							  + (dt / dy) * (flux_Y[B_interface + 1] - flux_Y[T_interface + 1]);
 				float MomY_new = MomY_old + (dt / dx) * (flux_X[L_interface + 2] - flux_X[R_interface + 2])
-							 + (dt / dy) * (flux_Y[B_interface + 2] - flux_Y[T_interface + 2]);
+							  + (dt / dy) * (flux_Y[B_interface + 2] - flux_Y[T_interface + 2]);
 				float E_new = E_old + (dt / dx) * (flux_X[L_interface + 4] - flux_X[R_interface + 4])
 						    + (dt / dy) * (flux_Y[B_interface + 4] - flux_Y[T_interface + 4]);
 				//更新密度 (p0)
