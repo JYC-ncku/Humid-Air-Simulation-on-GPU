@@ -94,27 +94,59 @@ int main(){
 			for (int j = 1; j < NY + 1; j++){
 				int INDEX = i * (NY + 2) + j;
 				int INDEX_R = (i + 1) * (NY + 2) + j;
+				int INDEX_RR = (i + 2) * (NY + 2) + j;
 				int INDEX_L = (i - 1) * (NY + 2) + j;
 				float QL_rho = p0[INDEX_L];
 				float QC_rho = p0[INDEX];
 		    		float QR_rho = p0[INDEX_R];
-		    		float dU_dx_L = MINMOD(QL_rho, QC_rho, QR_rho, dx);
-		    		float dU_dx_R = MINMOD(QL_rho, QC_rho, QR_rho, dx);
-		    		float QL_rho_star = QL_rho + 0.5 * dx * dU_dx_L;
-		    		float QR_rho_star = QR_rho - 0.5 * dx * dU_dx_R;
-    				float QL_ux = p1[INDEX];
+		    		float QRR_rho = p0[INDEX_RR];
+		    		float drho_dx_L = MINMOD(QL_rho, QC_rho, QR_rho, dx);
+		    		float drho_dx_R = MINMOD(QC_rho, QR_rho, QRR_rho, dx);
+		    		float QL_rho_star = QL_rho + 0.5 * dx * drho_dx_L;
+		    		float QR_rho_star = QR_rho - 0.5 * dx * drho_dx_R;
+
+    				float QL_ux = p1[INDEX_L];
+    				float QC_ux = p1[INDEX];
     				float QR_ux = p1[INDEX_R];
-    				float QL_vy = p2[INDEX];
+    				float QRR_ux = p1[INDEX_RR];
+		    		float du_dx_L = MINMOD(QL_ux, QC_ux, QR_ux, dx);
+		    		float du_dx_R = MINMOD(QC_ux, QR_ux, QRR_ux, dx);
+		    		float QL_ux_star = QL_rho + 0.5 * dx * du_dx_L;
+		    		float QR_ux_star = QR_rho - 0.5 * dx * du_dx_R;
+
+    				float QL_vy = p2[INDEX_L];
+    				float QC_vy = p2[INDEX];
     				float QR_vy = p2[INDEX_R];
+    				float QRR_vy = p2[INDEX_RR];
+		    		float dv_dx_L = MINMOD(QL_vy, QC_vy, QR_vy, dx);
+		    		float dv_dx_R = MINMOD(QC_vy, QR_vy, QRR_vy, dx);
+		    		float QL_vy_star = QL_rho + 0.5 * dx * dv_dx_L;
+		    		float QR_vy_star = QR_rho - 0.5 * dx * dv_dx_R;
+
     				float QL_vz  = 0.0;
     				float QR_vz  = 0.0;
-		    		float QL_T = p3[INDEX];
+
+		    		float QL_T = p3[INDEX_L];
+		    		float QC_T = p3[INDEX];
     				float QR_T = p3[INDEX_R];
+    				float QRR_T = p3[INDEX_RR];
+		    		float dT_dx_L = MINMOD(QL_T, QC_T, QR_T, dx);
+		    		float dT_dx_R = MINMOD(QC_T, QR_T, QRR_T, dx);
+		    		float QL_T_star = QL_rho + 0.5 * dx * dT_dx_L;
+		    		float QR_T_star = QR_rho - 0.5 * dx * dT_dx_R;
+
 				float QL_cRT = sqrt(R * QL_T);
+				float QC_cRT = sqrt(R * QC_T);
     				float QR_cRT = sqrt(R * QR_T);
+    				float QRR_cRT = sqrt(R * QRR_T);
+		    		float dcRT_dx_L = MINMOD(QL_cRT, QC_cRT, QR_cRT, dx);
+		    		float dcRT_dx_R = MINMOD(QC_cRT, QR_cRT, QRR_cRT, dx);
+		    		float QL_cRT_star = QL_rho + 0.5 * dx * dcRT_dx_L;
+		    		float QR_cRT_star = QR_rho - 0.5 * dx * dcRT_dx_R;
+
 				CPU_Calc_rho_u_P_T(&interface_p[INDEX*6], &flux_X[INDEX*5], //因為flux跟interface_p都有5個物理量需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
-						   QL_rho, QL_ux, QL_vy, QL_vz, QL_cRT,
-						   QR_rho, QR_ux, QR_vy, QR_vz, QR_cRT, R, GAMMA,
+						   QL_rho_star, QL_ux_star, QL_vy_star, QL_vz, QL_cRT_star,
+						   QR_rho_star, QR_ux_star, QR_vy_star, QR_vz, QR_cRT_star, R, GAMMA,
 						   1.0, 0.0, 0.0,
 						   0.0, 1.0, 0.0,
 						   0.0, 0.0, 1.0, wall_flag);
@@ -124,23 +156,62 @@ int main(){
 		//Y-dir (flux_Y) 把X軸往逆時針轉90度看。
 		for (int i = 1; i < NX + 1; i++){		//200 cells have 201 interface
 			for (int j = 0; j < NY + 1; j++){
+				int INDEX_B = i * (NY + 2) + (j - 1);
 				int INDEX = i * (NY + 2) + j;
 				int INDEX_T = i * (NY + 2) + (j + 1);
-				float QL_rho = p0[INDEX];
+				int INDEX_TT = i * (NY + 2) + (j + 2);
+
+				float QL_rho = p0[INDEX_B];
+				float QC_rho = p0[INDEX];
 		    		float QR_rho = p0[INDEX_T];
-    				float QL_ux  = p1[INDEX];
+		    		float QRR_rho = p0[INDEX_TT];
+		    		float drho_dy_L = MINMOD(QL_rho, QC_rho, QR_rho, dy);
+		    		float drho_dy_R = MINMOD(QC_rho, QR_rho, QRR_rho, dy);
+		    		float QL_rho_star = QL_rho + 0.5 * dy * drho_dy_L;
+		    		float QR_rho_star = QR_rho - 0.5 * dy * drho_dy_R;
+
+    				float QL_ux  = p1[INDEX_B];
+    				float QC_ux  = p1[INDEX];
     				float QR_ux  = p1[INDEX_T];
-    				float QL_vy = p2[INDEX];
+    				float QRR_ux  = p1[INDEX_TT];
+		    		float du_dy_L = MINMOD(QL_ux, QC_ux, QR_ux, dy);
+		    		float du_dy_R = MINMOD(QC_ux, QR_ux, QRR_ux, dy);
+		    		float QL_ux_star = QL_rho + 0.5 * dy * du_dy_L;
+		    		float QR_ux_star = QR_rho - 0.5 * dy * du_dy_R;
+
+    				float QL_vy = p2[INDEX_B];
+    				float QC_vy = p2[INDEX];
     				float QR_vy = p2[INDEX_T];
+    				float QRR_vy = p2[INDEX_TT];
+		    		float dv_dy_L = MINMOD(QL_vy, QC_vy, QR_vy, dy);
+		    		float dv_dy_R = MINMOD(QC_vy, QR_vy, QRR_vy, dy);
+		    		float QL_vy_star = QL_rho + 0.5 * dy * dv_dy_L;
+		    		float QR_vy_star = QR_rho - 0.5 * dy * dv_dy_R;
+
     				float QL_vz  = 0.0;
     				float QR_vz  = 0.0;
-		    		float QL_T   = p3[INDEX];
-    				float QR_T   = p3[INDEX_T];
+
+		    		float QL_T = p3[INDEX_B];
+		    		float QC_T = p3[INDEX];
+    				float QR_T = p3[INDEX_T];
+    				float QRR_T = p3[INDEX_TT];
+		    		float dT_dy_L = MINMOD(QL_T, QC_T, QR_T, dy);
+		    		float dT_dy_R = MINMOD(QC_T, QR_T, QRR_T, dy);
+		    		float QL_T_star = QL_rho + 0.5 * dy * dT_dy_L;
+		    		float QR_T_star = QR_rho - 0.5 * dy * dT_dy_R;
+
 				float QL_cRT = sqrt(R * QL_T);
+				float QC_cRT = sqrt(R * QC_T);
     				float QR_cRT = sqrt(R * QR_T);
+    				float QRR_cRT = sqrt(R * QRR_T);
+		    		float dcRT_dy_L = MINMOD(QL_cRT, QC_cRT, QR_cRT, dy);
+		    		float dcRT_dy_R = MINMOD(QC_cRT, QR_cRT, QRR_cRT, dy);
+		    		float QL_cRT_star = QL_rho + 0.5 * dy * dcRT_dy_L;
+		    		float QR_cRT_star = QR_rho - 0.5 * dy * dcRT_dy_R;
+
 				CPU_Calc_rho_u_P_T(&interface_p[INDEX*6], &flux_Y[INDEX*5], //因為flux跟interface_p都有5個物理量需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
-						   QL_rho, QL_ux, QL_vy, QL_vz, QL_cRT,
-						   QR_rho, QR_ux, QR_vy, QR_vz, QR_cRT, R, GAMMA,
+						   QL_rho_star, QL_ux_star, QL_vy_star, QL_vz, QL_cRT_star,
+						   QR_rho_star, QR_ux_star, QR_vy_star, QR_vz, QR_cRT_star, R, GAMMA,
 						   0.0, 1.0, 0.0,
 						   -1.0, 0.0, 0.0,
 						   0.0, 0.0, 1.0, wall_flag);
