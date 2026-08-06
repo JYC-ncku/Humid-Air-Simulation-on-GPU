@@ -264,8 +264,8 @@ int main(){
 	for (int i = 2; i < NX + 2; i++){
 		for (int j = 2; j < NY + 2; j++){
 			int INDEX = i * (NY + 4) + j;
-			float X = (i - 0.5) * dx;
-			float Y = (j - 0.5) * dy;
+			float X = (i - 1.5) * dx;
+			float Y = (j - 1.5) * dy;
 			fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.2f\n", X, Y, p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX]);
 		}
 	}
@@ -274,3 +274,4 @@ int main(){
 	Free_memory(&x, &y, &p0, &p1, &p2, &p3, &p4, &interface_p, &flux_X, &flux_Y);
 return 0;
 }
+
