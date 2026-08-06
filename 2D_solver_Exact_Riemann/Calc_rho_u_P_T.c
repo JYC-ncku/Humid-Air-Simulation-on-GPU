@@ -6,9 +6,9 @@
 float CPU_Compute_MAX_CFL(float *p0, float *p1, float *p2, float *p3, float dx, float dy, int NX, int NY){
 	float MAX_CFL = -1.0;
 	// Only care inner cells.
-	for (int i = 1; i < NX + 1; i++){
-		for (int j = 1; j < NY + 1; j++){
-			int cell = i * (NY + 2) + j;
+	for (int i = 2; i < NX + 2; i++){
+		for (int j = 2; j < NY + 2; j++){
+			int cell = i * (NY + 4) + j;
 			float rho = p0[cell];
 			float u = p1[cell];
 			float v = p2[cell];
