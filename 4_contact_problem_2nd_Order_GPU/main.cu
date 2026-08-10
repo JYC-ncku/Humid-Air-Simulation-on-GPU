@@ -4,6 +4,7 @@
 #include "memory.h"
 #include "Calc_rho_u_P_T.h"
 #include "Boundary.h"
+#include "Initial.h"
 
 /*
 	  GHOST				  GHOST
@@ -42,44 +43,26 @@ int main(){
 	float R = 1.0;
 	float GAMMA = 1.4;
 	int wall_flag = 0;
-	float *x, *y, *p0, *p1, *p2, *p3, *p4, *interface_p, *flux_X, *flux_Y; //p0 is density, p1 is x-dir velocity, p2 is y-dir veloctiy, p3 is temperature, p4 si pressure.
+	float *x, *y,
+	      *h_p0, *h_p1, *h_p2, *h_p3, *h_p4,
+	      *d_p0, *d_p1, *d_p2, *d_p3, *d_p4,
+	      *interface_p, *flux_X, *flux_Y; //p0 is density, p1 is x-dir velocity, p2 is y-dir veloctiy, p3 is temperature, p4 si pressure.
 	float flxnmn, flxpmn, flxqmn;
 	float CFL = 0.5;
 
-	Allocate_memory(&x, &y, &p0, &p1, &p2, &p3, &p4, &interface_p, &flux_X, &flux_Y, N_CELLS);
+	Allocate_memory(&x, &y,
+			&h_p0, &h_p1, &h_p2, &h_p3, &h_p4,
+			&d_p0, &d_p1, &d_p2, &d_p3, &d_p4,
+			&interface_p, &flux_X, &flux_Y, N_CELLS);
+	//Send the data to device
+	Send_To_Device(d_p0, h_p0, N_CELLS);
+	Send_To_Device(d_p1, h_p1, N_CELLS);
+	Send_To_Device(d_p2, h_p2, N_CELLS);
+	Send_To_Device(d_p3, h_p3, N_CELLS);
+	Send_To_Device(d_p4, h_p4, N_CELLS);
 	//Initial condition
-	for ( int i = 2; i < NX + 2; i++){
-		for (int j = 2; j < NY + 2; j++){
-			//int INDEX = i * (NY + 2) + j;
-			int INDEX = i * (NY + 4) + j;
-			//Quadrant I (region A)
-			if (i >= ((NX/2) + 1) && j >= ((NY/2) + 1)){
-				p0[INDEX] = 1.0;
-				p1[INDEX] = 0.75;
-				p2[INDEX] = -0.5;
-				p4[INDEX] = 1.0;
-			//Quadrant II (region B)
-			} else if (i < ((NX/2) + 1) && j >= ((NY/2) + 1)){
-				p0[INDEX] = 2.0;
-				p1[INDEX] = 0.75;
-				p2[INDEX] = 0.5;
-				p4[INDEX] = 1.0;
-			//Quadrant III (region C)
-			} else if (i < ((NX/2) + 1) && j < ((NY/2) + 1)){
-				p0[INDEX] = 1.0;
-				p1[INDEX] = -0.75;
-				p2[INDEX] = 0.5;
-				p4[INDEX] = 1.0;
-			//Quadrant IV (region D)
-			} else if (i >= ((NX/2) + 1) && j < ((NY/2) + 1)){
-				p0[INDEX] = 3.0;
-				p1[INDEX] = -0.75;
-				p2[INDEX] = -0.5;
-				p4[INDEX] = 1.0;
-			}
-			p3[INDEX] = p4[INDEX] / (R * p0[INDEX]);
-		}
-	}
+	Initial(d_p0, d_p1, d_p2, d_p3, d_p4, R, NX, NY, N_CELLS);
+
 /* For x-dir
 	// Because this code only consider 1D, so let other two direction equal 0)
 	float QL_vy = 1.0, QL_vz = 0;
