@@ -33,7 +33,7 @@ __global__ void GPU_Initial(float *d_p0, float *d_p1, float *d_p2, float *d_p3, 
 		p3[INDEX] = p4[INDEX] / (R * p0[INDEX]);
 }
 
-void Initial(float *d_p0, float d_p1, float d_p2, float d_p3, float d_p4, float R, int NX, int NY, int N_CELLS){
+void Initial(float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float R, int NX, int NY, int N_CELLS){
 	int TPB = 128;
 	int GPB = (N_CELLS + TPB - 1) / TPB;
 	GPU_Initial<<<GPB,TPB>>>(d_p0, d_p1, d_p2, d_p3, d_p4, R, NX, NY, N_CELLS);

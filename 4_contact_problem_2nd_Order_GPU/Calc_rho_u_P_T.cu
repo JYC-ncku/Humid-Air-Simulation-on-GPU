@@ -3,13 +3,13 @@
 #include <math.h>
 
 // Return the maximum CFL number across all cells
-float CPU_Compute_MAX_CFL(float *p0, float *p1, float *p2, float *p3, float dx, float dy, int NX, int NY){
+float CPU_Compute_MAX_CFL(float *d_p0, float *d_p1, float *d_p2, float *d_p3, float dx, float dy, int NX, int NY){
 	float MAX_CFL = -1.0;
 	// Only care inner cells.
 	for (int i = 2; i < NX + 2; i++){
 		for (int j = 2; j < NY + 2; j++){
 			int cell = i * (NY + 4) + j;
-			float rho = p0[cell];
+			float rho = d_p0[cell];
 			float u = p1[cell];
 			float v = p2[cell];
 			float T = p3[cell];
@@ -35,7 +35,21 @@ float CPU_Compute_MAX_CFL(float *p0, float *p1, float *p2, float *p3, float dx, 
 	}
 }
 
-void CPU_Calc_rho_u_P_T(float *interface_p, float *flux,
+__device__ float MINMOD(float QL_rho, float QC_rho, float QR_rho, float dx){
+	float dU_dx;
+	float Forward = (QR_rho - QC_rho) / dx;
+	float Backward = (QC_rho - QL_rho) / dx;
+	if (Backward * Forward < 0){
+		dU_dx = 0;
+	} else if ( fabs(Forward) < fabs(Backward) ){
+			dU_dx = Forward;
+		} else {
+			dU_dx = Backward;
+	}
+	return dU_dx;
+}
+
+__device__ void Calc_rho_u_P_T(float *interface_p, float *flux,
 			float QL_rho, float QL_ux, float QL_vy, float QL_vz, float QL_cRT,
 			float QR_rho, float QR_ux, float QR_vy, float QR_vz, float QR_cRT, float R, float GAMMA,
 			float nx, float ny, float nz,
@@ -697,4 +711,78 @@ void CPU_Calc_rho_u_P_T(float *interface_p, float *flux,
 	interface_p[3] = QI_w;
 	interface_p[4] = QI_T;
 	interface_p[5] = QI_p;
+}
+
+__global__ void GPU_Calc_flux_X(float *interface_p, float *flux_X, float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float R, float GAMMA, float dx, int NX, int NY, int N_CELLS){
+	int INDEX = blockIdx.x * blockDim.x + threadIdx.x;
+	int i = (int)INDEX / (NY+4);
+	int j = (int)INDEX - i * (NY+4);
+	int INDEX_R = (i + 1) * (NY + 4) + j;
+	int INDEX_RR = (i + 2) * (NY + 4) + j;
+	int INDEX_L = (i - 1) * (NY + 4) + j;
+	//X-dir (flux_X)
+	if (i >= 1 && i < NX + 2){		//N cells have N+1 interface
+		if (j >= 2 && j < NY + 2){	//j = 2 ~ 101(NY+1) is real cells
+			float QL_rho = d_p0[INDEX_L];
+			float QC_rho = d_p0[INDEX];
+	    		float QR_rho = d_p0[INDEX_R];
+	    		float QRR_rho = d_p0[INDEX_RR];
+	    		float drho_dx_L = MINMOD(QL_rho, QC_rho, QR_rho, dx);
+	    		float drho_dx_R = MINMOD(QC_rho, QR_rho, QRR_rho, dx);
+	    		float QL_rho_star = QC_rho + 0.5 * dx * drho_dx_L;
+	    		float QR_rho_star = QR_rho - 0.5 * dx * drho_dx_R;
+
+			float QL_ux = d_p1[INDEX_L];
+			float QC_ux = d_p1[INDEX];
+			float QR_ux = d_p1[INDEX_R];
+			float QRR_ux = d_p1[INDEX_RR];
+	    		float du_dx_L = MINMOD(QL_ux, QC_ux, QR_ux, dx);
+	    		float du_dx_R = MINMOD(QC_ux, QR_ux, QRR_ux, dx);
+			float QL_ux_star = QC_ux + 0.5 * dx * du_dx_L;
+	    		float QR_ux_star = QR_ux - 0.5 * dx * du_dx_R;
+
+			float QL_vy = d_p2[INDEX_L];
+			float QC_vy = d_p2[INDEX];
+			float QR_vy = d_p2[INDEX_R];
+			float QRR_vy = d_p2[INDEX_RR];
+	  		float dv_dx_L = MINMOD(QL_vy, QC_vy, QR_vy, dx);
+	    		float dv_dx_R = MINMOD(QC_vy, QR_vy, QRR_vy, dx);
+	    		float QL_vy_star = QC_vy + 0.5 * dx * dv_dx_L;
+	    		float QR_vy_star = QR_vy - 0.5 * dx * dv_dx_R;
+
+			float QL_vz  = 0.0;
+    			float QR_vz  = 0.0;
+
+	    		float QL_T = d_p3[INDEX_L];
+	    		float QC_T = d_p3[INDEX];
+    			float QR_T = d_p3[INDEX_R];
+    			float QRR_T = d_p3[INDEX_RR];
+	    		float dT_dx_L = MINMOD(QL_T, QC_T, QR_T, dx);
+	    		float dT_dx_R = MINMOD(QC_T, QR_T, QRR_T, dx);
+	    		float QL_T_star = QC_T + 0.5 * dx * dT_dx_L;
+	    		float QR_T_star = QR_T - 0.5 * dx * dT_dx_R;
+
+			float QL_cRT = sqrt(R * QL_T);
+			float QC_cRT = sqrt(R * QC_T);
+    			float QR_cRT = sqrt(R * QR_T);
+    			float QRR_cRT = sqrt(R * QRR_T);
+	    		float dcRT_dx_L = MINMOD(QL_cRT, QC_cRT, QR_cRT, dx);
+	    		float dcRT_dx_R = MINMOD(QC_cRT, QR_cRT, QRR_cRT, dx);
+	    		float QL_cRT_star = QC_cRT + 0.5 * dx * dcRT_dx_L;
+	    		float QR_cRT_star = QR_cRT - 0.5 * dx * dcRT_dx_R;
+
+			Calc_rho_u_P_T(&interface_p[INDEX*6], &flux_X[INDEX*5], //因為flux跟interface_p都有5個物理量需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
+					   QL_rho_star, QL_ux_star, QL_vy_star, QL_vz, QL_cRT_star,
+					   QR_rho_star, QR_ux_star, QR_vy_star, QR_vz, QR_cRT_star, R, GAMMA,
+					   1.0, 0.0, 0.0,
+					   0.0, 1.0, 0.0,
+					   0.0, 0.0, 1.0, 0.0);
+		}
+	}
+}
+
+void Calc_flux_X(float *interface_p, float *flux_X, float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float R, float GAMMA, float dx, int NX, int NY, int N_CELLS){
+	int TPB = 128;
+	int GPB = (N_CELLS + TPB - 1) / TPB;
+	GPU_Calc_flux_X<<<GPB, TPB>>>(interface_p, flux_X, d_p0, d_p1, d_p2, d_p3, d_p4, R, GAMMA, dx, NX, NY, N_CELLS);
 }
