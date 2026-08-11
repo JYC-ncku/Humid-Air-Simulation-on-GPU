@@ -60,8 +60,9 @@ int main(){
 
 		Calc_flux_X(d_interface_p, d_flux_X, d_p0, d_p1, d_p2, d_p3, d_p4, R, GAMMA, dx, NX, NY, N_CELLS);
 		Calc_flux_Y(d_interface_p, d_flux_Y, d_p0, d_p1, d_p2, d_p3, d_p4, R, GAMMA, dy, NX, NY, N_CELLS);
+		cudaDeviceSynchronize();
 		Calc_new_properties(d_flux_X, d_flux_Y, d_p0, d_p1, d_p2, d_p3, d_p4, R, GAMMA, dt, dx, dy, NX, NY, N_CELLS);
-
+		cudaDeviceSynchronize();
 		t += dt;
 	}
 	//Get the data from device

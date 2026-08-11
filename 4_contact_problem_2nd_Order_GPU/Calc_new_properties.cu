@@ -39,6 +39,7 @@ __global__ void GPU_Calc_new_properties(float *d_flux_X, float *d_flux_Y, float 
    				d_p2[INDEX] = MomY_new / rho_new;
 	    			// 更新能量並回推溫度 (p3)
 				float internal_e = (E_new / rho_new) - 0.5 * (d_p1[INDEX] * d_p1[INDEX] + d_p2[INDEX] * d_p2[INDEX]);
+				internal_e = fmaxf(internal_e, 1e-7f);
 				d_p3[INDEX] = internal_e / CV;
 				// 更新壓力 (p4)
 				d_p4[INDEX] = d_p0[INDEX] * R * d_p3[INDEX];
