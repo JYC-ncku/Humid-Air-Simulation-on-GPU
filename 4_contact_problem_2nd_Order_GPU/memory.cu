@@ -11,16 +11,16 @@ void Allocate_memory(float **array1, float **array2, float **array3, float **arr
 	*array5 = (float*)malloc(size);
 	*array6 = (float*)malloc(size);
 	*array7 = (float*)malloc(size);
-	*array8 = (float*)malloc(size);
 //	*array8 = (float*)malloc((N_CELLS) * 6 * sizeof(float)); // interface_p have 6 output
 //	*array9 = (float*)malloc((N_CELLS) * 5 * sizeof(float)); // flux_X have 5 ouuput
 //	*array10 = (float*)malloc((N_CELLS) * 5 * sizeof(float)); // flux_Y have 5 ouuput
-	if(*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL || *array7 == NULL || *array8 == NULL){
+	if(*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL || *array7 == NULL){
 		printf("Memory allocation failed!\n");
 		exit(1);
 	}
 	printf("Memory allocation successfully for %d elements!\n", N_CELLS);
 	//Device
+	cudaMalloc((void**)array8, size);
 	cudaMalloc((void**)array9, size);
 	cudaMalloc((void**)array10, size);
 	cudaMalloc((void**)array11, size);

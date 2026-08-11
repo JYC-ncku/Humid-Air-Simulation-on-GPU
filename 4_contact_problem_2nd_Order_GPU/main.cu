@@ -31,16 +31,16 @@ int main(){
 	float GAMMA = 1.4;
 //	int wall_flag = 0;
 //	float MAX_CFL = 1e-10;
-	float *x, *y, *CFL,
+	float *x, *y,
 	      *h_p0, *h_p1, *h_p2, *h_p3, *h_p4,
-	      *d_p0, *d_p1, *d_p2, *d_p3, *d_p4,
+	      *d_p0, *d_p1, *d_p2, *d_p3, *d_p4, *CFL,
 	      *d_interface_p, *d_flux_X, *d_flux_Y; //p0 is density, p1 is x-dir velocity, p2 is y-dir veloctiy, p3 is temperature, p4 si pressure.
 //	float flxnmn, flxpmn, flxqmn;
 //	float CFL_t = 0.5;
 
-	Allocate_memory(&x, &y, &CFL,
+	Allocate_memory(&x, &y,
 			&h_p0, &h_p1, &h_p2, &h_p3, &h_p4,
-			&d_p0, &d_p1, &d_p2, &d_p3, &d_p4,
+			&d_p0, &d_p1, &d_p2, &d_p3, &d_p4, &CFL,
 			&d_interface_p, &d_flux_X, &d_flux_Y, N_CELLS);
 	//Send the data to device
 	Send_To_Device(&d_p0, &h_p0, N_CELLS);
@@ -82,7 +82,7 @@ int main(){
 	}
 	fclose(pFile);
 
-	Free_memory(&x, &y, &CFL, &h_p0, &h_p1, &h_p2, &h_p3, &h_p4, &d_p0, &d_p1, &d_p2, &d_p3, &d_p4, &d_interface_p, &d_flux_X, &d_flux_Y);
+	Free_memory(&x, &y, &h_p0, &h_p1, &h_p2, &h_p3, &h_p4, &d_p0, &d_p1, &d_p2, &d_p3, &d_p4, &CFL, &d_interface_p, &d_flux_X, &d_flux_Y);
 return 0;
 }
 

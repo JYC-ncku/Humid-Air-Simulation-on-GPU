@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
-__global__ void GPU_Calc_new_properties(float *d_flux_X, float *d_flux_Y, float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float R, float GAMMA, float dt, float dx, float dy, int NX, int NY, int N_CELLS){
+__global__ void GPU_Calc_new_properties(float *d_flux_X, float *d_flux_Y, float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float R, float GAMMA,
+					float dt, float dx, float dy, int NX, int NY, int N_CELLS){
 	int INDEX = blockIdx.x * blockDim.x + threadIdx.x;
 	int i = (int)INDEX / (NY+4);
 	int j = (int)INDEX - i * (NY+4);
@@ -46,8 +47,9 @@ __global__ void GPU_Calc_new_properties(float *d_flux_X, float *d_flux_Y, float 
 	}
 }
 
-void Calc_new_properties(float *d_flux_X, float *d_flux_Y, float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float R, float GAMMA, float dt, float dx, float dy, int NX, int NY, int N_CELLS){
+void Calc_new_properties(float *d_flux_X, float *d_flux_Y, float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float R, float GAMMA,
+			 float dt, float dx, float dy, int NX, int NY, int N_CELLS){
 	int TPB = 128;
 	int GPB = (TPB + N_CELLS - 1) / TPB;
-	GPU_Calc_new_properties<<<GPB, TPB>>>(d_flux_X, d_flux_Y, d_p0, d_p1, d_p2, d_p3, d_p4, R, GAMMA, dy, dx, dy, NX, NY, N_CELLS);
+	GPU_Calc_new_properties<<<GPB, TPB>>>(d_flux_X, d_flux_Y, d_p0, d_p1, d_p2, d_p3, d_p4, R, GAMMA, dt, dx, dy, NX, NY, N_CELLS);
 }
