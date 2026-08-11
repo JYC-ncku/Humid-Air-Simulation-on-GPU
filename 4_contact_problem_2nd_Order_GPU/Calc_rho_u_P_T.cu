@@ -11,7 +11,7 @@ __global__ void GPU_Compute_MAX_CFL(float *CFL, float *d_p0, float *d_p1, float 
 	// Only care inner cells.
 		if (i >= 2 && i < NX + 2){
 			if (j >= 2 && j < NY + 2){
-				float rho = d_p0[cell];
+//				float rho = d_p0[cell];
 				float u = d_p1[cell];
 				float v = d_p2[cell];
 				float T = d_p3[cell];
@@ -770,10 +770,10 @@ __global__ void GPU_Calc_flux_X(float *d_interface_p, float *d_flux_X, float *d_
 	    			float QC_T = d_p3[INDEX];
 	    			float QR_T = d_p3[INDEX_R];
     				float QRR_T = d_p3[INDEX_RR];
-	    			float dT_dx_L = MINMOD(QL_T, QC_T, QR_T, dx);
-	    			float dT_dx_R = MINMOD(QC_T, QR_T, QRR_T, dx);
-		    		float QL_T_star = QC_T + 0.5 * dx * dT_dx_L;
-		    		float QR_T_star = QR_T - 0.5 * dx * dT_dx_R;
+//	    			float dT_dx_L = MINMOD(QL_T, QC_T, QR_T, dx);
+//	    			float dT_dx_R = MINMOD(QC_T, QR_T, QRR_T, dx);
+//		    		float QL_T_star = QC_T + 0.5 * dx * dT_dx_L;
+//		    		float QR_T_star = QR_T - 0.5 * dx * dT_dx_R;
 
 				float QL_cRT = sqrt(R * QL_T);
 				float QC_cRT = sqrt(R * QC_T);
@@ -841,10 +841,10 @@ __global__ void GPU_Calc_flux_Y(float *d_interface_p, float *d_flux_Y, float *d_
 		    		float QC_T = d_p3[INDEX];
     				float QR_T = d_p3[INDEX_T];
     				float QRR_T = d_p3[INDEX_TT];
-		    		float dT_dy_L = MINMOD(QL_T, QC_T, QR_T, dy);
-		    		float dT_dy_R = MINMOD(QC_T, QR_T, QRR_T, dy);
-		    		float QL_T_star = QC_T + 0.5 * dy * dT_dy_L;
-		    		float QR_T_star = QR_T - 0.5 * dy * dT_dy_R;
+//		    		float dT_dy_L = MINMOD(QL_T, QC_T, QR_T, dy);
+//		    		float dT_dy_R = MINMOD(QC_T, QR_T, QRR_T, dy);
+//		    		float QL_T_star = QC_T + 0.5 * dy * dT_dy_L;
+//		    		float QR_T_star = QR_T - 0.5 * dy * dT_dy_R;
 
 				float QL_cRT = sqrt(R * QL_T);
 				float QC_cRT = sqrt(R * QC_T);

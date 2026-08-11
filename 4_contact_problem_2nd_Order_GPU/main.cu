@@ -64,6 +64,12 @@ int main(){
 
 		t += dt;
 	}
+	//Get the data from device
+	Get_From_Device(&h_p0, &d_p0, N_CELLS);
+	Get_From_Device(&h_p1, &d_p1, N_CELLS);
+	Get_From_Device(&h_p2, &d_p2, N_CELLS);
+	Get_From_Device(&h_p3, &d_p3, N_CELLS);
+	Get_From_Device(&h_p4, &d_p4, N_CELLS);
 
 	FILE * pFile = fopen("Results_of_1000000_cells.txt","w");
 	for (int i = 2; i < NX + 2; i++){
