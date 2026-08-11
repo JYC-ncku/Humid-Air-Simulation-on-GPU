@@ -49,7 +49,7 @@ int main(){
 	Send_To_Device(&d_p3, &h_p3, N_CELLS);
 	Send_To_Device(&d_p4, &h_p4, N_CELLS);
 	//Initial condition
-	Initial(d_p0, d_p1, d_p2, d_p3, d_p4, R, NX, NY, N_CELLS);
+	Initial(CFL, d_p0, d_p1, d_p2, d_p3, d_p4, R, NX, NY, N_CELLS);
 
 	while (t<t_FINAL){
 		float dt = Compute_MAX_CFL(CFL, d_p0, d_p1, d_p2, d_p3,  dx,  dy,  NX,  NY,  N_CELLS);
@@ -58,8 +58,7 @@ int main(){
 
 //		float dt = CFL_t / MAX_CFL;
 
-		Calc_flux_X(d_interface_p, d_flux_X, d_p0, d_p1, d_p2, d_p3, d_p4, R, GAMMA, dx, NX, NY, N_CELLS);
-		Calc_flux_Y(d_interface_p, d_flux_Y, d_p0, d_p1, d_p2, d_p3, d_p4, R, GAMMA, dy, NX, NY, N_CELLS);
+		Calc_flux(d_interface_p, d_flux_X, d_flux_Y, d_p0, d_p1, d_p2, d_p3, d_p4, R, GAMMA, dx, dy, NX, NY, N_CELLS);
 		cudaDeviceSynchronize();
 		Calc_new_properties(d_flux_X, d_flux_Y, d_p0, d_p1, d_p2, d_p3, d_p4, R, GAMMA, dt, dx, dy, NX, NY, N_CELLS);
 		cudaDeviceSynchronize();
