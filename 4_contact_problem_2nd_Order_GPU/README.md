@@ -1,4 +1,4 @@
-This program is a Finite Volume Method (FVM) solver for 2D Euler equations. 
+program is a Finite Volume Method (FVM) solver for 2D Euler equations. 
 
 This program use CUDA to speed up the 2nd-Order Exact Riemann Solver and solve the 4-contact-problem.
 
@@ -54,4 +54,4 @@ GPU time:
 CPU time:
 ![CPU.png](./CPU.png)
 
-Speed up: (5 * 60 + 21.424) / 5.106 = 62.950
+Speed up: (5 * 60 + 21.424) / 5.106 = 62.950 times
