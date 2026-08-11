@@ -10,9 +10,9 @@ float CPU_Compute_MAX_CFL(float *d_p0, float *d_p1, float *d_p2, float *d_p3, fl
 		for (int j = 2; j < NY + 2; j++){
 			int cell = i * (NY + 4) + j;
 			float rho = d_p0[cell];
-			float u = p1[cell];
-			float v = p2[cell];
-			float T = p3[cell];
+			float u = d_p1[cell];
+			float v = d_p2[cell];
+			float T = d_p3[cell];
 			if (T<0){
 				printf("Error: Negative temperature in cell %d: T = %f\n. Aborting.", cell, T);
 			exit(1);
@@ -712,6 +712,26 @@ __device__ void Calc_rho_u_P_T(float *interface_p, float *flux,
 	interface_p[4] = QI_T;
 	interface_p[5] = QI_p;
 }
+
+/* For x-dir
+	// Because this code only consider 1D, so let other two direction equal 0)
+	float QL_vy = 1.0, QL_vz = 0;
+	float QR_vy = 1.0, QR_vz = 0;
+	float nx = 1.0, ny = 0.0, nz = 0.0;
+	float px = 0.0, py = 1.0, pz = 0.0;
+	float qx = 0.0, qy = 0.0, qz = 1.0;
+*/
+
+/* For y-dir
+	// Because this code only consider 1D, so let other two direction equal 0)
+	float QL_vy = 1.0, QL_vz = 0;
+	float QR_vy = 1.0, QR_vz = 0;
+	float nx = 0.0, ny = 1.0, nz = 0.0;
+	float px = -1.0, py = 0.0, pz = 0.0;
+	float qx = 0.0, qy = 0.0, qz = 1.0;
+
+	wall_flag = 0.0;
+*/
 
 __global__ void GPU_Calc_flux_X(float *interface_p, float *flux_X, float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float R, float GAMMA, float dx, int NX, int NY, int N_CELLS){
 	int INDEX = blockIdx.x * blockDim.x + threadIdx.x;
