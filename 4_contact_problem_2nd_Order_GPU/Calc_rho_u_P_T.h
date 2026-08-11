@@ -1,8 +1,4 @@
-float CPU_Compute_MAX_CFL(float *p0, float *p1, float *p2, float *p3, float dx, float dy, int NX, int NY);
+void Compute_MAX_CFL(float *CFL, float *d_p0, float *d_p1, float *d_p2, float *d_p3, float dx, float dy, int NX, int NY, int N_CELLS);
 
-void CPU_Calc_rho_u_P_T(float *interface_p, float *flux,
-			float QL_rho, float QL_ux, float QL_vy, float QL_vz, float QL_cRT,
-			float QR_rho, float QR_ux, float QR_vy, float QR_vz, float QR_cRT, float R, float GAMMA,
-			float nx, float ny, float nz,
-			float px, float py, float pz,
-			float qx, float qy, float qz, int wall_flag);
+void Calc_flux_X(float *d_interface_p, float *d_flux_X, float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float R, float GAMMA, float dx, int NX, int NY, int N_CELLS);
+void Calc_flux_Y(float *d_interface_p, float *d_flux_Y, float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float R, float GAMMA, float dy, int NX, int NY, int N_CELLS);

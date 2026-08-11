@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 void Allocate_memory(float **array1, float **array2, float **array3, float **array4, float **array5, float **array6, float **array7, float **array8, float **array9,
-		     float **array10, float **array11, float **array12, float **array13, float **array14, float **array15, int N_CELLS){
+		     float **array10, float **array11, float **array12, float **array13, float **array14, float **array15, float **array16, int N_CELLS){
 	float size = N_CELLS * sizeof(float);
 	*array1 = (float*)malloc(size);
 	*array2 = (float*)malloc(size);
@@ -11,27 +11,28 @@ void Allocate_memory(float **array1, float **array2, float **array3, float **arr
 	*array5 = (float*)malloc(size);
 	*array6 = (float*)malloc(size);
 	*array7 = (float*)malloc(size);
+	*array8 = (float*)malloc(size);
 //	*array8 = (float*)malloc((N_CELLS) * 6 * sizeof(float)); // interface_p have 6 output
 //	*array9 = (float*)malloc((N_CELLS) * 5 * sizeof(float)); // flux_X have 5 ouuput
 //	*array10 = (float*)malloc((N_CELLS) * 5 * sizeof(float)); // flux_Y have 5 ouuput
-	if(*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL || *array7 == NULL){
+	if(*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL || *array7 == NULL || *array8 == NULL){
 		printf("Memory allocation failed!\n");
 		exit(1);
 	}
 	printf("Memory allocation successfully for %d elements!\n", N_CELLS);
 	//Device
-	cudaMalloc((void**)array8, size);
 	cudaMalloc((void**)array9, size);
 	cudaMalloc((void**)array10, size);
 	cudaMalloc((void**)array11, size);
 	cudaMalloc((void**)array12, size);
-	cudaMalloc((void**)array13, (N_CELLS) * 6 * sizeof(float)); // interface_p have 6 output
-	cudaMalloc((void**)array14, (N_CELLS) * 5 * sizeof(float)); // flux_X have 5 ouuput
-	cudaMalloc((void**)array15, (N_CELLS) * 5 * sizeof(float)); // flux_Y have 5 ouuput
+	cudaMalloc((void**)array13, size);
+	cudaMalloc((void**)array14, (N_CELLS) * 6 * sizeof(float)); // interface_p have 6 output
+	cudaMalloc((void**)array15, (N_CELLS) * 5 * sizeof(float)); // flux_X have 5 ouuput
+	cudaMalloc((void**)array16, (N_CELLS) * 5 * sizeof(float)); // flux_Y have 5 ouuput
 }
 
 void Free_memory(float **array1, float **array2, float **array3, float **array4, float **array5, float **array6, float **array7, float **array8, float **array9, float **array10,
-		 float **array11, float **array12, float **array13, float **array14, float **array15){
+		 float **array11, float **array12, float **array13, float **array14, float **array15, float **array16){
 	free(*array1);
 	free(*array2);
 	free(*array3);
@@ -47,6 +48,7 @@ void Free_memory(float **array1, float **array2, float **array3, float **array4,
 	cudaFree(*array13);
 	cudaFree(*array14);
 	cudaFree(*array15);
+	cudaFree(*array16);
 	printf("Memory freed successfully!\n");
 }
 
