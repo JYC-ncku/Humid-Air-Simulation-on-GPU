@@ -1,1 +1,1 @@
-void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, int NX, int NY);
+void Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, int NX, int NY, int N_CELLS);

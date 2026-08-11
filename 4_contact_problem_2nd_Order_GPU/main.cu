@@ -30,13 +30,13 @@ int main(){
 	float R = 1.0;
 	float GAMMA = 1.4;
 //	int wall_flag = 0;
-	float MAX_CFL = 1e-10;
+//	float MAX_CFL = 1e-10;
 	float *x, *y, *CFL,
 	      *h_p0, *h_p1, *h_p2, *h_p3, *h_p4,
 	      *d_p0, *d_p1, *d_p2, *d_p3, *d_p4,
 	      *d_interface_p, *d_flux_X, *d_flux_Y; //p0 is density, p1 is x-dir velocity, p2 is y-dir veloctiy, p3 is temperature, p4 si pressure.
 //	float flxnmn, flxpmn, flxqmn;
-	float CFL_t = 0.5;
+//	float CFL_t = 0.5;
 
 	Allocate_memory(&x, &y, &CFL,
 			&h_p0, &h_p1, &h_p2, &h_p3, &h_p4,
@@ -52,11 +52,11 @@ int main(){
 	Initial(d_p0, d_p1, d_p2, d_p3, d_p4, R, NX, NY, N_CELLS);
 
 	while (t<t_FINAL){
+		float dt = Compute_MAX_CFL(CFL, d_p0, d_p1, d_p2, d_p3,  dx,  dy,  NX,  NY,  N_CELLS);
 		// Boundary condition for compute flux.
-		Boundary(d_p0, d_p1, d_p2, d_p3, d_p4, NX, NY);
-		Compute_MAX_CFL(CFL, d_p0, d_p1, d_p2, d_p3,  dx,  dy,  NX,  NY,  N_CELLS);
+		Boundary(d_p0, d_p1, d_p2, d_p3, d_p4, NX, NY, N_CELLS);
 
-		float dt = CFL_t / MAX_CFL;
+//		float dt = CFL_t / MAX_CFL;
 
 		Calc_flux_X(d_interface_p, d_flux_X, d_p0, d_p1, d_p2, d_p3, d_p4, R, GAMMA, dx, NX, NY, N_CELLS);
 		Calc_flux_Y(d_interface_p, d_flux_Y, d_p0, d_p1, d_p2, d_p3, d_p4, R, GAMMA, dy, NX, NY, N_CELLS);

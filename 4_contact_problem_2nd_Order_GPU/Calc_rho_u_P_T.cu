@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-
+#include <thrust/extrema.h>
+#include <thrust/execution_policy.h>
 // Return the maximum CFL number across all cells
 __global__ void GPU_Compute_MAX_CFL(float *CFL, float *d_p0, float *d_p1, float *d_p2, float *d_p3, float dx, float dy, int NX, int NY, int N_CELLS){
 	int cell = blockIdx.x * blockDim.x + threadIdx.x;
@@ -879,8 +880,14 @@ void Calc_flux_Y(float *d_interface_p, float *d_flux_Y, float *d_p0, float *d_p1
 	GPU_Calc_flux_Y<<<GPB, TPB>>>(d_interface_p, d_flux_Y, d_p0, d_p1, d_p2, d_p3, d_p4, R, GAMMA, dy, NX, NY, N_CELLS);
 }
 
-void Compute_MAX_CFL(float *CFL, float *d_p0, float *d_p1, float *d_p2, float *d_p3, float dx, float dy, int NX, int NY, int N_CELLS){
+float Compute_MAX_CFL(float *CFL, float *d_p0, float *d_p1, float *d_p2, float *d_p3, float dx, float dy, int NX, int NY, int N_CELLS){
 	int TPB = 128;
 	int GPB = (TPB + N_CELLS - 1) / TPB;
 	GPU_Compute_MAX_CFL<<<GPB, TPB>>>(CFL, d_p0, d_p1, d_p2, d_p3, dx, dy, NX, NY, N_CELLS);
+	float *d_max_CFL = thrust::max_element(thrust::device, CFL, CFL + N_CELLS);
+	float h_max_CFL;
+	cudaMemcpy(&h_max_CFL, d_max_CFL, sizeof(float), cudaMemcpyDeviceToHost);
+	float dt = 0.5 / h_max_CFL;
+	return dt;
 }
+
