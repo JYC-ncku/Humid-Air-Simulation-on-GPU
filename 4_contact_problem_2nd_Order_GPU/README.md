@@ -1,6 +1,6 @@
 This program is a Finite Volume Method (FVM) solver for 2D Euler equations. 
 
-This program upgrades the Exact Riemann Solver from 1st-order to 2nd-order accuracy and solve the 4-contact-problem.
+This program use CUDA to speed up the 2nd-Order Exact Riemann Solver and solve the 4-contact-problem.
 
 Initial condition:
 ```
@@ -46,4 +46,12 @@ all:
 Final result of density:
 
 Density vs location:
-![Result_of_Density.png](./Result_of_Density.png)
+![Result_of_Density_GPU.png](./Result_of_Density_GPU.png)
+
+GPU time:
+![GPU.png](./GPU.png)
+
+CPU time:
+![CPU.png](./CPU.png)
+
+Speed up: (5 * 60 + 21.424) / 5.106 = 62.950
