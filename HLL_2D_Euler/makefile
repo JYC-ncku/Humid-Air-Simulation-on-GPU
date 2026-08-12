@@ -1,2 +1,2 @@
 all:
-	gcc main.c memory.c Initial.c Calc_flux.c -O3 -o main.exe -lm
+	gcc main.c memory.c Calc_Flux.c Calc_conserved.c Calc_variable.c Boundary.c -O3 -lm -o main.exe
