@@ -54,8 +54,8 @@ void Calc_flux_X(float rho_L, float rho_R, float u_L, float u_R, float v_L, floa
 
 void Calc_flux_Y(float rho_B, float rho_T, float u_B, float u_T, float v_B, float v_T, float T_B, float T_T, float P_B, float P_T, float e_B, float e_T, float a_B, float a_T,
 		 float *mass_flux_Y, float *momentum_X_flux_Y, float *momentum_Y_flux_Y, float *energy_flux_Y, int INDEX){
-	float W_B = fmin(u_B - a_B, u_T - a_T);
-	float W_T = fmax(u_B + a_B, u_T + a_T);
+	float W_B = fmin(v_B - a_B, v_T - a_T);
+	float W_T = fmax(v_B + a_B, v_T + a_T);
 	float mass_B = rho_B;
 	float mass_T = rho_T;
 	float momentum_X_B = rho_B * u_B;
