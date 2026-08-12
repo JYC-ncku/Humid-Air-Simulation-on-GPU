@@ -17,7 +17,7 @@ The results can be viewed by clicking [here](./sine_wave/README.md).
 Information on the 1D Humidity simulation of air can be found [here](./Perform_1D_humidity_simulation_in_Air/READE.md)
 
 ## 1D_Shallow_Water
-This code uses c language to simulation 1D Shallow water problem, and use Rusanov method to calculate flux.
+This program uses c language to simulation 1D Shallow water problem, and use Rusanov method to calculate flux.
 
 More informations are in [here](./1D-Shallow-water/README.md)
 
@@ -26,7 +26,44 @@ The flux computation part of this code was provided by Prof. Smith. Its purpose 
 
 More informations are in [here](Exact_Riemann_Solver_1D_Euler)
 
+## Exact_Riemann_Solver_2D_Euler
+This program upgrades Exact_Riemann_Solver_1D_Euler to a 2D domain and verifies the accuracy of the computation by modifying the initial conditions.
+
+More informations are in [here](Exact_Riemann_Solver_2D_Euler)
+
+## 2D_solver_Exact_Riemann
+This program employs second-order reconstruction to enhance the spatial accuracy of the Exact Riemann Solver results.
+
+More informations are in [here](2D_solver_Exact_Riemann)
+
 ## Rusanov_1D_Euler
-This code utilizes the Rusanov method to calculate flux and compares the results against the Exact Riemann solver.
+This program utilizes the Rusanov method to calculate flux and compares the results against the Exact Riemann solver.
 
 More informations are in [here](Rusanov_1D_Euler)
+
+## GPU_1D_Euler
+This program parallelizes Rusanov_1D_Euler using CUDA acceleration and benchmarks its performance against the single-CPU-core execution. To address the data racing issue inherent to this problem, a shared memory implementation was also created to evaluate the speed difference between using and not using shared memory.
+
+More informations are in [here](GPU_1D_Euler)
+
+## Rusanov_2D_Euler
+This program upgrades the original 1D Euler code to a 2D domain and verifies the accuracy of the computation by modifying the initial conditions.
+
+More informations are in [here](Rusanov_2D_Euler)
+
+## HLL_1D_Euler
+This program solves the 1D Euler problem using the HLL method and compares the results with those obtained from the Rusanov method.
+
+More informations are in [here](HLL_1D_Euler)
+
+## 4_contact_problem
+This program solves the classic 2D Riemann problem using the Exact Riemann Solver.
+
+More informations are in [here](4_contact_problem)
+
+## 4_contact_problem_2nd_Order
+This program resolves the 4-contact problem using second-order reconstruction alongside the Exact Riemann Solver.
+
+More informations are in [here](4_contact_problem_2nd_Order)
+
+
