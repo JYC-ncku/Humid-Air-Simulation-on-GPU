@@ -64,6 +64,11 @@ More informations are in [here](4_contact_problem)
 ## 4_contact_problem_2nd_Order
 This program resolves the 4-contact problem using second-order reconstruction alongside the Exact Riemann Solver.
 
-More informations are in [here](4_contact_problem_2nd_Order)
+More informations are in [here](4_contact-problem_2nd_Order)
+
+## 4_contact_problem_2nd_Order_GPU
+This program applies CUDA acceleration to parallelize the 2nd-order 4-contact problem solver.
+
+More informations are in [here](4_contact_problem_2nd_Order_GPU)
 
 
