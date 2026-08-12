@@ -80,7 +80,7 @@ int main(){
 				if (W_LOCAL_MAX_X > W_GLOBAL_MAX){
 					W_GLOBAL_MAX = W_LOCAL_MAX_X;
 				}
-				Calc_flux_X(rho_L, rho_R, u_L, u_R, v_L, v_R, T_L, T_R, P_L, P_R, e_L, e_R, W_LOCAL_MAX_X,
+				Calc_flux_X(rho_L, rho_R, u_L, u_R, v_L, v_R, T_L, T_R, P_L, P_R, e_L, e_R, a_L, a_R,
 					    mass_flux_X, momentum_X_flux_X, momentum_Y_flux_X, energy_flux_X, INDEX);
 			}
 		}
@@ -107,7 +107,7 @@ int main(){
 				if (W_LOCAL_MAX_Y > W_GLOBAL_MAX){
 					W_GLOBAL_MAX = W_LOCAL_MAX_Y;
 				}
-				Calc_flux_Y(rho_B, rho_T, u_B, u_T, v_B, v_T, T_B, T_T, P_B, P_T, e_B, e_T, W_LOCAL_MAX_Y,
+				Calc_flux_Y(rho_B, rho_T, u_B, u_T, v_B, v_T, T_B, T_T, P_B, P_T, e_B, e_T, a_B, a_T,
 					    mass_flux_Y, momentum_X_flux_Y, momentum_Y_flux_Y, energy_flux_Y, INDEX);
 			}
 		}
