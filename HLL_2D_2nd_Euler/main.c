@@ -11,7 +11,7 @@ int main(){
 	int NY = 5;
 //	int NX = 5;
 //	int NY = 1000;
-	int N_CELLS = (NX+2) * (NY+2);
+	int N_CELLS = (NX+4) * (NY+4);
 	float L = 1.0;
 	float H = 0.005;
 //	float L = 0.005;
@@ -33,9 +33,9 @@ int main(){
 	//Initial condition (p0 is density, p1 is X-direction veloctiy, p2 is Y-direction veloctiy, p3 is temperature, p4 is pressure)
 	for (int i = 1; i < NX + 1; i++){
 		for (int j = 1; j < NY + 1; j++){
-			int INDEX = i * (NY+2) + j;
-			if (i < NX/2){
-//			if (j < NY/2){
+			int INDEX = i * (NY+4) + j;
+			if (i < (NX/2 + 1)){
+//			if (j < (NY/2 + 1)){
 				p0[INDEX] = 10.0;
 				p1[INDEX] = 0.0;
 				p2[INDEX] = 0.0;
@@ -60,8 +60,9 @@ int main(){
 		//X-direction flux
 		for (int i = 0; i < NX + 1; i++){
 			for (int j = 1; j < NY + 1; j++){
-				int INDEX = i * (NY+2) + j;
-				int INDEX_R = (i+1) * (NY+2) + j;
+				int INDEX = i * (NY+4) + j;
+				int INDEX_R = (i+1) * (NY+4) + j;
+				int INDEX_RR = (i+2) * (NY+4) + j;
 				float rho_L = p0[INDEX];	//LEFT = BOTTOM
 				float rho_R = p0[INDEX_R];
 				float u_L = p1[INDEX];
@@ -87,8 +88,9 @@ int main(){
 		//Y-direction flux
 		for (int i = 1; i < NX + 1; i++){
 			for (int j = 0; j < NY + 1; j++){
-				int INDEX = i * (NY+2) + j;
-				int INDEX_T = i * (NY+2) + (j+1);
+				int INDEX = i * (NY+4) + j;
+				int INDEX_T = i * (NY+4) + (j+1);
+				int INDEX_TT = i * (NY+4) + (j+2);
 				float rho_B = p0[INDEX];	//LEFT = BOTTOM
 				float rho_T = p0[INDEX_T];
 				float u_B = p1[INDEX];
@@ -128,9 +130,9 @@ int main(){
 		for (int j = 1; j < NY + 1; j++){
 //	for (int j = 1; j < NY + 1; j++){
 //		for (int i = 1; i < NX + 1; i++){
-			int INDEX = i *(NY+2) + j;
-			float X = (i - 0.5) * dx;
-			float Y = (j - 0.5) * dy;
+			int INDEX = i *(NY+4) + j;
+			float X = (i - 1.5) * dx;
+			float Y = (j - 1.5) * dy;
 			fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, Y, p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX]);
 		}
 	}
