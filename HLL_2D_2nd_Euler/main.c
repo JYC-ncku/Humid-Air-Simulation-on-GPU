@@ -142,8 +142,7 @@ int main(){
 				if (W_LOCAL_MAX_X > W_GLOBAL_MAX){
 					W_GLOBAL_MAX = W_LOCAL_MAX_X;
 				}
-				Calc_flux_X(rho_L, rho_R, u_L, u_R, v_L, v_R, P_L, P_R, e_L, e_R, a_L, a_R,
-					    rho_L_star, rho_R_star, u_L_star, u_R_star, v_L_star, v_R_star, e_L_star, e_R_star,
+				Calc_flux_X(rho_L_star, rho_R_star, u_L_star, u_R_star, v_L_star, v_R_star, P_L_star, P_R_star, e_L_star, e_R_star, a_L_star, a_R_star,
 					    mass_flux_X, momentum_X_flux_X, momentum_Y_flux_X, energy_flux_X, INDEX);
 			}
 		}
@@ -217,8 +216,7 @@ int main(){
 				if (W_LOCAL_MAX_Y > W_GLOBAL_MAX){
 					W_GLOBAL_MAX = W_LOCAL_MAX_Y;
 				}
-				Calc_flux_Y(rho_B, rho_T, u_B, u_T, v_B, v_T, P_B, P_T, e_B, e_T, a_B, a_T,
-					    rho_B_star, rho_T_star, u_B_star, u_T_star, v_B_star, v_T_star, e_B_star, e_T_star,
+				Calc_flux_Y(rho_B_star, rho_T_star, u_B_star, u_T_star, v_B_star, v_T_star, P_B_star, P_T_star, e_B_star, e_T_star, a_B_star, a_T_star,
 					    mass_flux_Y, momentum_X_flux_Y, momentum_Y_flux_Y, energy_flux_Y, INDEX);
 			}
 		}
