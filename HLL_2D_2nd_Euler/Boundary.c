@@ -1,16 +1,18 @@
 void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, int NX, int NY){
 	//LEFT and RIGHT
-	for (int j = 1 ; j <= NY; j++){
+	for (int j = 2 ; j < NY + 2; j++){
 		int LEFT_LEFT_GHOST = 0 * (NY+4) + j;
 		int LEFT_GHOST = 1 * (NY+4) + j;
-		int RIGHT_GHOST = (NX+1) * (NY+4) + j;
-		int RIGHT_RIGHT_GHOST = (NX+2) * (NY+4) + j;
-		int LEFT_INNER = 1 * (NY+4) + j;
-		int RIGHT_INNER = NX * (NY+4) + j;
+		int RIGHT_RIGHT_GHOST = (NX+3) * (NY+4) + j;
+		int RIGHT_GHOST = (NX+2) * (NY+4) + j;
+		int LEFT_INNER = 2 * (NY+4) + j;
+		int RIGHT_INNER = (NX+1) * (NY+4) + j;
+
 		p0[LEFT_GHOST] = p0[LEFT_INNER];
 		p0[LEFT_LEFT_GHOST] = p0[LEFT_GHOST];
 		p0[RIGHT_GHOST] = p0[RIGHT_INNER];
 		p0[RIGHT_RIGHT_GHOST] = p0[RIGHT_GHOST];
+
 		p1[LEFT_GHOST] = p1[LEFT_INNER];
 		p1[LEFT_LEFT_GHOST] = p1[LEFT_GHOST];
 		p1[RIGHT_GHOST] = p1[RIGHT_INNER];
@@ -18,35 +20,41 @@ void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, int NX, int
 		// Reflect boundary
 //		p1[LEFT_GHOST] = -p1[LEFT_INNER];
 //		p1[RIGHT_GHOST] = -p1[RIGHT_INNER];
+
 		p2[LEFT_GHOST] = p2[LEFT_INNER];
 		p2[LEFT_LEFT_GHOST] = p2[LEFT_GHOST];
 		p2[RIGHT_GHOST] = p2[RIGHT_INNER];
 		p2[RIGHT_RIGHT_GHOST] = p2[RIGHT_GHOST];
+
 		p3[LEFT_GHOST] = p3[LEFT_INNER];
 		p3[LEFT_LEFT_GHOST] = p3[LEFT_GHOST];
 		p3[RIGHT_GHOST] = p3[RIGHT_INNER];
 		p3[RIGHT_RIGHT_GHOST] = p3[RIGHT_GHOST];
+
 		p4[LEFT_GHOST] = p4[LEFT_INNER];
 		p4[LEFT_LEFT_GHOST] = p4[LEFT_GHOST];
 		p4[RIGHT_GHOST] = p4[RIGHT_INNER];
 		p4[RIGHT_RIGHT_GHOST] = p4[RIGHT_GHOST];
 	}
 	//BOTTOM and TOP
-	for (int i = 1 ; i <= NX; i++){
+	for (int i = 2 ; i < NX + 2; i++){
 		int BOTTOM_BOTTOM_GHOST = i * (NY+4) + 0;
 		int BOTTOM_GHOST = i * (NY+4) + 1;
-		int TOP_GHOST = i * (NY+4) + (NY+1);
-		int TOP_TOP_GHOST = i * (NY+4) + (NY+2);
-		int BOTTOM_INNER = i * (NY+4) + 1;
-		int TOP_INNER = i * (NY+4) + NY;
+		int TOP_TOP_GHOST = i * (NY+4) + (NY+3);
+		int TOP_GHOST = i * (NY+4) + (NY+2);
+		int BOTTOM_INNER = i * (NY+4) + 2;
+		int TOP_INNER = i * (NY+4) + (NY+1);
+
 		p0[BOTTOM_GHOST] = p0[BOTTOM_INNER];
 		p0[BOTTOM_BOTTOM_GHOST] = p0[BOTTOM_GHOST];
 		p0[TOP_GHOST] = p0[TOP_INNER];
 		p0[TOP_TOP_GHOST] = p0[TOP_GHOST];
+
 		p1[BOTTOM_GHOST] = p1[BOTTOM_INNER];
 		p1[BOTTOM_BOTTOM_GHOST] = p1[BOTTOM_GHOST];
 		p1[TOP_GHOST] = p1[TOP_INNER];
 		p1[TOP_TOP_GHOST] = p1[TOP_GHOST];
+
 		p2[BOTTOM_GHOST] = p2[BOTTOM_INNER];
 		p2[BOTTOM_BOTTOM_GHOST] = p2[BOTTOM_GHOST];
 		p2[TOP_GHOST] = p2[TOP_INNER];
@@ -54,10 +62,12 @@ void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, int NX, int
 		// Reflect boundary
 //		p2[BOTTOM_GHOST] = -p2[BOTTOM_INNER];
 //		p2[TOP_GHOST] = -p2[TOP_INNER];
+
 		p3[BOTTOM_GHOST] = p3[BOTTOM_INNER];
 		p3[BOTTOM_BOTTOM_GHOST] = p3[BOTTOM_GHOST];
 		p3[TOP_GHOST] = p3[TOP_INNER];
 		p3[TOP_TOP_GHOST] = p3[TOP_GHOST];
+
 		p4[BOTTOM_GHOST] = p4[BOTTOM_INNER];
 		p4[BOTTOM_BOTTOM_GHOST] = p4[BOTTOM_GHOST];
 		p4[TOP_GHOST] = p4[TOP_INNER];
