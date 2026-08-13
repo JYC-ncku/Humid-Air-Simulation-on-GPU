@@ -126,7 +126,7 @@ int main(){
 				float a_L_star = MINMOD(a_L, a_C, a_R, dx);
 				float a_R_star = MINMOD(a_C, a_R, a_RR, dx);
 
-				float W_LOCAL_MAX_X = MAX_WAVE_SPEED(u_L, u_R, a_L, a_R);
+				float W_LOCAL_MAX_X = MAX_WAVE_SPEED(u_L, u_C, a_C, a_C);
 				if (W_LOCAL_MAX_X > W_GLOBAL_MAX){
 					W_GLOBAL_MAX = W_LOCAL_MAX_X;
 				}
@@ -188,7 +188,7 @@ int main(){
 				float a_B_star = MINMOD(a_B, a_C, a_T, dy);
 				float a_T_star = MINMOD(a_C, a_T, a_TT, dy);
 
-				float W_LOCAL_MAX_Y = MAX_WAVE_SPEED(v_B, v_T, a_B, a_T);
+				float W_LOCAL_MAX_Y = MAX_WAVE_SPEED(v_B, v_C, a_B, a_C);
 				if (W_LOCAL_MAX_Y > W_GLOBAL_MAX){
 					W_GLOBAL_MAX = W_LOCAL_MAX_Y;
 				}
