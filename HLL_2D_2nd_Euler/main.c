@@ -110,6 +110,10 @@ int main(){
 				float T_C = p3[INDEX];
 				float T_R = p3[INDEX_R];
 				float T_RR = p3[INDEX_RR];
+				float dT_dx_L = MINMOD(T_L, T_C, T_R, dx);
+				float dT_dx_R = MINMOD(T_C, T_R, T_RR, dx);
+				float T_L_star = T_C + 0.5 * dx * dT_dx_L;
+				float T_R_star = T_R - 0.5 * dx * dT_dx_R;
 
 				float P_L = p4[INDEX_L];
 				float P_C = p4[INDEX];
@@ -120,23 +124,23 @@ int main(){
 				float P_L_star = P_C + 0.5 * dx * dP_dx_L;
 				float P_R_star = P_R - 0.5 * dx * dP_dx_R;
 
-				float e_L = 0.5 * rho_L * (u_L * u_L + v_L * v_L) + P_L / (GAMMA - 1);
-				float e_C = 0.5 * rho_C * (u_C * u_C + v_C * v_C) + P_C / (GAMMA - 1);
-				float e_R = 0.5 * rho_R * (u_R * u_R + v_R * v_R) + P_R / (GAMMA - 1);
-				float e_RR = 0.5 * rho_RR * (u_RR * u_RR + v_RR * v_RR) + P_RR / (GAMMA - 1);
-				float de_dx_L = MINMOD(e_L, e_C, e_R, dx);
-				float de_dx_R = MINMOD(e_C, e_R, e_RR, dx);
-				float e_L_star = e_C + 0.5 * dx * de_dx_L;
-				float e_R_star = e_R - 0.5 * dx * de_dx_R;
+				float e_L_star = 0.5 * rho_L_star * (u_L_star * u_L_star + v_L_star * v_L_star) + P_L_star / (GAMMA - 1);
+//				float e_C = 0.5 * rho_C * (u_C * u_C + v_C * v_C) + P_C / (GAMMA - 1);
+				float e_R_star = 0.5 * rho_R_star * (u_R_star * u_R_star + v_R_star * v_R_star) + P_R_star / (GAMMA - 1);
+//				float e_RR = 0.5 * rho_RR * (u_RR * u_RR + v_RR * v_RR) + P_RR / (GAMMA - 1);
+//				float de_dx_L = MINMOD(e_L, e_C, e_R, dx);
+//				float de_dx_R = MINMOD(e_C, e_R, e_RR, dx);
+//				float e_L_star = e_C + 0.5 * dx * de_dx_L;
+//				float e_R_star = e_R - 0.5 * dx * de_dx_R;
 
-				float a_L = sqrt(GAMMA * R * T_L);
-				float a_C = sqrt(GAMMA * R * T_C);
-				float a_R = sqrt(GAMMA * R * T_R);
-				float a_RR = sqrt(GAMMA * R * T_RR);
-				float da_dx_L = MINMOD(a_L, a_C, a_R, dx);
-				float da_dx_R = MINMOD(a_C, a_R, a_RR, dx);
-				float a_L_star = a_C + 0.5 * dx * da_dx_L;
-				float a_R_star = a_R - 0.5 * dx * da_dx_R;
+				float a_L_star = sqrt(GAMMA * R * T_L_star);
+//				float a_C = sqrt(GAMMA * R * T_C);
+				float a_R_star = sqrt(GAMMA * R * T_R_star);
+//				float a_RR = sqrt(GAMMA * R * T_RR);
+//				float da_dx_L = MINMOD(a_L, a_C, a_R, dx);
+//				float da_dx_R = MINMOD(a_C, a_R, a_RR, dx);
+//				float a_L_star = a_C + 0.5 * dx * da_dx_L;
+//				float a_R_star = a_R - 0.5 * dx * da_dx_R;
 
 				float W_LOCAL_MAX_X = MAX_WAVE_SPEED(u_L_star, u_R_star, a_L_star, a_R_star);
 				if (W_LOCAL_MAX_X > W_GLOBAL_MAX){
@@ -184,6 +188,10 @@ int main(){
 				float T_C = p3[INDEX];
 				float T_T = p3[INDEX_T];
 				float T_TT = p3[INDEX_TT];
+				float dT_dy_B = MINMOD(T_B, T_C, T_T, dy);
+				float dT_dy_T = MINMOD(T_C, T_T, T_TT, dy);
+				float T_B_star = T_C + 0.5 * dy * dT_dy_B;
+				float T_T_star = T_T - 0.5 * dy * dT_dy_T;
 
 				float P_B = p4[INDEX_B];
 				float P_C = p4[INDEX];
@@ -194,23 +202,23 @@ int main(){
 				float P_B_star = P_C + 0.5 * dy * dP_dy_B;
 				float P_T_star = P_T - 0.5 * dy * dP_dy_T;
 
-				float e_B = 0.5 * rho_B * (u_B * u_B + v_B * v_B) + P_B / (GAMMA - 1);
-				float e_C = 0.5 * rho_C * (u_C * u_C + v_C * v_C) + P_C / (GAMMA - 1);
-				float e_T = 0.5 * rho_T * (u_T * u_T + v_T * v_T) + P_T / (GAMMA - 1);
-				float e_TT = 0.5 * rho_TT * (u_TT * u_TT + v_TT * v_TT) + P_TT / (GAMMA - 1);
-				float de_dy_B = MINMOD(e_B, e_C, e_T, dy);
-				float de_dy_T = MINMOD(e_C, e_T, e_TT, dy);
-				float e_B_star = e_C + 0.5 * dy * de_dy_B;
-				float e_T_star = e_T - 0.5 * dy * de_dy_T;
+				float e_B_star = 0.5 * rho_B_star * (u_B_star * u_B_star + v_B_star * v_B_star) + P_B_star / (GAMMA - 1);
+//				float e_C = 0.5 * rho_C * (u_C * u_C + v_C * v_C) + P_C / (GAMMA - 1);
+				float e_T_star = 0.5 * rho_T_star * (u_T_star * u_T_star + v_T_star * v_T_star) + P_T_star / (GAMMA - 1);
+//				float e_TT = 0.5 * rho_TT * (u_TT * u_TT + v_TT * v_TT) + P_TT / (GAMMA - 1);
+//				float de_dy_B = MINMOD(e_B, e_C, e_T, dy);
+//				float de_dy_T = MINMOD(e_C, e_T, e_TT, dy);
+//				float e_B_star = e_C + 0.5 * dy * de_dy_B;
+//				float e_T_star = e_T - 0.5 * dy * de_dy_T;
 
-				float a_B = sqrt(GAMMA * R * T_B);
-				float a_C = sqrt(GAMMA * R * T_C);
-				float a_T = sqrt(GAMMA * R * T_T);
-				float a_TT = sqrt(GAMMA * R * T_TT);
-				float da_dy_B = MINMOD(a_B, a_C, a_T, dy);
-				float da_dy_T = MINMOD(a_C, a_T, a_TT, dy);
-				float a_B_star = a_C + 0.5 * dy * da_dy_B;
-				float a_T_star = a_T - 0.5 * dy * da_dy_T;
+				float a_B_star = sqrt(GAMMA * R * T_B_star);
+//				float a_C = sqrt(GAMMA * R * T_C);
+				float a_T_star = sqrt(GAMMA * R * T_T_star);
+//				float a_TT = sqrt(GAMMA * R * T_TT);
+//				float da_dy_B = MINMOD(a_B, a_C, a_T, dy);
+//				float da_dy_T = MINMOD(a_C, a_T, a_TT, dy);
+//				float a_B_star = a_C + 0.5 * dy * da_dy_B;
+//				float a_T_star = a_T - 0.5 * dy * da_dy_T;
 
 				float W_LOCAL_MAX_Y = MAX_WAVE_SPEED(v_B_star, v_T_star, a_B_star, a_T_star);
 				if (W_LOCAL_MAX_Y > W_GLOBAL_MAX){
