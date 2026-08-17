@@ -56,6 +56,16 @@ This program solves the 1D Euler problem using the HLL method and compares the r
 
 More informations are in [here](HLL_1D_Euler)
 
+## HLL_2D_Euler
+This program upgrades the 1D HLL solver to a 2D domain and verifies the computational accuracy by swapping the X and Y directions for symmetry validation.
+
+More informations are in [here](HLL_2D_Euler)
+
+## HLL_2D_2nd_Euler
+This program reruns the 2D HLL Euler solver with second-order reconstruction using the Minmod limiter and compares the results with those obtained from the first-order scheme.
+
+More informations are in [here](HLL_2D_2nd_Euler)
+
 ## 4_contact_problem
 This program solves the classic 2D Riemann problem using the Exact Riemann Solver.
 
