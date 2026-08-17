@@ -1,8 +1,6 @@
 This program is a Finite Volume Method (FVM) solver for 2D Euler equations. 
 
-This program extends the 1D domain to a 2D domain, still solving it with an HLL solver.
-To validate the results, I ran two test cases.
-Theoretically, the two results must be identical, and the final simulated data matched our expectations perfectly.
+This program applies second-order reconstruction to the original 2D HLL solver using the Minmod limiter and compares the results with those from the first-order scheme.
 
 Initial condition:
 ```
