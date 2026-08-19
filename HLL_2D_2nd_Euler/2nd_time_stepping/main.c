@@ -37,8 +37,8 @@ int main(){
 	      *mass_flux_X, *momentum_X_flux_X, *momentum_Y_flux_X, *energy_flux_X,
 	      *mass_flux_Y, *momentum_X_flux_Y, *momentum_Y_flux_Y, *energy_flux_Y;
 
-	float mass_old, momentum_X_old, momentum_Y_old, energy_old,
-	      mass_now, momentum_X_now, momentum_Y_now, energy_now;
+	float *mass_old, *momentum_X_old, *momentum_Y_old, *energy_old,
+	      *mass_now, *momentum_X_now, *momentum_Y_now, *energy_now;
 
 	float t = 0.0;
 	float t_FINAL = 0.2;
@@ -48,6 +48,8 @@ int main(){
 	Allocate_memory(&x, &y, &p0, &p1, &p2, &p3, &p4, &mass, &momentum_X, &momentum_Y, &energy,
 			&mass_flux_X, &momentum_X_flux_X, &momentum_Y_flux_X, &energy_flux_X,
 			&mass_flux_Y, &momentum_X_flux_Y, &momentum_Y_flux_Y, &energy_flux_Y,
+			&mass_old, &momentum_X_old, &momentum_Y_old, &energy_old,
+			&mass_now, &momentum_X_now, &momentum_Y_now, &energy_now,
 			N_CELLS);
 	//Initial condition (p0 is density, p1 is X-direction veloctiy, p2 is Y-direction veloctiy, p3 is temperature, p4 is pressure)
 	for (int i = 2; i < NX + 2; i++){
@@ -82,10 +84,10 @@ int main(){
 		for (int i = 2; i < NX + 2; i++){
 			for (int j =2; j < NY + 2; j++){
 				int INDEX = i * (NY+4) + j;
-				mass_old = mass[INDEX];
-				momentum_X_old = momentum_X[INDEX];
-				momentum_Y_old = momentum_Y[INDEX];
-				energy_old = energy[INDEX];
+				mass_old[INDEX] = mass[INDEX];
+				momentum_X_old[INDEX] = momentum_X[INDEX];
+				momentum_Y_old[INDEX] = momentum_Y[INDEX];
+				energy_old[INDEX] = energy[INDEX];
 			}
 		}
 
@@ -284,10 +286,6 @@ int main(){
 				float a_L_star = sqrt(GAMMA * R * T_L_star);
 				float a_R_star = sqrt(GAMMA * R * T_R_star);
 
-				float W_LOCAL_MAX_X = MAX_WAVE_SPEED(u_L_star, u_R_star, a_L_star, a_R_star);
-				if (W_LOCAL_MAX_X > W_GLOBAL_MAX){
-					W_GLOBAL_MAX = W_LOCAL_MAX_X;
-				}
 				Calc_flux_X(rho_L_star, rho_R_star, u_L_star, u_R_star, v_L_star, v_R_star, P_L_star, P_R_star, e_L_star, e_R_star, a_L_star, a_R_star,
 					    mass_flux_X, momentum_X_flux_X, momentum_Y_flux_X, energy_flux_X, INDEX);
 			}
@@ -349,10 +347,6 @@ int main(){
 				float a_B_star = sqrt(GAMMA * R * T_B_star);
 				float a_T_star = sqrt(GAMMA * R * T_T_star);
 
-				float W_LOCAL_MAX_Y = MAX_WAVE_SPEED(v_B_star, v_T_star, a_B_star, a_T_star);
-				if (W_LOCAL_MAX_Y > W_GLOBAL_MAX){
-					W_GLOBAL_MAX = W_LOCAL_MAX_Y;
-				}
 				Calc_flux_Y(rho_B_star, rho_T_star, u_B_star, u_T_star, v_B_star, v_T_star, P_B_star, P_T_star, e_B_star, e_T_star, a_B_star, a_T_star,
 					    mass_flux_Y, momentum_X_flux_Y, momentum_Y_flux_Y, energy_flux_Y, INDEX);
 			}
@@ -367,20 +361,20 @@ int main(){
 		for (int i = 2; i < NX + 2; i++){
 			for (int j =2; j < NY + 2; j++){
 				int INDEX = i * (NY+4) + j;
-				mass_now = mass[INDEX];
-				momentum_X_now = momentum_X[INDEX];
-				momentum_Y_now = momentum_Y[INDEX];
-				energy_now = energy[INDEX];
+				mass_now[INDEX] = mass[INDEX];
+				momentum_X_now[INDEX] = momentum_X[INDEX];
+				momentum_Y_now[INDEX] = momentum_Y[INDEX];
+				energy_now[INDEX] = energy[INDEX];
 			}
 		}
 		//Calculate the new conserved quantity.
 		for (int i = 2; i < NX + 2; i++){
 			for (int j =2; j < NY + 2; j++){
 				int INDEX = i * (NY+4) + j;
-				mass[INDEX] = mass_old * 0.5 + mass_now * 0.5;
-				momentum_X[INDEX] = momentum_X_old * 0.5 + momentum_X_now * 0.5;
-				momentum_Y[INDEX] = momentum_Y_old * 0.5 + momentum_Y_now * 0.5;
-				energy[INDEX] = energy_old * 0.5 + energy_now * 0.5;
+				mass[INDEX] = 0.5 * (mass_old[INDEX] + mass_now[INDEX]);
+				momentum_X[INDEX] = 0.5 * (momentum_X_old[INDEX] + momentum_X_now[INDEX]);
+				momentum_Y[INDEX] = 0.5 * (momentum_Y_old[INDEX] + momentum_Y_now[INDEX]);
+				energy[INDEX] = 0.5 * (energy_old[INDEX] + energy_now[INDEX]);
 			}
 		}
 
@@ -404,7 +398,9 @@ int main(){
 
 	Free_memory(&x, &y, &p0, &p1, &p2, &p3, &p4, &mass, &momentum_X, &momentum_Y, &energy,
 		    &mass_flux_X, &momentum_X_flux_X, &momentum_Y_flux_X, &energy_flux_X,
-		    &mass_flux_Y, &momentum_X_flux_Y, &momentum_Y_flux_Y, &energy_flux_Y);
+		    &mass_flux_Y, &momentum_X_flux_Y, &momentum_Y_flux_Y, &energy_flux_Y,
+		    &mass_old, &momentum_X_old, &momentum_Y_old, &energy_old,
+		    &mass_now, &momentum_X_now, &momentum_Y_now, &energy_now);
 
 	return 0;
 }
