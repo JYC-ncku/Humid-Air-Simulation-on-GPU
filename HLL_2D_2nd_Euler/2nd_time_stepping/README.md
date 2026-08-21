@@ -1,24 +1,14 @@
 This program is a Finite Volume Method (FVM) solver for 2D Euler equations. 
 
-This program extends the 1D domain to a 2D domain, still solving it with an HLL solver.
-To validate the results, I ran two test cases.
-Theoretically, the two results must be identical, and the final simulated data matched our expectations perfectly.
+Since applying the Minmod limiter to the 2D HLL Euler problem introduced some numerical oscillations,
+I upgraded the time integration to second-order as well, and compared the results with the 1st-order scheme.
 
 Initial condition:
 ```
-Case1:
 u = X-direction velocity = 0 m/s (everywhere), v = Y-direction veloctiy = 0m/s (everywhere), T = temperature = 1 K (everywhere)
 
 Density = 10m  (x <= 0.5L)
            1m  (x > 0.5L)
-
-Case2:
-u = X-direction velocity = 0 m/s (everywhere), v = Y-direction veloctiy = 0m/s (everywhere), T = temperature = 1 K (everywhere)
-
-Density = 10m  (y <= 0.5L)
-           1m  (y > 0.5L)
-
-Ratio of specific heats = 1.4, R = 1, L = 1m. Computed time = 0.2s.
 ```
 
 compile this code using :
@@ -29,7 +19,7 @@ all:
 	${COMPLIER} main.c memory.c Calc_rho_u_P_T.c Boundary.c ${OPT_FLAGS} -o main.exe
 ```
 
-Final results for 2 cases:
+Final results:
 
 Density vs location:
 ![Result_of_Density.png](./Result_of_Density.png)
