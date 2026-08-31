@@ -1,6 +1,7 @@
 This program is a Finite Volume Method (FVM) solver for 2D Euler equations. 
 
-This program applies the Minmod limiter to my 2D HLL Euler problem and compares the results with the first-order solution.
+Since applying the Minmod limiter to the 2D HLL Euler problem introduced some numerical oscillations,
+I upgraded the time integration to second-order as well, and compared the results with the 1st-order scheme.
 
 Initial condition:
 ```
