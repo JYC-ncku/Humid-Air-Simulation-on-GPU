@@ -4,7 +4,7 @@ This is my two-year plan, and I hope to complete it on time and graduate success
 ## CFD_Practice
 This directory stores practice code and snippets for future reference.[here](./CFD_Practice)
 
-##Shock_Tube_Probelm
+## Shock_Tube_Probelm
 I implemented three different solver formulations and validated and benchmarked them using the Sod shock tube problem.[here](./Shock_Tube_Problem)
 
 ## 4_Contact_Problem
