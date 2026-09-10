@@ -39,7 +39,7 @@ int main(){
 	float dy = H/NY;
 	float t = 0;
 	float t_FINAL = 0.2;
-	float R = 1.0;
+	float R = 287; // Gas constant of dry air
 	float GAMMA = 1.4;
 	int wall_flag = 0;
 	float *x, *y, *p0, *p1, *p2, *p3, *p4, *interface_p, *flux_X, *flux_Y; //p0 is density, p1 is x-dir velocity, p2 is y-dir veloctiy, p3 is temperature, p4 si pressure.
@@ -50,34 +50,12 @@ int main(){
 	//Initial condition
 	for ( int i = 2; i < NX + 2; i++){
 		for (int j = 2; j < NY + 2; j++){
-			//int INDEX = i * (NY + 2) + j;
 			int INDEX = i * (NY + 4) + j;
-			//Quadrant I (region A)
-			if (i >= ((NX/2) + 1) && j >= ((NY/2) + 1)){
-				p0[INDEX] = 1.0;
-				p1[INDEX] = 0.75;
-				p2[INDEX] = -0.5;
-				p4[INDEX] = 1.0;
-			//Quadrant II (region B)
-			} else if (i < ((NX/2) + 1) && j >= ((NY/2) + 1)){
-				p0[INDEX] = 2.0;
-				p1[INDEX] = 0.75;
-				p2[INDEX] = 0.5;
-				p4[INDEX] = 1.0;
-			//Quadrant III (region C)
-			} else if (i < ((NX/2) + 1) && j < ((NY/2) + 1)){
-				p0[INDEX] = 1.0;
-				p1[INDEX] = -0.75;
-				p2[INDEX] = 0.5;
-				p4[INDEX] = 1.0;
-			//Quadrant IV (region D)
-			} else if (i >= ((NX/2) + 1) && j < ((NY/2) + 1)){
-				p0[INDEX] = 3.0;
-				p1[INDEX] = -0.75;
-				p2[INDEX] = -0.5;
-				p4[INDEX] = 1.0;
-			}
-			p3[INDEX] = p4[INDEX] / (R * p0[INDEX]);
+			p1[INDEX] = 0.0;
+			p2[INDEX] = 0.0;
+			p3[INDEX] = 298.15; // Room temperature = 25 C = 273.15 + 25 = 298.15 K
+			p4[INDEX] = 101325; // 1 atm = 101325 Pa
+			p0[INDEX] = p4[INDEX] / (R * p3[INDEX]);
 		}
 	}
 /* For x-dir
