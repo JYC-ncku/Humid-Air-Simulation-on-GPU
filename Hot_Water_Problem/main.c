@@ -142,9 +142,18 @@ int main(){
 		    		float QL_cRT_star = QC_cRT + 0.5 * dx * dcRT_dx_L;
 		    		float QR_cRT_star = QR_cRT - 0.5 * dx * dcRT_dx_R;
 
-				CPU_Calc_rho_u_P_T(&interface_p[INDEX*6], &flux_X[INDEX*5], //因為flux跟interface_p都有5個物理量需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
-						   QL_rho_star, QL_ux_star, QL_vy_star, QL_vz, QL_cRT_star,
-						   QR_rho_star, QR_ux_star, QR_vy_star, QR_vz, QR_cRT_star, R_mix, GAMMA,
+		    		float QL_Y = p5[INDEX_L];
+		    		float QC_Y = p5[INDEX];
+    				float QR_Y = p5[INDEX_R];
+    				float QRR_Y = p5[INDEX_RR];
+		    		float dY_dx_L = MINMOD(QL_Y, QC_Y, QR_Y, dx);
+		    		float dY_dx_R = MINMOD(QC_Y, QR_Y, QRR_Y, dx);
+		    		float QL_Y_star = QC_Y + 0.5 * dx * dY_dx_L;
+		    		float QR_Y_star = QR_Y - 0.5 * dx * dY_dx_R;
+
+				CPU_Calc_rho_u_P_T(&interface_p[INDEX*6], &flux_X[INDEX*6], //因為flux跟interface_p都有6個物理量需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
+						   QL_rho_star, QL_ux_star, QL_vy_star, QL_vz, QL_cRT_star, QL_Y_star,
+						   QR_rho_star, QR_ux_star, QR_vy_star, QR_vz, QR_cRT_star, QR_Y_star, R_mix, GAMMA,
 						   1.0, 0.0, 0.0,
 						   0.0, 1.0, 0.0,
 						   0.0, 0.0, 1.0, wall_flag);
@@ -208,9 +217,18 @@ int main(){
 		    		float QL_cRT_star = QC_cRT + 0.5 * dy * dcRT_dy_L;
 		    		float QR_cRT_star = QR_cRT - 0.5 * dy * dcRT_dy_R;
 
-				CPU_Calc_rho_u_P_T(&interface_p[INDEX*6], &flux_Y[INDEX*5], //因為flux跟interface_p都有5個物理量需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
-						   QL_rho_star, QL_ux_star, QL_vy_star, QL_vz, QL_cRT_star,
-						   QR_rho_star, QR_ux_star, QR_vy_star, QR_vz, QR_cRT_star, R_mix, GAMMA,
+		    		float QL_Y = p3[INDEX_B];
+		    		float QC_Y = p3[INDEX];
+    				float QR_Y = p3[INDEX_T];
+    				float QRR_Y = p3[INDEX_TT];
+		    		float dY_dy_L = MINMOD(QL_Y, QC_Y, QR_Y, dy);
+		    		float dY_dy_R = MINMOD(QC_Y, QR_Y, QRR_Y, dy);
+		    		float QL_Y_star = QC_Y + 0.5 * dy * dY_dy_L;
+		    		float QR_Y_star = QR_Y - 0.5 * dy * dY_dy_R;
+
+				CPU_Calc_rho_u_P_T(&interface_p[INDEX*6], &flux_Y[INDEX*6], //因為flux跟interface_p都有6個物理量需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
+						   QL_rho_star, QL_ux_star, QL_vy_star, QL_vz, QL_cRT_star, QL_Y_star,
+						   QR_rho_star, QR_ux_star, QR_vy_star, QR_vz, QR_cRT_star, QR_Y_star, R_mix, GAMMA,
 						   0.0, 1.0, 0.0,
 						   -1.0, 0.0, 0.0,
 						   0.0, 0.0, 1.0, wall_flag);
@@ -238,7 +256,7 @@ int main(){
 				float MomX_old = rho_old * u_old; // p0[INDEX] * p1[INDEX]
 				float MomY_old = rho_old * v_old; // p0[INDEX] * p1[INDEX]
 				float E_old = rho_old * (CV * T_old + 0.5 * (u_old * u_old + v_old * v_old)); //p0[INDEX] * (CV * p2[INDEX] + 0.5 * (p1[INDEX] * p1[INDEX] + p2[INDEX] * p2[INDEX]))
-				// Use FVM to get new primitive variable，interface_p[0] is density、[1] is u、[2] is v、[3] is w、[4] is temperature。
+				// Use FVM to get new primitive variable，interface_p[0] is density、[1] is u、[2] is v、[3] is w、[4] is temperature、[5] is mass fraction (Y)。
 				float rho_new = rho_old + (dt / dx) * (flux_X[L_interface + 0] - flux_X[R_interface + 0])
 							+ (dt / dy) * (flux_Y[B_interface + 0] - flux_Y[T_interface + 0]);
 				float MomX_new = MomX_old + (dt / dx) * (flux_X[L_interface + 1] - flux_X[R_interface + 1])

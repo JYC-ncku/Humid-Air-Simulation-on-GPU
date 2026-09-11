@@ -36,12 +36,13 @@ float CPU_Compute_MAX_CFL(float *p0, float *p1, float *p2, float *p3, float dx, 
 }
 
 void CPU_Calc_rho_u_P_T(float *interface_p, float *flux,
-			float QL_rho, float QL_ux, float QL_vy, float QL_vz, float QL_cRT,
-			float QR_rho, float QR_ux, float QR_vy, float QR_vz, float QR_cRT, float R, float GAMMA,
+			float QL_rho, float QL_ux, float QL_vy, float QL_vz, float QL_cRT, float QL_Y,
+			float QR_rho, float QR_ux, float QR_vy, float QR_vz, float QR_cRT, float QR_Y, float R, float GAMMA,
 			float nx, float ny, float nz,
 			float px, float py, float pz,
 			float qx, float qy, float qz, int wall_flag){
 	// DECLARE CONSTANTS
+	float Y_face, Yflx;
 	float QL_u, QL_v, QL_w, QR_u, QR_v, QR_w; // 一個界面會有來自x,y,z三個不同方向的速度分量進入，然後我們有左邊界面跟右邊界面。
 	float QR_RT, QL_RT, QR_T, QL_T, QR_E, QL_E, QR_p, QL_p, QR_a, QL_a, QL_e, QR_e;
 	float sqrR, sqrL, gm1, gp1, base,expon,pwr,z;
@@ -655,9 +656,11 @@ void CPU_Calc_rho_u_P_T(float *interface_p, float *flux,
 	if (QI_u < 0.0) {
 		QI_v = QR_v;
 		QI_w = QR_w;
+		Y_face = QR_Y;
 	} else {
 		QI_v = QL_v;
 		QI_w = QL_w;
+		Y_face = QL_Y;
 	}
 
 	//     ******** **********
@@ -666,7 +669,7 @@ void CPU_Calc_rho_u_P_T(float *interface_p, float *flux,
 
 	//    Mass/unit-area/unit-time
 	mflx = QI_rho*QI_u; // Mss flux
-
+	Yflx = mflx * Y_face;
 	//    Normal momentum
 	flxnmn = QI_rho*QI_u*QI_u + QI_p;
 
@@ -689,7 +692,7 @@ void CPU_Calc_rho_u_P_T(float *interface_p, float *flux,
 	flux[2] = pyflx;
 	flux[3] = pzflx;
 	flux[4] = eflx;
-
+	flux[5] = Yflx;
 	// States now
 	interface_p[0] = QI_rho;
 	interface_p[1] = QI_u;
