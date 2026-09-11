@@ -46,7 +46,7 @@ int main(){
 	float GAMMA = 1.4;
 	int wall_flag = 0;
 	float *x, *y, *p0, *p1, *p2, *p3, *p4, *p5, *p6, *interface_p, *flux_X, *flux_Y;
-	//p0 is density, p1 is x-dir velocity, p2 is y-dir veloctiy, p3 is temperature, p4 is pressure., p5 is mass fraction of water vapor
+	//p0 is density, p1 is x-dir velocity, p2 is y-dir veloctiy, p3 is temperature, p4 is pressure, p5 is mass fraction of water vapor, p6 is relative humidity
 	float flxnmn, flxpmn, flxqmn;
 	float CFL = 0.5;
 
