@@ -82,7 +82,7 @@ int main(){
 */
 	while (t<t_FINAL){
 		// Boundary condition for compute flux.
-		Boundary(p0, p1, p2, p3, p4, NX, NY);
+		Boundary(p0, p1, p2, p3, p4, p5, NX, NY);
 	    	float MAX_CFL = CPU_Compute_MAX_CFL(p0, p1, p2, p3, dx, dy, NX, NY);
 		float dt = CFL / MAX_CFL;
 	    	//X-dir (flux_X)
