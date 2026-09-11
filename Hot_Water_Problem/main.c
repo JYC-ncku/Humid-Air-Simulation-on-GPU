@@ -39,14 +39,18 @@ int main(){
 	float dy = H/NY;
 	float t = 0;
 	float t_FINAL = 0.2;
-	float R = 287; // Gas constant of dry air
+
+	float Ru = 8.3145; // unit: J/mole K
+	float R_dry = Ru / 28.97; // Gas constant of dry air (MW_air = 28.97 g/mole)
+	float R_v = Ru / 18.02; // Gas constant of water vapor (MW_water = 18.02 g/mole)
 	float GAMMA = 1.4;
 	int wall_flag = 0;
-	float *x, *y, *p0, *p1, *p2, *p3, *p4, *interface_p, *flux_X, *flux_Y; //p0 is density, p1 is x-dir velocity, p2 is y-dir veloctiy, p3 is temperature, p4 si pressure.
+	float *x, *y, *p0, *p1, *p2, *p3, *p4, *p5, *interface_p, *flux_X, *flux_Y;
+	//p0 is density, p1 is x-dir velocity, p2 is y-dir veloctiy, p3 is temperature, p4 is pressure., p5 is mass fraction of water vapor
 	float flxnmn, flxpmn, flxqmn;
 	float CFL = 0.5;
 
-	Allocate_memory(&x, &y, &p0, &p1, &p2, &p3, &p4, &interface_p, &flux_X, &flux_Y, N_CELLS);
+	Allocate_memory(&x, &y, &p0, &p1, &p2, &p3, &p4, &p5, &interface_p, &flux_X, &flux_Y, N_CELLS);
 	//Initial condition
 	for ( int i = 2; i < NX + 2; i++){
 		for (int j = 2; j < NY + 2; j++){
@@ -55,11 +59,12 @@ int main(){
 			p2[INDEX] = 0.0;
 			p3[INDEX] = 298.15; // Room temperature = 25 C = 273.15 + 25 = 298.15 K
 			p4[INDEX] = 101325; // 1 atm = 101325 Pa
-			p0[INDEX] = p4[INDEX] / (R * p3[INDEX]);
+			p0[INDEX] = p4[INDEX] / (R_dry * p3[INDEX]); //Density: rho = P / (R * T)
+			p5[INDEX] = 0.0; // Mass fraction of water vapor is 0 at every cells
 		}
 	}
 /* For x-dir
-	// Because this code only consider 1D, so let other two direction equal 0)
+	// Because this code only consider 2D, so let z direction equal 0)
 	float QL_vy = 1.0, QL_vz = 0;
 	float QR_vy = 1.0, QR_vz = 0;
 	float nx = 1.0, ny = 0.0, nz = 0.0;
@@ -68,7 +73,7 @@ int main(){
 */
 
 /* For y-dir
-	// Because this code only consider 1D, so let other two direction equal 0)
+	// Because this code only consider 2D, so let z direction equal 0)
 	float QL_vy = 1.0, QL_vz = 0;
 	float QR_vy = 1.0, QR_vz = 0;
 	float nx = 0.0, ny = 1.0, nz = 0.0;
@@ -78,7 +83,6 @@ int main(){
 	while (t<t_FINAL){
 		// Boundary condition for compute flux.
 		Boundary(p0, p1, p2, p3, p4, NX, NY);
-
 	    	float MAX_CFL = CPU_Compute_MAX_CFL(p0, p1, p2, p3, dx, dy, NX, NY);
 		float dt = CFL / MAX_CFL;
 	    	//X-dir (flux_X)
@@ -88,6 +92,8 @@ int main(){
 				int INDEX_R = (i + 1) * (NY + 4) + j;
 				int INDEX_RR = (i + 2) * (NY + 4) + j;
 				int INDEX_L = (i - 1) * (NY + 4) + j;
+				float R_mix = (1 - p5[INDEX]) * R_dry + p5[INDEX] * R_v;
+
 				float QL_rho = p0[INDEX_L];
 				float QC_rho = p0[INDEX];
 		    		float QR_rho = p0[INDEX_R];
@@ -127,10 +133,10 @@ int main(){
 		    		float QL_T_star = QC_T + 0.5 * dx * dT_dx_L;
 		    		float QR_T_star = QR_T - 0.5 * dx * dT_dx_R;
 
-				float QL_cRT = sqrt(R * QL_T);
-				float QC_cRT = sqrt(R * QC_T);
-    				float QR_cRT = sqrt(R * QR_T);
-    				float QRR_cRT = sqrt(R * QRR_T);
+				float QL_cRT = sqrt(R_mix * QL_T);
+				float QC_cRT = sqrt(R_mix * QC_T);
+    				float QR_cRT = sqrt(R_mix * QR_T);
+    				float QRR_cRT = sqrt(R_mix * QRR_T);
 		    		float dcRT_dx_L = MINMOD(QL_cRT, QC_cRT, QR_cRT, dx);
 		    		float dcRT_dx_R = MINMOD(QC_cRT, QR_cRT, QRR_cRT, dx);
 		    		float QL_cRT_star = QC_cRT + 0.5 * dx * dcRT_dx_L;
@@ -138,7 +144,7 @@ int main(){
 
 				CPU_Calc_rho_u_P_T(&interface_p[INDEX*6], &flux_X[INDEX*5], //因為flux跟interface_p都有5個物理量需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
 						   QL_rho_star, QL_ux_star, QL_vy_star, QL_vz, QL_cRT_star,
-						   QR_rho_star, QR_ux_star, QR_vy_star, QR_vz, QR_cRT_star, R, GAMMA,
+						   QR_rho_star, QR_ux_star, QR_vy_star, QR_vz, QR_cRT_star, R_mix, GAMMA,
 						   1.0, 0.0, 0.0,
 						   0.0, 1.0, 0.0,
 						   0.0, 0.0, 1.0, wall_flag);
@@ -152,6 +158,7 @@ int main(){
 				int INDEX = i * (NY + 4) + j;
 				int INDEX_T = i * (NY + 4) + (j + 1);
 				int INDEX_TT = i * (NY + 4) + (j + 2);
+				float R_mix = (1 - p5[INDEX]) * R_dry + p5[INDEX] * R_v;
 
 				float QL_rho = p0[INDEX_B];
 				float QC_rho = p0[INDEX];
@@ -192,10 +199,10 @@ int main(){
 		    		float QL_T_star = QC_T + 0.5 * dy * dT_dy_L;
 		    		float QR_T_star = QR_T - 0.5 * dy * dT_dy_R;
 
-				float QL_cRT = sqrt(R * QL_T);
-				float QC_cRT = sqrt(R * QC_T);
-    				float QR_cRT = sqrt(R * QR_T);
-    				float QRR_cRT = sqrt(R * QRR_T);
+				float QL_cRT = sqrt(R_mix * QL_T);
+				float QC_cRT = sqrt(R_mix * QC_T);
+    				float QR_cRT = sqrt(R_mix * QR_T);
+    				float QRR_cRT = sqrt(R_mix * QRR_T);
 		    		float dcRT_dy_L = MINMOD(QL_cRT, QC_cRT, QR_cRT, dy);
 		    		float dcRT_dy_R = MINMOD(QC_cRT, QR_cRT, QRR_cRT, dy);
 		    		float QL_cRT_star = QC_cRT + 0.5 * dy * dcRT_dy_L;
@@ -203,7 +210,7 @@ int main(){
 
 				CPU_Calc_rho_u_P_T(&interface_p[INDEX*6], &flux_Y[INDEX*5], //因為flux跟interface_p都有5個物理量需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
 						   QL_rho_star, QL_ux_star, QL_vy_star, QL_vz, QL_cRT_star,
-						   QR_rho_star, QR_ux_star, QR_vy_star, QR_vz, QR_cRT_star, R, GAMMA,
+						   QR_rho_star, QR_ux_star, QR_vy_star, QR_vz, QR_cRT_star, R_mix, GAMMA,
 						   0.0, 1.0, 0.0,
 						   -1.0, 0.0, 0.0,
 						   0.0, 0.0, 1.0, wall_flag);
@@ -218,18 +225,20 @@ int main(){
 				int R_interface = INDEX * 5; // T_intewrface = R_interface
 				int B_interface = (i * (NY + 4) + (j - 1)) * 5;
 				int T_interface = INDEX * 5; // T_intewrface = R_interface
-				float CV = R / (GAMMA - 1.0);
-				// 先將舊的值儲存起來
+
+				float R_mix = (1 - p5[INDEX]) * R_dry + p5[INDEX] * R_v;
+				float CV = R_mix / (GAMMA - 1.0);
+
+				// Save old data
 				float rho_old = p0[INDEX];
 				float u_old   = p1[INDEX];
 				float v_old   = p2[INDEX];
 				float T_old   = p3[INDEX];
-				// p1 存的是速度 u，我們要先算動量 rho*u 的變化再去除以rho得到u。
+
 				float MomX_old = rho_old * u_old; // p0[INDEX] * p1[INDEX]
 				float MomY_old = rho_old * v_old; // p0[INDEX] * p1[INDEX]
-				// 先從溫度算總能 E，更新完 E 再扣掉動能回算 T
 				float E_old = rho_old * (CV * T_old + 0.5 * (u_old * u_old + v_old * v_old)); //p0[INDEX] * (CV * p2[INDEX] + 0.5 * (p1[INDEX] * p1[INDEX] + p2[INDEX] * p2[INDEX]))
-				// 使用FVM計算新的值，interface_p[0]是密度、[1]是u、[2]是v、[3]是w、[4]是溫度。
+				// Use FVM to get new primitive variable，interface_p[0] is density、[1] is u、[2] is v、[3] is w、[4] is temperature。
 				float rho_new = rho_old + (dt / dx) * (flux_X[L_interface + 0] - flux_X[R_interface + 0])
 							+ (dt / dy) * (flux_Y[B_interface + 0] - flux_Y[T_interface + 0]);
 				float MomX_new = MomX_old + (dt / dx) * (flux_X[L_interface + 1] - flux_X[R_interface + 1])
@@ -238,16 +247,13 @@ int main(){
 							  + (dt / dy) * (flux_Y[B_interface + 2] - flux_Y[T_interface + 2]);
 				float E_new = E_old + (dt / dx) * (flux_X[L_interface + 4] - flux_X[R_interface + 4])
 						    + (dt / dy) * (flux_Y[B_interface + 4] - flux_Y[T_interface + 4]);
-				//更新密度 (p0)
+
 		    		p0[INDEX] = rho_new;
-    				// 更新動量並回推速度 (p1, p2)
     				p1[INDEX] = MomX_new / rho_new;
     				p2[INDEX] = MomY_new / rho_new;
-		    		// 更新能量並回推溫度 (p3)
 				float internal_e = (E_new / rho_new) - 0.5 * (p1[INDEX] * p1[INDEX] + p2[INDEX] * p2[INDEX]);
 				p3[INDEX] = internal_e / CV;
-				// 更新壓力 (p4)
-				p4[INDEX] = p0[INDEX] * R * p3[INDEX];
+				p4[INDEX] = p0[INDEX] * R_mix * p3[INDEX];
 			}
 		}
 		t += dt;
@@ -258,12 +264,12 @@ int main(){
 			int INDEX = i * (NY + 4) + j;
 			float X = (i - 1.5) * dx;
 			float Y = (j - 1.5) * dy;
-			fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.2f\n", X, Y, p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX]);
+			fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, Y, p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX], p5[INDEX]);
 		}
 	}
 	fclose(pFile);
 
-	Free_memory(&x, &y, &p0, &p1, &p2, &p3, &p4, &interface_p, &flux_X, &flux_Y);
+	Free_memory(&x, &y, &p0, &p1, &p2, &p3, &p4, &p5, &interface_p, &flux_X, &flux_Y);
 return 0;
 }
 
