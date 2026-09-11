@@ -157,6 +157,10 @@ int main(){
 						   1.0, 0.0, 0.0,
 						   0.0, 1.0, 0.0,
 						   0.0, 0.0, 1.0, wall_flag);
+
+//				float rho_face = 0.5 * (QC_rho + QR_rho);
+//				float Diff_flux = rho_face * D * ((QR_Y - QC_Y) / dx);
+//				float Y_Tot_Flux =
 			}
 		}
 
@@ -249,13 +253,15 @@ int main(){
 
 				// Save old data
 				float rho_old = p0[INDEX];
-				float u_old   = p1[INDEX];
-				float v_old   = p2[INDEX];
-				float T_old   = p3[INDEX];
+				float u_old = p1[INDEX];
+				float v_old = p2[INDEX];
+				float T_old = p3[INDEX];
+				float Y_old = p5[INDEX];
 
 				float MomX_old = rho_old * u_old; // p0[INDEX] * p1[INDEX]
 				float MomY_old = rho_old * v_old; // p0[INDEX] * p1[INDEX]
 				float E_old = rho_old * (CV * T_old + 0.5 * (u_old * u_old + v_old * v_old)); //p0[INDEX] * (CV * p2[INDEX] + 0.5 * (p1[INDEX] * p1[INDEX] + p2[INDEX] * p2[INDEX]))
+				float rho_Y_old = rho_old * Y_old;
 				// Use FVM to get new primitive variable，interface_p[0] is density、[1] is u、[2] is v、[3] is w、[4] is temperature、[5] is mass fraction (Y)。
 				float rho_new = rho_old + (dt / dx) * (flux_X[L_interface + 0] - flux_X[R_interface + 0])
 							+ (dt / dy) * (flux_Y[B_interface + 0] - flux_Y[T_interface + 0]);
@@ -265,6 +271,8 @@ int main(){
 							  + (dt / dy) * (flux_Y[B_interface + 2] - flux_Y[T_interface + 2]);
 				float E_new = E_old + (dt / dx) * (flux_X[L_interface + 4] - flux_X[R_interface + 4])
 						    + (dt / dy) * (flux_Y[B_interface + 4] - flux_Y[T_interface + 4]);
+				float rho_Y_new = rho_Y_old + (dt / dx) * (flux_X[L_interface + 5] - flux_X[R_interface + 5])
+							    + (dt / dy) * (flux_Y[B_interface + 5] - flux_Y[T_interface + 5]);
 
 		    		p0[INDEX] = rho_new;
     				p1[INDEX] = MomX_new / rho_new;
@@ -272,6 +280,7 @@ int main(){
 				float internal_e = (E_new / rho_new) - 0.5 * (p1[INDEX] * p1[INDEX] + p2[INDEX] * p2[INDEX]);
 				p3[INDEX] = internal_e / CV;
 				p4[INDEX] = p0[INDEX] * R_mix * p3[INDEX];
+				p5[INDEX] = rho_Y_new / rho_new;
 			}
 		}
 		t += dt;
