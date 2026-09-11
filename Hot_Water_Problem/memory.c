@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 void Allocate_memory(float **array1, float **array2, float **array3, float **array4, float **array5, float **array6, float **array7, float **array8, float **array9,
-		     float **array10, float **array11, int N_CELLS){
+		     float **array10, float **array11, float **array12, int N_CELLS){
 	*array1 = (float*)malloc(N_CELLS * sizeof(float));
 	*array2 = (float*)malloc(N_CELLS * sizeof(float));
 	*array3 = (float*)malloc(N_CELLS * sizeof(float));
@@ -11,9 +11,10 @@ void Allocate_memory(float **array1, float **array2, float **array3, float **arr
 	*array6 = (float*)malloc(N_CELLS * sizeof(float));
 	*array7 = (float*)malloc(N_CELLS * sizeof(float));
 	*array8 = (float*)malloc(N_CELLS * sizeof(float));
-	*array9 = (float*)malloc((N_CELLS) * 6 * sizeof(float)); // interface_p have 6 output
-	*array10 = (float*)malloc((N_CELLS) * 5 * sizeof(float)); // flux_X have 5 ouuput
-	*array11 = (float*)malloc((N_CELLS) * 5 * sizeof(float)); // flux_Y have 5 ouuput
+	*array9 = (float*)malloc(N_CELLS * sizeof(float));
+	*array10 = (float*)malloc((N_CELLS) * 6 * sizeof(float)); // interface_p have 6 output
+	*array11 = (float*)malloc((N_CELLS) * 5 * sizeof(float)); // flux_X have 5 ouuput
+	*array12 = (float*)malloc((N_CELLS) * 5 * sizeof(float)); // flux_Y have 5 ouuput
 	if(*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL || *array7 == NULL || *array8 == NULL ||
 	   *array9 == NULL || *array10 == NULL || *array11 == NULL){
 		printf("Memory allocation failed!\n");
@@ -21,7 +22,8 @@ void Allocate_memory(float **array1, float **array2, float **array3, float **arr
 		printf("Memory allocation successfully for %d elements!\n", N_CELLS);
 }
 
-void Free_memory(float **array1, float **array2, float **array3, float **array4, float **array5, float **array6, float **array7, float **array8, float **array9, float **array10, float **array11){
+void Free_memory(float **array1, float **array2, float **array3, float **array4, float **array5, float **array6, float **array7, float **array8, float **array9, float **array10, float **array11,
+		 float **array12){
 	free(*array1);
 	free(*array2);
 	free(*array3);
@@ -33,5 +35,6 @@ void Free_memory(float **array1, float **array2, float **array3, float **array4,
 	free(*array9);
 	free(*array10);
 	free(*array11);
+	free(*array12);
 	printf("Memory freed successfully!\n");
 }

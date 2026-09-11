@@ -45,12 +45,12 @@ int main(){
 	float R_v = Ru / 18.02; // Gas constant of water vapor (MW_water = 18.02 g/mole)
 	float GAMMA = 1.4;
 	int wall_flag = 0;
-	float *x, *y, *p0, *p1, *p2, *p3, *p4, *p5, *interface_p, *flux_X, *flux_Y;
+	float *x, *y, *p0, *p1, *p2, *p3, *p4, *p5, *p6, *interface_p, *flux_X, *flux_Y;
 	//p0 is density, p1 is x-dir velocity, p2 is y-dir veloctiy, p3 is temperature, p4 is pressure., p5 is mass fraction of water vapor
 	float flxnmn, flxpmn, flxqmn;
 	float CFL = 0.5;
 
-	Allocate_memory(&x, &y, &p0, &p1, &p2, &p3, &p4, &p5, &interface_p, &flux_X, &flux_Y, N_CELLS);
+	Allocate_memory(&x, &y, &p0, &p1, &p2, &p3, &p4, &p5, &p6, &interface_p, &flux_X, &flux_Y, N_CELLS);
 	//Initial condition
 	for ( int i = 2; i < NX + 2; i++){
 		for (int j = 2; j < NY + 2; j++){
@@ -269,7 +269,7 @@ int main(){
 	}
 	fclose(pFile);
 
-	Free_memory(&x, &y, &p0, &p1, &p2, &p3, &p4, &p5, &interface_p, &flux_X, &flux_Y);
+	Free_memory(&x, &y, &p0, &p1, &p2, &p3, &p4, &p5, &p6, &interface_p, &flux_X, &flux_Y);
 return 0;
 }
 
