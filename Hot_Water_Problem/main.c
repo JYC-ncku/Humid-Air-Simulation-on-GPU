@@ -255,10 +255,8 @@ int main(){
 	    			// 我們是 i*6，所以左界面是 (i-1)*6，右界面是 i*6
 				int L_interface = ((i - 1) * (NY + 4) + j) * 6;
 				int R_interface = INDEX * 6; // T_intewrface = R_interface
-//				int B_interface = (i * (NY + 4) + (j - 1)) * 6;
-//				int T_interface = INDEX * 6; // T_intewrface = R_interface
-				int B_interface = INDEX * 6;
-				int T_interface = (i * (NY + 4) + (j + 1)) * 6;
+				int B_interface = (i * (NY + 4) + (j - 1)) * 6;
+				int T_interface = INDEX * 6; // T_intewrface = R_interface
 
 				float R_mix_old = (1 - p5[INDEX]) * R_dry + p5[INDEX] * R_v;
 				float Cp_mix_old = (1 - p5[INDEX]) * Cp_dry + p5[INDEX] * Cp_v;
