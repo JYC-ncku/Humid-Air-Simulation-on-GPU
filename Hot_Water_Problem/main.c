@@ -96,10 +96,10 @@ int main(){
 				int INDEX_R = (i + 1) * (NY + 4) + j;
 				int INDEX_RR = (i + 2) * (NY + 4) + j;
 				int INDEX_L = (i - 1) * (NY + 4) + j;
-				float R_mix = (1 - p5[INDEX]) * R_dry + p5[INDEX] * R_v;
-				float Cp_mix =(1 - p5[INDEX]) * Cp_dry + p5[INDEX] * Cp_v;
-				float Cv_mix = Cp_mix - R_mix;
-				float GAMMA = Cp_mix / Cv_mix;
+//				float R_mix = (1 - p5[INDEX]) * R_dry + p5[INDEX] * R_v;
+//				float Cp_mix =(1 - p5[INDEX]) * Cp_dry + p5[INDEX] * Cp_v;
+//				float Cv_mix = Cp_mix - R_mix;
+//				float GAMMA = Cp_mix / Cv_mix;
 
 				float QL_rho = p0[INDEX_L];
 				float QC_rho = p0[INDEX];
@@ -140,10 +140,16 @@ int main(){
 		    		float QL_T_star = QC_T + 0.5 * dx * dT_dx_L;
 		    		float QR_T_star = QR_T - 0.5 * dx * dT_dx_R;
 
-				float QL_cRT = sqrt(R_mix * QL_T);
-				float QC_cRT = sqrt(R_mix * QC_T);
-    				float QR_cRT = sqrt(R_mix * QR_T);
-    				float QRR_cRT = sqrt(R_mix * QRR_T);
+				// Calculate gas constant at interface for calculate Flux
+				float R_L = (1 - p5[INDEX_L]) * R_dry + p5[INDEX_L] * R_v;
+				float R_C = (1 - p5[INDEX]) * R_dry + p5[INDEX] * R_v;
+				float R_R = (1 - p5[INDEX_R]) * R_dry + p5[INDEX_R] * R_v;
+				float R_RR = (1 - p5[INDEX_RR]) * R_dry + p5[INDEX_RR] * R_v;
+
+				float QL_cRT = sqrt(R_L * QL_T);
+				float QC_cRT = sqrt(R_C * QC_T);
+  				float QR_cRT = sqrt(R_R * QR_T);
+				float QRR_cRT = sqrt(R_RR * QRR_T);
 		    		float dcRT_dx_L = MINMOD(QL_cRT, QC_cRT, QR_cRT, dx);
 		    		float dcRT_dx_R = MINMOD(QC_cRT, QR_cRT, QRR_cRT, dx);
 		    		float QL_cRT_star = QC_cRT + 0.5 * dx * dcRT_dx_L;
@@ -158,9 +164,14 @@ int main(){
 		    		float QL_Y_star = QC_Y + 0.5 * dx * dY_dx_L;
 		    		float QR_Y_star = QR_Y - 0.5 * dx * dY_dx_R;
 
+				float Y_face = 0.5 * (QL_Y_star + QR_Y_star);
+				float R_mix_face = (1 - Y_face) * R_dry + Y_face * R_v;
+				float Cp_mix_face = (1 - Y_face) * Cp_dry + Y_face * Cp_v;
+				float GAMMA_face = Cp_mix_face / (Cp_mix_face - R_mix_face);
+
 				CPU_Calc_rho_u_P_T(&interface_p[INDEX*6], &flux_X[INDEX*6], //因為flux跟interface_p都有6個物理量需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
 						   QL_rho_star, QL_ux_star, QL_vy_star, QL_vz, QL_cRT_star, QL_Y_star,
-						   QR_rho_star, QR_ux_star, QR_vy_star, QR_vz, QR_cRT_star, QR_Y_star, R_mix, GAMMA,
+						   QR_rho_star, QR_ux_star, QR_vy_star, QR_vz, QR_cRT_star, QR_Y_star, R_mix_face, GAMMA_face,
 						   1.0, 0.0, 0.0,
 						   0.0, 1.0, 0.0,
 						   0.0, 0.0, 1.0, wall_flag);
@@ -178,71 +189,82 @@ int main(){
 				int INDEX = i * (NY + 4) + j;
 				int INDEX_T = i * (NY + 4) + (j + 1);
 				int INDEX_TT = i * (NY + 4) + (j + 2);
-				float R_mix = (1 - p5[INDEX]) * R_dry + p5[INDEX] * R_v;
-				float Cp_mix =(1 - p5[INDEX]) * Cp_dry + p5[INDEX] * Cp_v;
-				float Cv_mix = Cp_mix - R_mix;
-				float GAMMA = Cp_mix / Cv_mix;
+//				float R_mix = (1 - p5[INDEX]) * R_dry + p5[INDEX] * R_v;
+//				float Cp_mix =(1 - p5[INDEX]) * Cp_dry + p5[INDEX] * Cp_v;
+//				float Cv_mix = Cp_mix - R_mix;
+//				float GAMMA = Cp_mix / Cv_mix;
 
-				float QL_rho = p0[INDEX_B];
+				float QB_rho = p0[INDEX_B];
 				float QC_rho = p0[INDEX];
-		    		float QR_rho = p0[INDEX_T];
-		    		float QRR_rho = p0[INDEX_TT];
-		    		float drho_dy_L = MINMOD(QL_rho, QC_rho, QR_rho, dy);
-		    		float drho_dy_R = MINMOD(QC_rho, QR_rho, QRR_rho, dy);
-		    		float QL_rho_star = QC_rho + 0.5 * dy * drho_dy_L;
-		    		float QR_rho_star = QR_rho - 0.5 * dy * drho_dy_R;
+		    		float QT_rho = p0[INDEX_T];
+		    		float QTT_rho = p0[INDEX_TT];
+		    		float drho_dy_B = MINMOD(QB_rho, QC_rho, QT_rho, dy);
+		    		float drho_dy_T = MINMOD(QC_rho, QT_rho, QTT_rho, dy);
+		    		float QB_rho_star = QC_rho + 0.5 * dy * drho_dy_B;
+		    		float QT_rho_star = QT_rho - 0.5 * dy * drho_dy_T;
 
-    				float QL_ux  = p1[INDEX_B];
+    				float QB_ux  = p1[INDEX_B];
     				float QC_ux  = p1[INDEX];
-    				float QR_ux  = p1[INDEX_T];
-    				float QRR_ux  = p1[INDEX_TT];
-		    		float du_dy_L = MINMOD(QL_ux, QC_ux, QR_ux, dy);
-		    		float du_dy_R = MINMOD(QC_ux, QR_ux, QRR_ux, dy);
-		    		float QL_ux_star = QC_ux + 0.5 * dy * du_dy_L;
-		    		float QR_ux_star = QR_ux - 0.5 * dy * du_dy_R;
+    				float QT_ux  = p1[INDEX_T];
+    				float QTT_ux  = p1[INDEX_TT];
+		    		float du_dy_B = MINMOD(QB_ux, QC_ux, QT_ux, dy);
+		    		float du_dy_T = MINMOD(QC_ux, QT_ux, QTT_ux, dy);
+		    		float QB_ux_star = QC_ux + 0.5 * dy * du_dy_B;
+		    		float QT_ux_star = QT_ux - 0.5 * dy * du_dy_T;
 
-    				float QL_vy = p2[INDEX_B];
+    				float QB_vy = p2[INDEX_B];
     				float QC_vy = p2[INDEX];
-    				float QR_vy = p2[INDEX_T];
-    				float QRR_vy = p2[INDEX_TT];
-		    		float dv_dy_L = MINMOD(QL_vy, QC_vy, QR_vy, dy);
-		    		float dv_dy_R = MINMOD(QC_vy, QR_vy, QRR_vy, dy);
-		    		float QL_vy_star = QC_vy + 0.5 * dy * dv_dy_L;
-		    		float QR_vy_star = QR_vy - 0.5 * dy * dv_dy_R;
+    				float QT_vy = p2[INDEX_T];
+    				float QTT_vy = p2[INDEX_TT];
+		    		float dv_dy_B = MINMOD(QB_vy, QC_vy, QT_vy, dy);
+		    		float dv_dy_T = MINMOD(QC_vy, QT_vy, QTT_vy, dy);
+		    		float QB_vy_star = QC_vy + 0.5 * dy * dv_dy_B;
+		    		float QT_vy_star = QT_vy - 0.5 * dy * dv_dy_T;
 
-    				float QL_vz  = 0.0;
-    				float QR_vz  = 0.0;
+    				float QB_vz  = 0.0;
+    				float QT_vz  = 0.0;
 
-		    		float QL_T = p3[INDEX_B];
+		    		float QB_T = p3[INDEX_B];
 		    		float QC_T = p3[INDEX];
-    				float QR_T = p3[INDEX_T];
-    				float QRR_T = p3[INDEX_TT];
-		    		float dT_dy_L = MINMOD(QL_T, QC_T, QR_T, dy);
-		    		float dT_dy_R = MINMOD(QC_T, QR_T, QRR_T, dy);
-		    		float QL_T_star = QC_T + 0.5 * dy * dT_dy_L;
-		    		float QR_T_star = QR_T - 0.5 * dy * dT_dy_R;
+    				float QT_T = p3[INDEX_T];
+    				float QTT_T = p3[INDEX_TT];
+		    		float dT_dy_B = MINMOD(QB_T, QC_T, QT_T, dy);
+		    		float dT_dy_T = MINMOD(QC_T, QT_T, QTT_T, dy);
+		    		float QB_T_star = QC_T + 0.5 * dy * dT_dy_B;
+		    		float QT_T_star = QT_T - 0.5 * dy * dT_dy_T;
 
-				float QL_cRT = sqrt(R_mix * QL_T);
-				float QC_cRT = sqrt(R_mix * QC_T);
-    				float QR_cRT = sqrt(R_mix * QR_T);
-    				float QRR_cRT = sqrt(R_mix * QRR_T);
-		    		float dcRT_dy_L = MINMOD(QL_cRT, QC_cRT, QR_cRT, dy);
-		    		float dcRT_dy_R = MINMOD(QC_cRT, QR_cRT, QRR_cRT, dy);
-		    		float QL_cRT_star = QC_cRT + 0.5 * dy * dcRT_dy_L;
-		    		float QR_cRT_star = QR_cRT - 0.5 * dy * dcRT_dy_R;
+				// Calculate gas constant at interface for calculate Flux
+				float R_B = (1 - p5[INDEX_B]) * R_dry + p5[INDEX_B] * R_v;
+				float R_C = (1 - p5[INDEX]) * R_dry + p5[INDEX] * R_v;
+				float R_T = (1 - p5[INDEX_T]) * R_dry + p5[INDEX_T] * R_v;
+				float R_TT = (1 - p5[INDEX_TT]) * R_dry + p5[INDEX_TT] * R_v;
 
-		    		float QL_Y = p5[INDEX_B];
+				float QB_cRT = sqrt(R_B * QB_T);
+				float QC_cRT = sqrt(R_C * QC_T);
+    				float QT_cRT = sqrt(R_T * QT_T);
+    				float QTT_cRT = sqrt(R_TT * QTT_T);
+		    		float dcRT_dy_B = MINMOD(QB_cRT, QC_cRT, QT_cRT, dy);
+		    		float dcRT_dy_T = MINMOD(QC_cRT, QT_cRT, QTT_cRT, dy);
+		    		float QB_cRT_star = QC_cRT + 0.5 * dy * dcRT_dy_B;
+		    		float QT_cRT_star = QT_cRT - 0.5 * dy * dcRT_dy_T;
+
+		    		float QB_Y = p5[INDEX_B];
 		    		float QC_Y = p5[INDEX];
-    				float QR_Y = p5[INDEX_T];
-    				float QRR_Y = p5[INDEX_TT];
-		    		float dY_dy_L = MINMOD(QL_Y, QC_Y, QR_Y, dy);
-		    		float dY_dy_R = MINMOD(QC_Y, QR_Y, QRR_Y, dy);
-		    		float QL_Y_star = QC_Y + 0.5 * dy * dY_dy_L;
-		    		float QR_Y_star = QR_Y - 0.5 * dy * dY_dy_R;
+    				float QT_Y = p5[INDEX_T];
+    				float QTT_Y = p5[INDEX_TT];
+		    		float dY_dy_B = MINMOD(QB_Y, QC_Y, QT_Y, dy);
+		    		float dY_dy_T = MINMOD(QC_Y, QT_Y, QTT_Y, dy);
+		    		float QB_Y_star = QC_Y + 0.5 * dy * dY_dy_B;
+		    		float QT_Y_star = QT_Y - 0.5 * dy * dY_dy_T;
+
+				float Y_face = 0.5 * (QB_Y_star + QT_Y_star);
+				float R_mix_face = (1 - Y_face) * R_dry + Y_face * R_v;
+				float Cp_mix_face = (1 - Y_face) * Cp_dry + Y_face * Cp_v;
+				float GAMMA_face = Cp_mix_face / (Cp_mix_face - R_mix_face);
 
 				CPU_Calc_rho_u_P_T(&interface_p[INDEX*6], &flux_Y[INDEX*6], //因為flux跟interface_p都有6個物理量需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
-						   QL_rho_star, QL_ux_star, QL_vy_star, QL_vz, QL_cRT_star, QL_Y_star,
-						   QR_rho_star, QR_ux_star, QR_vy_star, QR_vz, QR_cRT_star, QR_Y_star, R_mix, GAMMA,
+						   QB_rho_star, QB_ux_star, QB_vy_star, QB_vz, QB_cRT_star, QB_Y_star,
+						   QT_rho_star, QT_ux_star, QT_vy_star, QT_vz, QT_cRT_star, QT_Y_star, R_mix_face, GAMMA_face,
 						   0.0, 1.0, 0.0,
 						   -1.0, 0.0, 0.0,
 						   0.0, 0.0, 1.0, wall_flag);
@@ -296,6 +318,7 @@ int main(){
 				float internal_e = (E_new / rho_new) - 0.5 * (p1[INDEX] * p1[INDEX] + p2[INDEX] * p2[INDEX]);
 				p3[INDEX] = internal_e / Cv_mix_new;
 				p4[INDEX] = p0[INDEX] * R_mix_new * p3[INDEX];
+				if (isnan(p3[INDEX]) || isnan(p0[INDEX])) { printf("抓到 NaN！時間 t=%f, 座標 i=%d, j=%d\n", t, i, j); exit(1); }
 			}
 		}
 		t += dt;
