@@ -72,8 +72,8 @@ void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, 
 		p4[BOTTOM_GHOST] = p4[BOTTOM_INNER];
 		p4[BOTTOM_BOTTOM_GHOST] = p4[BOTTOM_BOTTOM_INNER];
 
-		p5[BOTTOM_GHOST] = 2 * Y_base - p5[BOTTOM_INNER];
-		p5[BOTTOM_BOTTOM_GHOST] = 2 * Y_base - p5[BOTTOM_BOTTOM_INNER];
+		p5[BOTTOM_GHOST] = fmin(2 * Y_base - p5[BOTTOM_INNER], 1.0);
+		p5[BOTTOM_BOTTOM_GHOST] = fmin(2 * Y_base - p5[BOTTOM_BOTTOM_INNER], 1.0);
 
 		// rho = P / RT
 		float R_mix_B = (1 - p5[BOTTOM_GHOST]) * R_dry + p5[BOTTOM_GHOST] * R_v;
