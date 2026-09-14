@@ -340,7 +340,7 @@ int main(){
 		}
 		t += dt;
 	}
-	FILE * pFile = fopen("Results_of_1000000_cells.txt","w");
+	FILE * pFile = fopen("Results_of_10000_cells.txt","w");
 	for (int i = 2; i < NX + 2; i++){
 		for (int j = 2; j < NY + 2; j++){
 			int INDEX = i * (NY + 4) + j;
