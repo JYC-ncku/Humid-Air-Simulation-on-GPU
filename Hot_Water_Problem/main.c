@@ -40,7 +40,7 @@ int main(){
 	float t = 0;
 	float t_FINAL = 0.2;
 
-	float Ru = 8.3145; // unit: J/mole-K
+	float Ru = 8314.5; // unit: J/mole-K
 	float R_dry = Ru / 28.97; // Gas constant of dry air (MW_air = 28.97 g/mole)
 	float R_v = Ru / 18.02; // Gas constant of water vapor (MW_water = 18.02 g/mole)
 
@@ -86,7 +86,7 @@ int main(){
 */
 	while (t<t_FINAL){
 		// Boundary condition for compute flux.
-		Boundary(p0, p1, p2, p3, p4, p5, NX, NY);
+		Boundary(p0, p1, p2, p3, p4, p5, Ru, R_v, R_dry, NX, NY);
 	    	float MAX_CFL = CPU_Compute_MAX_CFL(p0, p1, p2, p3, dx, dy, NX, NY);
 		float dt = CFL / MAX_CFL;
 	    	//X-dir (flux_X)
