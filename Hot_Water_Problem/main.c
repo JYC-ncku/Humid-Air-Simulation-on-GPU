@@ -46,7 +46,7 @@ int main(){
 
 	float Cp_dry = 1005; // unit: J/kg-K
 	float Cp_v = 1864; // unit: J/kg-K (water vapor, not liquid! liquid is 4.179)
-
+	float D = 2.42e-5;
 //	float GAMMA = 1.4;
 	int wall_flag = 0;
 	float *x, *y, *p0, *p1, *p2, *p3, *p4, *p5, *p6, *interface_p, *flux_X, *flux_Y;
@@ -88,7 +88,9 @@ int main(){
 		// Boundary condition for compute flux.
 		Boundary(p0, p1, p2, p3, p4, p5, Ru, R_v, R_dry, NX, NY);
 	    	float MAX_CFL = CPU_Compute_MAX_CFL(p0, p1, p2, p3, dx, dy, NX, NY);
-		float dt = CFL / MAX_CFL;
+		float dt_advection = CFL / MAX_CFL;
+		float dt_diffusion = 0.25 / (D * (1.0 / (dx * dx) + 1.0 / (dy * dy)));
+		float dt = fmin(dt_advection, dt_diffusion);
 	    	//X-dir (flux_X)
 		for (int i = 1; i < NX + 2; i++){		//N cells have N+1 interface
 			for (int j = 2; j < NY + 2; j++){	//j = 2 ~ 101(NY+1) is real cells
@@ -176,9 +178,9 @@ int main(){
 						   0.0, 1.0, 0.0,
 						   0.0, 0.0, 1.0, wall_flag);
 
-//				float rho_face = 0.5 * (QC_rho + QR_rho);
-//				float Diff_flux = rho_face * D * ((QR_Y - QC_Y) / dx);
-//				float Y_Tot_Flux =
+				float rho_face_X = 0.5 * (QC_rho + QR_rho);
+				float Diff_flux_X = rho_face_X * D * ((QR_Y - QC_Y) / dx); // Central difference
+				flux_X[INDEX*6 + 5] -= Diff_flux_X; // Total flux = Advection flux - diffusion flux, flux_X is adveciton flux from FVM
 			}
 		}
 
@@ -268,6 +270,9 @@ int main(){
 						   0.0, 1.0, 0.0,
 						   -1.0, 0.0, 0.0,
 						   0.0, 0.0, 1.0, wall_flag);
+				float rho_face_Y = 0.5 * (QC_rho + QT_rho);
+				float Diff_flux_Y = rho_face_Y * D * ((QT_Y - QC_Y) / dy);
+				flux_Y[INDEX*6 + 5] -= Diff_flux_Y;
 			}
 		}
 
