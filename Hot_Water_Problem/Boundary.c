@@ -31,7 +31,7 @@ void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, 
 		p3[RIGHT_GHOST] = p3[RIGHT_INNER];
 		p3[RIGHT_RIGHT_GHOST] = p3[RIGHT_INNER];
 
-		p4[LEFT_GHOST] = P_atm; // Inflow P = 1 atm = 101325 Pa (Kg/m-s^2)
+		p4[LEFT_GHOST] = p4[LEFT_INNER]; // Inflow P = 1 atm = 101325 Pa (Kg/m-s^2)
 		p4[LEFT_LEFT_GHOST] = p4[LEFT_GHOST];
 		p4[RIGHT_GHOST] = p4[RIGHT_INNER];
 		p4[RIGHT_RIGHT_GHOST] = p4[RIGHT_INNER];
@@ -75,8 +75,8 @@ void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, 
 //		int TOP_TOP_INNER = i * (NY+4) + NY;
 
 		// BOTTOM
-		p1[BOTTOM_GHOST] = -p1[BOTTOM_INNER];
-		p1[BOTTOM_BOTTOM_GHOST] = -p1[BOTTOM_BOTTOM_INNER];
+		p1[BOTTOM_GHOST] = p1[BOTTOM_INNER];
+		p1[BOTTOM_BOTTOM_GHOST] = p1[BOTTOM_BOTTOM_INNER];
 
 		p2[BOTTOM_GHOST] = -p2[BOTTOM_INNER];
 		p2[BOTTOM_BOTTOM_GHOST] = -p2[BOTTOM_BOTTOM_INNER];
@@ -108,8 +108,8 @@ void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, 
 		p3[TOP_GHOST] = p3[TOP_INNER];
 		p3[TOP_TOP_GHOST] = p3[TOP_INNER];
 
-		p4[TOP_GHOST] = P_atm;
-		p4[TOP_TOP_GHOST] = P_atm;
+		p4[TOP_GHOST] = p4[TOP_INNER];
+		p4[TOP_TOP_GHOST] = p4[TOP_INNER];
 
 		p5[TOP_GHOST] = p5[TOP_INNER];
 		p5[TOP_TOP_GHOST] = p5[TOP_INNER];

@@ -30,8 +30,8 @@ float MINMOD(float QL_rho, float QC_rho, float QR_rho, float dx){
 }
 
 int main(){
-	int NX = 1000;
-	int NY = 1000;
+	int NX = 100;
+	int NY = 100;
 	int N_CELLS = (NX+4) * (NY+4); //+2 for Ghost cells
 	float L = 1.0;
 	float H = 1.0;
@@ -52,7 +52,7 @@ int main(){
 	float *x, *y, *p0, *p1, *p2, *p3, *p4, *p5, *p6, *interface_p, *flux_X, *flux_Y;
 	//p0 is density, p1 is x-dir velocity, p2 is y-dir veloctiy, p3 is temperature, p4 is pressure, p5 is mass fraction of water vapor, p6 is relative humidity
 	float flxnmn, flxpmn, flxqmn;
-	float CFL = 0.5;
+	float CFL = 0.1;
 
 	Allocate_memory(&x, &y, &p0, &p1, &p2, &p3, &p4, &p5, &p6, &interface_p, &flux_X, &flux_Y, N_CELLS);
 	//Initial condition
@@ -179,8 +179,11 @@ int main(){
 						   0.0, 0.0, 1.0, wall_flag);
 
 				float rho_face_X = 0.5 * (QC_rho + QR_rho);
+				float T_face_X = 0.5 * (QC_T + QR_T);
 				float Diff_flux_X = rho_face_X * D * ((QR_Y - QC_Y) / dx); // Central difference
+				float Enthalpy_diff_X = Diff_flux_X * (Cp_v - Cp_dry) * T_face_X;
 				flux_X[INDEX*6 + 5] -= Diff_flux_X; // Total flux = Advection flux - diffusion flux, flux_X is adveciton flux from FVM
+				flux_X[INDEX*6 + 4] -= Enthalpy_diff_X;
 			}
 		}
 
@@ -271,8 +274,11 @@ int main(){
 						   -1.0, 0.0, 0.0,
 						   0.0, 0.0, 1.0, wall_flag);
 				float rho_face_Y = 0.5 * (QC_rho + QT_rho);
+				float T_face_Y = 0.5 * (QC_T + QT_T);
 				float Diff_flux_Y = rho_face_Y * D * ((QT_Y - QC_Y) / dy);
+				float Enthalpy_diff_Y = Diff_flux_Y * (Cp_v - Cp_dry) * T_face_Y;
 				flux_Y[INDEX*6 + 5] -= Diff_flux_Y;
+				flux_Y[INDEX*6 + 4] -= Enthalpy_diff_Y;
 			}
 		}
 
@@ -340,7 +346,7 @@ int main(){
 			int INDEX = i * (NY + 4) + j;
 			float X = (i - 1.5) * dx;
 			float Y = (j - 1.5) * dy;
-			fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, Y, p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX], p5[INDEX]);
+			fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, Y, p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX], p6[INDEX]);
 		}
 	}
 	fclose(pFile);
