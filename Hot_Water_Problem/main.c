@@ -47,7 +47,7 @@ int main(){
 	float Cp_dry = 1005; // unit: J/kg-K
 	float Cp_v = 1864; // unit: J/kg-K (water vapor, not liquid! liquid is 4.179)
 
-	float GAMMA = 1.4;
+//	float GAMMA = 1.4;
 	int wall_flag = 0;
 	float *x, *y, *p0, *p1, *p2, *p3, *p4, *p5, *p6, *interface_p, *flux_X, *flux_Y;
 	//p0 is density, p1 is x-dir velocity, p2 is y-dir veloctiy, p3 is temperature, p4 is pressure, p5 is mass fraction of water vapor, p6 is relative humidity
@@ -260,8 +260,9 @@ int main(){
 				int B_interface = INDEX * 6;
 				int T_interface = (i * (NY + 4) + (j + 1)) * 6;
 
-				float R_mix = (1 - p5[INDEX]) * R_dry + p5[INDEX] * R_v;
-				float CV = R_mix / (GAMMA - 1.0);
+				float R_mix_old = (1 - p5[INDEX]) * R_dry + p5[INDEX] * R_v;
+				float Cp_mix_old = (1 - p5[INDEX]) * Cp_dry + p5[INDEX] * Cp_v;
+				float Cv_mix_old = Cp_mix_old - R_mix_old;
 
 				// Save old data
 				float rho_old = p0[INDEX];
@@ -272,7 +273,7 @@ int main(){
 
 				float MomX_old = rho_old * u_old; // p0[INDEX] * p1[INDEX]
 				float MomY_old = rho_old * v_old; // p0[INDEX] * p1[INDEX]
-				float E_old = rho_old * (CV * T_old + 0.5 * (u_old * u_old + v_old * v_old)); //p0[INDEX] * (CV * p2[INDEX] + 0.5 * (p1[INDEX] * p1[INDEX] + p2[INDEX] * p2[INDEX]))
+				float E_old = rho_old * (Cv_mix_old * T_old + 0.5 * (u_old * u_old + v_old * v_old)); //p0[INDEX] * (CV * p2[INDEX] + 0.5 * (p1[INDEX] * p1[INDEX] + p2[INDEX] * p2[INDEX]))
 				float rho_Y_old = rho_old * Y_old;
 				// Use FVM to get new primitive variable，interface_p[0] is density、[1] is u、[2] is v、[3] is w、[4] is temperature、[5] is mass fraction (Y)。
 				float rho_new = rho_old + (dt / dx) * (flux_X[L_interface + 0] - flux_X[R_interface + 0])
@@ -289,10 +290,14 @@ int main(){
 		    		p0[INDEX] = rho_new;
     				p1[INDEX] = MomX_new / rho_new;
     				p2[INDEX] = MomY_new / rho_new;
-				float internal_e = (E_new / rho_new) - 0.5 * (p1[INDEX] * p1[INDEX] + p2[INDEX] * p2[INDEX]);
-				p3[INDEX] = internal_e / CV;
-				p4[INDEX] = p0[INDEX] * R_mix * p3[INDEX];
 				p5[INDEX] = rho_Y_new / rho_new;
+				float Y_new = p5[INDEX];
+				float R_mix_new = (1 - Y_new) * R_dry + Y_new * R_v;
+				float Cp_mix_new = (1 - Y_new) * Cp_dry + Y_new * Cp_v;
+				float Cv_mix_new = Cp_mix_new - R_mix_new;
+				float internal_e = (E_new / rho_new) - 0.5 * (p1[INDEX] * p1[INDEX] + p2[INDEX] * p2[INDEX]);
+				p3[INDEX] = internal_e / Cv_mix_new;
+				p4[INDEX] = p0[INDEX] * R_mix_new * p3[INDEX];
 			}
 		}
 		t += dt;
