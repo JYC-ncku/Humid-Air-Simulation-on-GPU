@@ -40,9 +40,13 @@ int main(){
 	float t = 0;
 	float t_FINAL = 0.2;
 
-	float Ru = 8.3145; // unit: J/mole K
+	float Ru = 8.3145; // unit: J/mole-K
 	float R_dry = Ru / 28.97; // Gas constant of dry air (MW_air = 28.97 g/mole)
 	float R_v = Ru / 18.02; // Gas constant of water vapor (MW_water = 18.02 g/mole)
+
+	float Cp_dry = 1005; // unit: J/kg-K
+	float Cp_v = 1864; // unit: J/kg-K (water vapor, not liquid! liquid is 4.179)
+
 	float GAMMA = 1.4;
 	int wall_flag = 0;
 	float *x, *y, *p0, *p1, *p2, *p3, *p4, *p5, *p6, *interface_p, *flux_X, *flux_Y;
@@ -93,6 +97,9 @@ int main(){
 				int INDEX_RR = (i + 2) * (NY + 4) + j;
 				int INDEX_L = (i - 1) * (NY + 4) + j;
 				float R_mix = (1 - p5[INDEX]) * R_dry + p5[INDEX] * R_v;
+				float Cp_mix =(1 - p5[INDEX]) * Cp_dry + p5[INDEX] * Cp_v;
+				float Cv_mix = Cp_mix - R_mix;
+				float GAMMA = Cp_mix / Cv_mix;
 
 				float QL_rho = p0[INDEX_L];
 				float QC_rho = p0[INDEX];
@@ -172,6 +179,9 @@ int main(){
 				int INDEX_T = i * (NY + 4) + (j + 1);
 				int INDEX_TT = i * (NY + 4) + (j + 2);
 				float R_mix = (1 - p5[INDEX]) * R_dry + p5[INDEX] * R_v;
+				float Cp_mix =(1 - p5[INDEX]) * Cp_dry + p5[INDEX] * Cp_v;
+				float Cv_mix = Cp_mix - R_mix;
+				float GAMMA = Cp_mix / Cv_mix;
 
 				float QL_rho = p0[INDEX_B];
 				float QC_rho = p0[INDEX];
