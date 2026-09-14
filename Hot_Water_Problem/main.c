@@ -323,7 +323,13 @@ int main(){
 				float internal_e = (E_new / rho_new) - 0.5 * (p1[INDEX] * p1[INDEX] + p2[INDEX] * p2[INDEX]);
 				p3[INDEX] = internal_e / Cv_mix_new;
 				p4[INDEX] = p0[INDEX] * R_mix_new * p3[INDEX];
-				if (isnan(p3[INDEX]) || isnan(p0[INDEX])) { printf("抓到 NaN！時間 t=%f, 座標 i=%d, j=%d\n", t, i, j); exit(1); }
+				if (isnan(p3[INDEX]) || isnan(p0[INDEX])){
+					printf("抓到 NaN！時間 t=%f, 座標 i=%d, j=%d\n", t, i, j); exit(1);
+				}
+				float T_C = p3[INDEX] - 273.15;
+				float P_sat = 610.78 * exp((17.27 * T_C) / (T_C + 237.3));
+				float P_vapor = p0[INDEX] * p5[INDEX] * R_v * p3[INDEX]; // p0*p5*R_v*p3 就是vapor分壓
+				p6[INDEX] = P_vapor / P_sat;
 			}
 		}
 		t += dt;
