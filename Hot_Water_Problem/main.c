@@ -231,10 +231,10 @@ int main(){
 		    		float QL_cRT_star = QC_cRT + 0.5 * dy * dcRT_dy_L;
 		    		float QR_cRT_star = QR_cRT - 0.5 * dy * dcRT_dy_R;
 
-		    		float QL_Y = p3[INDEX_B];
-		    		float QC_Y = p3[INDEX];
-    				float QR_Y = p3[INDEX_T];
-    				float QRR_Y = p3[INDEX_TT];
+		    		float QL_Y = p5[INDEX_B];
+		    		float QC_Y = p5[INDEX];
+    				float QR_Y = p5[INDEX_T];
+    				float QRR_Y = p5[INDEX_TT];
 		    		float dY_dy_L = MINMOD(QL_Y, QC_Y, QR_Y, dy);
 		    		float dY_dy_R = MINMOD(QC_Y, QR_Y, QRR_Y, dy);
 		    		float QL_Y_star = QC_Y + 0.5 * dy * dY_dy_L;
@@ -252,11 +252,13 @@ int main(){
 		for (int i = 2; i < NX + 2; i++){		//The ghost cells on the left and right are not include in calculation.
 			for (int j = 2; j < NY + 2; j++){
 				int INDEX = i * (NY + 4) + j;
-	    			// 我們是 i*5，所以左界面是 (i-1)*5，右界面是 i*5
-				int L_interface = ((i - 1) * (NY + 4) + j) * 5;
-				int R_interface = INDEX * 5; // T_intewrface = R_interface
-				int B_interface = (i * (NY + 4) + (j - 1)) * 5;
-				int T_interface = INDEX * 5; // T_intewrface = R_interface
+	    			// 我們是 i*6，所以左界面是 (i-1)*6，右界面是 i*6
+				int L_interface = ((i - 1) * (NY + 4) + j) * 6;
+				int R_interface = INDEX * 6; // T_intewrface = R_interface
+//				int B_interface = (i * (NY + 4) + (j - 1)) * 6;
+//				int T_interface = INDEX * 6; // T_intewrface = R_interface
+				int B_interface = INDEX * 6;
+				int T_interface = (i * (NY + 4) + (j + 1)) * 6;
 
 				float R_mix = (1 - p5[INDEX]) * R_dry + p5[INDEX] * R_v;
 				float CV = R_mix / (GAMMA - 1.0);
