@@ -46,7 +46,10 @@ int main(){
 
 	float Cp_dry = 1005; // unit: J/kg-K
 	float Cp_v = 1864; // unit: J/kg-K (water vapor, not liquid! liquid is 4.179)
+
 	float D = 2.42e-5;
+	float nu = 2.306e-5; // Kinematic of air at 300 K. unit: (m^2/s)
+
 //	float GAMMA = 1.4;
 	int wall_flag = 0;
 	float *x, *y, *p0, *p1, *p2, *p3, *p4, *p5, *p6, *interface_p, *flux_X, *flux_Y;
@@ -180,9 +183,16 @@ int main(){
 
 				float rho_face_X = 0.5 * (QC_rho + QR_rho);
 				float T_face_X = 0.5 * (QC_T + QR_T);
+
+				float Visc_flux_X_u = rho_face_X * nu * ((QR_ux - QC_ux) / dx);
+				float Visc_flux_X_v = rho_face_X * nu * ((QR_vy - QC_vy) / dx);
+				flux_X[INDEX*6 + 1] -= Visc_flux_X_u; // X-dir momentum
+				flux_X[INDEX*6 + 2] -= Visc_flux_X_v; // Y-dir momentum
+
 				float Diff_flux_X = rho_face_X * D * ((QR_Y - QC_Y) / dx); // Central difference
-				float Enthalpy_diff_X = Diff_flux_X * (Cp_v - Cp_dry) * T_face_X;
 				flux_X[INDEX*6 + 5] -= Diff_flux_X; // Total flux = Advection flux - diffusion flux, flux_X is adveciton flux from FVM
+
+				float Enthalpy_diff_X = Diff_flux_X * (Cp_v - Cp_dry) * T_face_X;
 				flux_X[INDEX*6 + 4] -= Enthalpy_diff_X;
 			}
 		}
@@ -275,9 +285,16 @@ int main(){
 						   0.0, 0.0, 1.0, wall_flag);
 				float rho_face_Y = 0.5 * (QC_rho + QT_rho);
 				float T_face_Y = 0.5 * (QC_T + QT_T);
+
+				float Visc_flux_Y_u = rho_face_Y * nu * ((QT_ux - QC_ux) / dy);
+				float Visc_flux_Y_v = rho_face_Y * nu * ((QT_vy - QC_vy) / dy);
+				flux_Y[INDEX*6 + 1] -= Visc_flux_Y_u;
+				flux_Y[INDEX*6 + 2] -= Visc_flux_Y_v;
+
 				float Diff_flux_Y = rho_face_Y * D * ((QT_Y - QC_Y) / dy);
-				float Enthalpy_diff_Y = Diff_flux_Y * (Cp_v - Cp_dry) * T_face_Y;
 				flux_Y[INDEX*6 + 5] -= Diff_flux_Y;
+
+				float Enthalpy_diff_Y = Diff_flux_Y * (Cp_v - Cp_dry) * T_face_Y;
 				flux_Y[INDEX*6 + 4] -= Enthalpy_diff_Y;
 			}
 		}
@@ -329,9 +346,7 @@ int main(){
 				float internal_e = (E_new / rho_new) - 0.5 * (p1[INDEX] * p1[INDEX] + p2[INDEX] * p2[INDEX]);
 				p3[INDEX] = internal_e / Cv_mix_new;
 				p4[INDEX] = p0[INDEX] * R_mix_new * p3[INDEX];
-				if (isnan(p3[INDEX]) || isnan(p0[INDEX])){
-					printf("抓到 NaN！時間 t=%f, 座標 i=%d, j=%d\n", t, i, j); exit(1);
-				}
+
 				float T_C = p3[INDEX] - 273.15;
 				float P_sat = 610.78 * exp((17.27 * T_C) / (T_C + 237.3));
 				float P_vapor = p0[INDEX] * p5[INDEX] * R_v * p3[INDEX]; // p0*p5*R_v*p3 就是vapor分壓
@@ -346,7 +361,7 @@ int main(){
 			int INDEX = i * (NY + 4) + j;
 			float X = (i - 1.5) * dx;
 			float Y = (j - 1.5) * dy;
-			fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, Y, p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX], p6[INDEX]);
+			fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, Y, p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX], p5[INDEX], p6[INDEX]);
 		}
 	}
 	fclose(pFile);
