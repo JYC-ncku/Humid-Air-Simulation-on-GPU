@@ -31,7 +31,7 @@ void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, 
 		p3[RIGHT_GHOST] = p3[RIGHT_INNER];
 		p3[RIGHT_RIGHT_GHOST] = p3[RIGHT_INNER];
 
-		p4[LEFT_GHOST] = p4[LEFT_INNER]; // Inflow P = 1 atm = 101325 Pa (Kg/m-s^2)
+		p4[LEFT_GHOST] = 101325.0; // Inflow P = 1 atm = 101325 Pa (Kg/m-s^2)
 		p4[LEFT_LEFT_GHOST] = p4[LEFT_GHOST];
 		p4[RIGHT_GHOST] = p4[RIGHT_INNER];
 		p4[RIGHT_RIGHT_GHOST] = p4[RIGHT_INNER];
@@ -87,10 +87,10 @@ void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, 
 		p4[BOTTOM_GHOST] = p4[BOTTOM_INNER];
 		p4[BOTTOM_BOTTOM_GHOST] = p4[BOTTOM_BOTTOM_INNER];
 
-		p5[BOTTOM_GHOST] = fmax(0.0, fmin(2 * Y_base - p5[BOTTOM_INNER], 1.0));
-		p5[BOTTOM_BOTTOM_GHOST] = fmax(0.0, fmin(2 * Y_base - p5[BOTTOM_BOTTOM_INNER], 1.0));
-//		p5[BOTTOM_GHOST] = 1.0; // The max relative humidity (phi_max) setting 1
-//		p5[BOTTOM_BOTTOM_GHOST] = p5[BOTTOM_GHOST];
+//		p5[BOTTOM_GHOST] = fmax(0.0, fmin(2 * Y_base - p5[BOTTOM_INNER], 1.0));
+//		p5[BOTTOM_BOTTOM_GHOST] = fmax(0.0, fmin(2 * Y_base - p5[BOTTOM_BOTTOM_INNER], 1.0));
+		p5[BOTTOM_GHOST] = 1.0; // The max relative humidity (phi_max) setting 1
+		p5[BOTTOM_BOTTOM_GHOST] = p5[BOTTOM_GHOST];
 
 		// rho = P / RT
 		float R_mix_B = (1 - p5[BOTTOM_GHOST]) * R_dry + p5[BOTTOM_GHOST] * R_v;
