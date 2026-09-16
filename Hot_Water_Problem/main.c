@@ -38,16 +38,16 @@ int main(){
 	float dx = L/NX;
 	float dy = H/NY;
 	float t = 0;
-	float t_FINAL = 0.2;
+	float t_FINAL = 3.0;
 
 	float Ru = 8314.5; // unit: J/mole-K
 	float R_dry = Ru / 28.97; // Gas constant of dry air (MW_air = 28.97 g/mole)
 	float R_v = Ru / 18.02; // Gas constant of water vapor (MW_water = 18.02 g/mole)
 
-	float Cp_dry = 1005; // unit: J/kg-K
-	float Cp_v = 1864; // unit: J/kg-K (water vapor, not liquid! liquid is 4.179)
+	float Cp_dry = 1005.0; // unit: J/kg-K
+	float Cp_v = 1864.0; // unit: J/kg-K (water vapor, not liquid! liquid is 4.179)
 
-	float D = 2.42e-5;
+	float D = 1.837e-5;
 //	float nu = 2.306e-5; // Kinematic of air at 300 K. unit: (m^2/s)
 //	float k_cond = 0.032; // Thermal conductivity of air at 300K (W/m.K)
 
@@ -57,16 +57,20 @@ int main(){
 	//p0 is density, p1 is x-dir velocity, p2 is y-dir veloctiy, p3 is temperature, p4 is pressure, p5 is mass fraction of water vapor, p6 is relative humidity
 	float flxnmn, flxpmn, flxqmn;
 	float CFL = 0.2;
-
+	float g = 9.81; // m/s^2
+	float T_ref = 300.0; // K
+	float P_ref = 101325.0; // Pa
+	float rho_ref = P_ref / (R_dry * T_ref); // kg/m³
 	Allocate_memory(&x, &y, &p0, &p1, &p2, &p3, &p4, &p5, &p6, &interface_p, &flux_X, &flux_Y, N_CELLS);
 	//Initial condition
 	for ( int i = 2; i < NX + 2; i++){
 		for (int j = 2; j < NY + 2; j++){
 			int INDEX = i * (NY + 4) + j;
-			p1[INDEX] = 0.0;
+//			p1[INDEX] = 0.0;
+			p1[INDEX] = 10.0;
 			p2[INDEX] = 0.0;
 			p3[INDEX] = 298.15; // Room temperature = 25 C = 273.15 + 25 = 298.15 K
-			p4[INDEX] = 101325; // 1 atm = 101325 Pa
+			p4[INDEX] = 1013.25; // 1 atm = 101325 Pa
 			p0[INDEX] = p4[INDEX] / (R_dry * p3[INDEX]); //Density: rho = P / (R * T)
 			p5[INDEX] = 0.0; // Mass fraction of water vapor is 0 at every cells
 		}
@@ -92,9 +96,9 @@ int main(){
 		// Boundary condition for compute flux.
 		Boundary(p0, p1, p2, p3, p4, p5, Ru, R_v, R_dry, NX, NY);
 	    	float MAX_CFL = CPU_Compute_MAX_CFL(p0, p1, p2, p3, dx, dy, NX, NY);
-		float dt/*_advection*/ = CFL / MAX_CFL;
-//		float dt_diffusion = 0.25 / (D * (1.0 / (dx * dx) + 1.0 / (dy * dy)));
-//		float dt = fmin(dt_advection, dt_diffusion);
+		float dt_advection = CFL / MAX_CFL;
+		float dt_diffusion = 0.25 / (D * (1.0 / (dx * dx) + 1.0 / (dy * dy)));
+		float dt = fmin(dt_advection, dt_diffusion);
 	    	//X-dir (flux_X)
 		for (int i = 1; i < NX + 2; i++){		//N cells have N+1 interface
 			for (int j = 2; j < NY + 2; j++){	//j = 2 ~ 101(NY+1) is real cells
@@ -181,18 +185,18 @@ int main(){
 						   1.0, 0.0, 0.0,
 						   0.0, 1.0, 0.0,
 						   0.0, 0.0, 1.0, wall_flag);
-
-				float rho_face_X = 0.5 * (QC_rho + QR_rho);
-//				float T_face_X = 0.5 * (QC_T + QR_T);
 /*
+				float rho_face_X = 0.5 * (QC_rho + QR_rho);
+				float T_face_X = 0.5 * (QC_T + QR_T);
+
 				float Visc_flux_X_u = rho_face_X * nu * ((QR_ux - QC_ux) / dx);
 				float Visc_flux_X_v = rho_face_X * nu * ((QR_vy - QC_vy) / dx);
 				flux_X[INDEX*6 + 1] -= Visc_flux_X_u; // X-dir momentum
 				flux_X[INDEX*6 + 2] -= Visc_flux_X_v; // Y-dir momentum
-*/
+
 				float Diff_flux_X = rho_face_X * D * ((QR_Y - QC_Y) / dx); // Central difference
 				flux_X[INDEX*6 + 5] -= Diff_flux_X; // Total flux = Advection flux - diffusion flux, flux_X is adveciton flux from FVM
-/*
+
 				float Enthalpy_diff_X = Diff_flux_X * (Cp_v - Cp_dry) * T_face_X;
 				flux_X[INDEX*6 + 4] -= Enthalpy_diff_X;
 */
@@ -285,18 +289,18 @@ int main(){
 						   0.0, 1.0, 0.0,
 						   -1.0, 0.0, 0.0,
 						   0.0, 0.0, 1.0, wall_flag);
-
-				float rho_face_Y = 0.5 * (QC_rho + QT_rho);
-//				float T_face_Y = 0.5 * (QC_T + QT_T);
 /*
+				float rho_face_Y = 0.5 * (QC_rho + QT_rho);
+				float T_face_Y = 0.5 * (QC_T + QT_T);
+
 				float Visc_flux_Y_u = rho_face_Y * nu * ((QT_ux - QC_ux) / dy);
 				float Visc_flux_Y_v = rho_face_Y * nu * ((QT_vy - QC_vy) / dy);
 				flux_Y[INDEX*6 + 1] -= Visc_flux_Y_u;
 				flux_Y[INDEX*6 + 2] -= Visc_flux_Y_v;
-*/
+
 				float Diff_flux_Y = rho_face_Y * D * ((QT_Y - QC_Y) / dy);
 				flux_Y[INDEX*6 + 5] -= Diff_flux_Y;
-/*
+
 				float Enthalpy_diff_Y = Diff_flux_Y * (Cp_v - Cp_dry) * T_face_Y;
 				flux_Y[INDEX*6 + 4] -= Enthalpy_diff_Y;
 */
@@ -336,6 +340,15 @@ int main(){
 							  + (dt / dy) * (flux_Y[B_interface + 2] - flux_Y[T_interface + 2]);
 				float E_new = E_old + (dt / dx) * (flux_X[L_interface + 4] - flux_X[R_interface + 4])
 						    + (dt / dy) * (flux_Y[B_interface + 4] - flux_Y[T_interface + 4]);
+/*
+				float Buoyancy_force = - (rho_old - rho_ref) * g;
+				float MomY_new = MomY_old + (dt / dx) * (flux_X[L_interface + 2] - flux_X[R_interface + 2])
+	                        			  + (dt / dy) * (flux_Y[B_interface + 2] - flux_Y[T_interface + 2])
+				                          + dt * Buoyancy_force;
+				float E_new = E_old + (dt / dx) * (flux_X[L_interface + 4] - flux_X[R_interface + 4])
+				                    + (dt / dy) * (flux_Y[B_interface + 4] - flux_Y[T_interface + 4])
+	        			            + dt * Buoyancy_force * v_old;
+*/
 				float rho_Y_new = rho_Y_old + (dt / dx) * (flux_X[L_interface + 5] - flux_X[R_interface + 5])
 							    + (dt / dy) * (flux_Y[B_interface + 5] - flux_Y[T_interface + 5]);
 
