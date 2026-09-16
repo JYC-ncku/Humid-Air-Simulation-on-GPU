@@ -19,7 +19,7 @@ float MAX_Wave_Speed(double u_L, double u_R, double a_L, double a_R){
 
 int main(){
 	int N_CELLS = 800;
-	float *x, *p0, *p1, *p2, *p3, *mass, *momentum, *energy, *mass_flux, *momentum_flux, *energy_flux;
+	float *x, *p0, *p1, *p2, *p3, *p4, *mass, *momentum, *energy, *mass_flux, *momentum_flux, *energy_flux;
 	float L = 1.0;
 	float t = 0;
 	float t_FINAL = 0.2;
@@ -28,8 +28,8 @@ int main(){
 	float CFL = 0.5;
 	float dx = L/N_CELLS;
 	float W_GLOBAL_MAX = 1e-10;
-	Allocate_memory(&x, &p0, &p1, &p2, &p3, &mass, &momentum, &energy, &mass_flux, &momentum_flux, &energy_flux, N_CELLS);
-	Initial(x, p0, p1, p2, p3, mass, momentum, energy, dx, GAMMA, N_CELLS);
+	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &mass, &momentum, &energy, &mass_flux, &momentum_flux, &energy_flux, N_CELLS);
+	Initial(x, p0, p1, p2, p3, p4, mass, momentum, energy, dx, GAMMA, N_CELLS);
 	while(t < t_FINAL){
 		for (int i = 1; i < N_CELLS; i++){
 			float rho_L = p0[i-1];
@@ -83,7 +83,7 @@ int main(){
 	}
 	fclose(pFile);
 
-	Free_memory(&x, &p0, &p1, &p2, &p3, &mass, &momentum, &energy, &mass_flux, &momentum_flux, &energy_flux);
+	Free_memory(&x, &p0, &p1, &p2, &p3, &p4, &mass, &momentum, &energy, &mass_flux, &momentum_flux, &energy_flux);
 return 0;
 }
 
