@@ -19,7 +19,7 @@ float MAX_Wave_Speed(double u_L, double u_R, double a_L, double a_R){
 
 int main(){
 	int N_CELLS = 800;
-	float *x, *p0, *p1, *p2, *p3, *p4, *mass, *momentum, *energy, *mass_flux, *momentum_flux, *energy_flux, *mass_fraction_flux;
+	float *x, *p0, *p1, *p2, *p3, *p4, *mass, *momentum, *energy, *mass_fraction, *mass_flux, *momentum_flux, *energy_flux, *mass_fraction_flux;
 	float L = 1.0;
 	float t = 0;
 	float t_FINAL = 0.2;
@@ -42,10 +42,10 @@ int main(){
 	float P_sat = 0.61078 * exp((17.27*25)/(25+237.3));
 	printf("P_sat = %g\n", P_sat);
 
-	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &mass, &momentum, &energy, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux, N_CELLS);
-	Initial(x, p0, p1, p2, p3, p4, mass, momentum, energy, dx, GAMMA, N_CELLS);
+	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &mass, &momentum, &energy, &mass_fraction, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux, N_CELLS);
+	Initial(x, p0, p1, p2, p3, p4, mass, momentum, energy, mass_fraction, dx, GAMMA, N_CELLS);
 	while(t < t_FINAL){
-		for (int i = 1; i < N_CELLS; i++){
+		for (int i = 1; i <= N_CELLS; i++){
 			float rho_L = p0[i-1];
 			float rho_R = p0[i];
 			float u_L = p1[i-1];
@@ -63,6 +63,7 @@ int main(){
 			float W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
 			Calc_HLL_flux(rho_L, rho_R, u_L, u_R, T_L, T_R, P_L, P_R, Y_L, Y_R, e_L, e_R, a_L, a_R,
 				      mass_flux, momentum_flux, energy_flux, mass_fraction_flux, i);
+			mass_fraction_flux[i] -= D * ((Y_R - Y_L) / dx);
 			if (W_LOCAL_MAX > W_GLOBAL_MAX){
 				W_GLOBAL_MAX = W_LOCAL_MAX;
 			}
@@ -75,21 +76,23 @@ int main(){
 		mass_flux[N_CELLS] = mass_flux[N_CELLS-1];
 		momentum_flux[N_CELLS] = momentum_flux[N_CELLS-1];
 		energy_flux[N_CELLS] = energy_flux[N_CELLS-1];
+		mass_fraction_flux[N_CELLS] = mass_fraction_flux[N_CELLS-1];
 
 		float dt = CFL * (dx / W_GLOBAL_MAX);
 
 		for (int i = 0; i < N_CELLS; i++){
 		        // Use FVM to get new conservation values
-			mass[i] = mass[i] - (dt / dx)*(mass_flux[i+1] - mass_flux[i]);
-			momentum[i] = momentum[i] - (dt / dx)*(momentum_flux[i+1] - momentum_flux[i]);
-			energy[i] = energy[i] - (dt / dx)*(energy_flux[i+1] - energy_flux[i]);
+			mass[i] = mass[i] - (dt / dx) * (mass_flux[i+1] - mass_flux[i]);
+			momentum[i] = momentum[i] - (dt / dx) * (momentum_flux[i+1] - momentum_flux[i]);
+			energy[i] = energy[i] - (dt / dx) * (energy_flux[i+1] - energy_flux[i]);
+			mass_fraction[i] = mass_fraction[i] - (dt / dx) * (mass_fraction_flux[i+1] - mass_fraction_flux[i]);
 			//Get new variable
 			p0[i] = mass[i];
 			p1[i] = momentum[i] / mass[i];
 			p3[i] = (GAMMA - 1) * (energy[i] - 0.5 * p0[i] * p1[i] * p1[i]);
 			p2[i] = p3[i] / (p0[i] * R);
+			p4[i] = mass_fraction[i];
 		}
-
 		t += dt;
 	}
 
@@ -99,7 +102,7 @@ int main(){
 	}
 	fclose(pFile);
 
-	Free_memory(&x, &p0, &p1, &p2, &p3, &p4, &mass, &momentum, &energy, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux);
+	Free_memory(&x, &p0, &p1, &p2, &p3, &p4, &mass, &momentum, &energy, &mass_fraction, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux);
 return 0;
 }
 
