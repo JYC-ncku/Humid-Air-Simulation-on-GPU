@@ -19,7 +19,7 @@ float MAX_Wave_Speed(double u_L, double u_R, double a_L, double a_R){
 
 int main(){
 	int N_CELLS = 800;
-	float *x, *p0, *p1, *p2, *p3, *p4, *mass, *momentum, *energy, *mass_fraction, *mass_flux, *momentum_flux, *energy_flux, *mass_fraction_flux;
+	float *x, *p0, *p1, *p2, *p3, *p4, *p5, *P_sat, *P_v, *mass, *momentum, *energy, *mass_fraction, *mass_flux, *momentum_flux, *energy_flux, *mass_fraction_flux;
 	float L = 1.0;
 	float t = 0;
 	float t_FINAL = 0.2;
@@ -30,7 +30,7 @@ int main(){
 	float W_GLOBAL_MAX = 1e-10;
 
 	float D = 1.837e-5; //Diffusivity of water vapor. unit:(m^2/s)
-/*
+
 	float R_bar = 8.315; // unti:kJ/(mol*K)
 	float MW_H2O = 18.02; // unit:kg/kmol
 	float MW_air = 28.97; // unit:kg/kmol
@@ -38,12 +38,10 @@ int main(){
 	float R_dry = R_bar / MW_air;
 	float CV_v = 4.18; // unit:kJ/(kg*K) // H2O的定容比熱
 	float CV_dry = 0.718;
-*/
-	float P_sat = 0.61078 * exp((17.27*25)/(25+237.3));
-	printf("P_sat = %g\n", P_sat);
 
-	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &mass, &momentum, &energy, &mass_fraction, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux, N_CELLS);
-	Initial(x, p0, p1, p2, p3, p4, mass, momentum, energy, mass_fraction, dx, GAMMA, N_CELLS);
+
+	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &P_sat, &P_v, &mass, &momentum, &energy, &mass_fraction, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux, N_CELLS);
+	Initial(x, p0, p1, p2, p3, p4, p5, P_sat, P_v, mass, momentum, energy, mass_fraction, dx, GAMMA, N_CELLS);
 	while(t < t_FINAL){
 		for (int i = 1; i <= N_CELLS; i++){
 			float rho_L = p0[i-1];
@@ -92,17 +90,21 @@ int main(){
 			p3[i] = (GAMMA - 1) * (energy[i] - 0.5 * p0[i] * p1[i] * p1[i]);
 			p2[i] = p3[i] / (p0[i] * R);
 			p4[i] = mass_fraction[i] / p0[i];
+
+			P_sat[i] = 0.611 * exp((17.27 * (p2[i] - 273.15)) / ((p2[i] - 273.15) + 237.3)); // Tetens equation
+			P_v[i] = (p0[i] * p4[i]) * R_v * p2[i];
+			p5[i] = P_v[i] / P_sat[i];
 		}
 		t += dt;
 	}
 
 	FILE *pFile = fopen("Results_of_800_cells.txt", "w");
 	for (int i = 0; i < N_CELLS; i++){
-		fprintf(pFile, "%g\t%g\t%g\t%g\t%g\t%g\n", x[i], p0[i], p1[i], p2[i], p3[i], p4[i]);
+		fprintf(pFile, "%g\t%g\t%g\t%g\t%g\t%g\t%g\n", x[i], p0[i], p1[i], p2[i], p3[i], p4[i], p5[i]);
 	}
 	fclose(pFile);
 
-	Free_memory(&x, &p0, &p1, &p2, &p3, &p4, &mass, &momentum, &energy, &mass_fraction, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux);
+	Free_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &P_sat, &P_v, &mass, &momentum, &energy, &mass_fraction, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux);
 return 0;
 }
 
