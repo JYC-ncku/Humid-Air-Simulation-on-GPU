@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
 void Initial(float *x, float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, float *P_sat, float *P_v, float *mass, float *momentum, float *energy, float *mass_fraction, float dx, float GAMMA, int N_CELLS){
-	for (int i = 0; i < N_CELLS; i++){
+	for (int i = 1; i < N_CELLS + 1; i++){
 		x[i] = (i+0.5) * dx;
 		if ( i < N_CELLS/2){
 			p0[i] = 10.0;

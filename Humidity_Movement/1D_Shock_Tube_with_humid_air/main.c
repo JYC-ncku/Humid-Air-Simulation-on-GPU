@@ -3,6 +3,7 @@
 #include <math.h>
 #include "memory.h"
 #include "Initial.h"
+#include "Boundary.h"
 #include "Calc_flux.h"
 #include "Primitive_variable.h"
 
@@ -44,7 +45,8 @@ int main(){
 	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &P_sat, &P_v, &mass, &momentum, &energy, &mass_fraction, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux, N_CELLS);
 	Initial(x, p0, p1, p2, p3, p4, p5, P_sat, P_v, mass, momentum, energy, mass_fraction, dx, GAMMA, N_CELLS);
 	while(t < t_FINAL){
-		for (int i = 1; i <= N_CELLS; i++){
+		Boundary(p0, p1, p2, p3, p4, N_CELLS);
+		for (int i = 1; i < N_CELLS + 2; i++){
 			float rho_L = p0[i-1];
 			float rho_R = p0[i];
 			float u_L = p1[i-1];
@@ -68,15 +70,6 @@ int main(){
 			}
 		}
 
-		//Boundary condition
-		mass_flux[0] = mass_flux[1];
-		momentum_flux[0] = momentum_flux[1];
-		energy_flux[0] = energy_flux[1];
-		mass_flux[N_CELLS] = mass_flux[N_CELLS-1];
-		momentum_flux[N_CELLS] = momentum_flux[N_CELLS-1];
-		energy_flux[N_CELLS] = energy_flux[N_CELLS-1];
-		mass_fraction_flux[N_CELLS] = mass_fraction_flux[N_CELLS-1];
-
 		float dt = CFL * (dx / W_GLOBAL_MAX);
 
 		Calc_primitive_variable(p0, p1, p2, p3, p4, p5, P_sat, P_v, mass, momentum, energy, mass_fraction,
@@ -85,8 +78,9 @@ int main(){
 	}
 
 	FILE *pFile = fopen("Results_of_800_cells.txt", "w");
-	for (int i = 0; i < N_CELLS; i++){
-		fprintf(pFile, "%g\t%g\t%g\t%g\t%g\t%g\t%g\n", x[i], p0[i], p1[i], p2[i], p3[i], p4[i], p5[i]);
+	for (int i = 1; i < N_CELLS + 1; i++){
+		float X = (i - 0.5) * dx;
+		fprintf(pFile, "%.3g\t%.3g\t%.3g\t%.3g\t%.3g\t%.3g\t%.3g\n", X, p0[i], p1[i], p2[i], p3[i], p4[i], p5[i]);
 	}
 	fclose(pFile);
 
