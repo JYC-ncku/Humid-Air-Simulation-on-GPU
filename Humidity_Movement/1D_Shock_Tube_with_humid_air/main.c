@@ -4,6 +4,7 @@
 #include "memory.h"
 #include "Initial.h"
 #include "Calc_flux.h"
+#include "Primitive_variable.h"
 
 float MAX_Wave_Speed(double u_L, double u_R, double a_L, double a_R){
     double W_L = fabs(u_L) + a_L;
@@ -78,23 +79,8 @@ int main(){
 
 		float dt = CFL * (dx / W_GLOBAL_MAX);
 
-		for (int i = 0; i < N_CELLS; i++){
-		        // Use FVM to get new conservation values
-			mass[i] = mass[i] - (dt / dx) * (mass_flux[i+1] - mass_flux[i]);
-			momentum[i] = momentum[i] - (dt / dx) * (momentum_flux[i+1] - momentum_flux[i]);
-			energy[i] = energy[i] - (dt / dx) * (energy_flux[i+1] - energy_flux[i]);
-			mass_fraction[i] = mass_fraction[i] - (dt / dx) * (mass_fraction_flux[i+1] - mass_fraction_flux[i]);
-			//Get new variable
-			p0[i] = mass[i];
-			p1[i] = momentum[i] / mass[i];
-			p3[i] = (GAMMA - 1) * (energy[i] - 0.5 * p0[i] * p1[i] * p1[i]);
-			p2[i] = p3[i] / (p0[i] * R);
-			p4[i] = mass_fraction[i] / p0[i];
-
-			P_sat[i] = 0.611 * exp((17.27 * (p2[i] - 273.15)) / ((p2[i] - 273.15) + 237.3)); // Tetens equation
-			P_v[i] = (p0[i] * p4[i]) * R_v * p2[i];
-			p5[i] = P_v[i] / P_sat[i];
-		}
+		Calc_primitive_variable(p0, p1, p2, p3, p4, p5, P_sat, P_v, mass, momentum, energy, mass_fraction,
+					mass_flux, momentum_flux, energy_flux, mass_fraction_flux, R, GAMMA, R_v, dx, dt, N_CELLS);
 		t += dt;
 	}
 

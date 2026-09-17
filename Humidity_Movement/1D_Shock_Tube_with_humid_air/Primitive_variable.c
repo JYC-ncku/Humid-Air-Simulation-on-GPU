@@ -1,0 +1,23 @@
+#include <stdlib.h>
+#include <math.h>
+
+void Calc_primitive_variable(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, float *P_sat, float *P_v, float *mass, float *momentum, float *energy, float *mass_fraction,
+			     float *mass_flux, float *momentum_flux, float *energy_flux, float *mass_fraction_flux, float R, float GAMMA, float R_v, float dx, float dt, int N_CELLS){
+	for (int i = 0; i < N_CELLS; i++){
+	        // Use FVM to get new conservation values
+		mass[i] = mass[i] - (dt / dx) * (mass_flux[i+1] - mass_flux[i]);
+		momentum[i] = momentum[i] - (dt / dx) * (momentum_flux[i+1] - momentum_flux[i]);
+		energy[i] = energy[i] - (dt / dx) * (energy_flux[i+1] - energy_flux[i]);
+		mass_fraction[i] = mass_fraction[i] - (dt / dx) * (mass_fraction_flux[i+1] - mass_fraction_flux[i]);
+		//Get new variable
+		p0[i] = mass[i];
+		p1[i] = momentum[i] / mass[i];
+		p3[i] = (GAMMA - 1) * (energy[i] - 0.5 * p0[i] * p1[i] * p1[i]);
+		p2[i] = p3[i] / (p0[i] * R);
+		p4[i] = mass_fraction[i] / p0[i];
+
+		P_sat[i] = 0.611 * exp((17.27 * (p2[i] - 273.15)) / ((p2[i] - 273.15) + 237.3)); // Tetens equation
+		P_v[i] = (p0[i] * p4[i]) * R_v * p2[i];
+		p5[i] = P_v[i] / P_sat[i];
+	}
+}
