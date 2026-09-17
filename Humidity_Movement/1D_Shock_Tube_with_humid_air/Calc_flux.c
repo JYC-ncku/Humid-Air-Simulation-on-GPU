@@ -10,8 +10,8 @@ void Calc_HLL_flux(float rho_L, float rho_R, float u_L, float u_R, float T_L, fl
 	float mass_R = rho_R;
 	float momentum_R = rho_R * u_R;
 	float energy_R = e_R;
-	float mass_fraction_L = Y_L;
-	float mass_fraction_R = Y_R;
+	float mass_fraction_L = mass_L * Y_L;
+	float mass_fraction_R = mass_R * Y_R;
 
 	float mass_flux_L = rho_L * u_L;
 	float mass_flux_R = rho_R * u_R;
@@ -35,6 +35,6 @@ void Calc_HLL_flux(float rho_L, float rho_R, float u_L, float u_R, float T_L, fl
 		mass_flux[i] = (W_R * mass_flux_L - W_L * mass_flux_R + W_L * W_R * (mass_R - mass_L)) / (W_R - W_L);
 		momentum_flux[i] = (W_R * momentum_flux_L - W_L * momentum_flux_R + W_L * W_R * (momentum_R - momentum_L)) / (W_R - W_L);
 		energy_flux[i] = (W_R * energy_flux_L - W_L * energy_flux_R + W_L * W_R * (energy_R - energy_L)) / (W_R - W_L);
-		mass_fraction_flux[i] = (W_R * mass_fraction_flux_L - W_L * mass_fraction_flux_R + W_L * W_R * (energy_R - energy_L)) / (W_R - W_L);
+		mass_fraction_flux[i] = (W_R * mass_fraction_flux_L - W_L * mass_fraction_flux_R + W_L * W_R * (mass_fraction_R - mass_fraction_L)) / (W_R - W_L);
 	}
 }

@@ -19,6 +19,6 @@ void Initial(float *x, float *p0, float *p1, float *p2, float *p3, float *p4, fl
 		mass[i] = p0[i];
 		momentum[i] = p0[i] * p1[i];
 		energy[i] = 0.5 * p0[i] * p1[i] * p1[i] + (p3[i] / (GAMMA - 1.0));
-		mass_fraction[i] = p4[i];
+		mass_fraction[i] = p0[i] * p4[i];
 	}
 }

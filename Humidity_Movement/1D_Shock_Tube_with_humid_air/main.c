@@ -91,7 +91,7 @@ int main(){
 			p1[i] = momentum[i] / mass[i];
 			p3[i] = (GAMMA - 1) * (energy[i] - 0.5 * p0[i] * p1[i] * p1[i]);
 			p2[i] = p3[i] / (p0[i] * R);
-			p4[i] = mass_fraction[i];
+			p4[i] = mass_fraction[i] / p0[i];
 		}
 		t += dt;
 	}
