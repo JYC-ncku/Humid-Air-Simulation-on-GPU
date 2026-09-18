@@ -23,7 +23,7 @@ int main(){
 	int N_CELLS = 800;
 	float *x, *p0, *p1, *p2, *p3, *p4, *p5, *P_sat, *P_v, *R_mix, *Cv_mix, *Gamma_mix,
 	      *mass, *momentum, *energy, *mass_fraction, *mass_flux, *momentum_flux, *energy_flux, *mass_fraction_flux;
-	float L = 1.0;
+	float L = 0.01; // unit: m
 	float t = 0;
 	float t_FINAL = 0.2;
 //	float R = 1.0;
@@ -41,7 +41,7 @@ int main(){
 
 	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &P_sat, &P_v, &R_mix, &Cv_mix, &Gamma_mix,
 			&mass, &momentum, &energy, &mass_fraction, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux, N_CELLS);
-	Initial(x, p0, p1, p2, p3, p4, p5, P_sat, P_v, mass, momentum, energy, mass_fraction, dx, N_CELLS);
+	Initial(x, p0, p1, p2, p3, p4, p5, P_sat, P_v, mass, momentum, energy, mass_fraction, dx, R_dry, R_v, N_CELLS);
 
 	while(t < t_FINAL){
 		float W_GLOBAL_MAX = 1e-10;
