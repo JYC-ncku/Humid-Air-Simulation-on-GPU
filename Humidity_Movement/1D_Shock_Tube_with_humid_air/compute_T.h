@@ -1,1 +1,1 @@
-float compute_T(float T, float e_target);
+float compute_T(float T, float Y, float e_target);

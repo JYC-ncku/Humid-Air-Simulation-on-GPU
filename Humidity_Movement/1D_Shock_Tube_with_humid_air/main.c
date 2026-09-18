@@ -26,25 +26,23 @@ int main(){
 	float L = 1.0;
 	float t = 0;
 	float t_FINAL = 0.2;
-	float R = 1.0;
-	float GAMMA = 1.4;
+//	float R = 1.0;
+//	float GAMMA = 1.4;
 	float CFL = 0.5;
 	float dx = L/N_CELLS;
 
 	float D = 1.837e-5; //Diffusivity of water vapor. unit:(m^2/s)
 
-	float R_bar = 8.315; // unti:kJ/(mol*K)
-	float MW_H2O = 18.02; // unit:kg/kmol
-	float MW_air = 28.97; // unit:kg/kmol
+	float R_bar = 8.3145; // unti:J/(mol*K)
+	float MW_H2O = 0.01802; // unit:kg/mol
+	float MW_air = 0.02897; // unit:kg/mol
 	float R_v = R_bar / MW_H2O; // unit:J/(kg*k) R = R_bar / Molecular weight
 	float R_dry = R_bar / MW_air;
-	float Cv_v = 4.18; // unit:kJ/(kg*K) // H2O的定容比熱
-	float Cv_dry = 0.718;
-
 
 	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &P_sat, &P_v, &R_mix, &Cv_mix, &Gamma_mix,
 			&mass, &momentum, &energy, &mass_fraction, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux, N_CELLS);
-	Initial(x, p0, p1, p2, p3, p4, p5, P_sat, P_v, mass, momentum, energy, mass_fraction, dx, GAMMA, N_CELLS);
+	Initial(x, p0, p1, p2, p3, p4, p5, P_sat, P_v, mass, momentum, energy, mass_fraction, dx, N_CELLS);
+
 	while(t < t_FINAL){
 		float W_GLOBAL_MAX = 1e-10;
 		Boundary(p0, p1, p2, p3, p4, N_CELLS);
@@ -59,18 +57,18 @@ int main(){
 			float P_R = p3[i];
 			float Y_L = p4[i-1];
 			float Y_R = p4[i];
-			float R_L = R_dry * (1 - Y_L) + R_v * Y_L;
-			float R_R = R_dry * (1 - Y_R) + R_v * Y_R;
-			float Cv_L = Cv_dry * (1 - Y_L) + Cv_v * Y_L;
-			float Cv_R = Cv_dry * (1 - Y_R) + Cv_v * Y_R;
-			float Gamma_L = 1 + R_L / Cv_L;
-			float Gamma_R = 1 + R_R / Cv_R;
-			float e_L = 0.5 * rho_L * u_L * u_L + (P_L / (Gamma_L - 1));
-			float e_R = 0.5 * rho_R * u_R * u_R + (P_R / (Gamma_R - 1));
-			float a_L = sqrt(Gamma_L * R_L * T_L); // Sound speed a = (R*T)^0.5
-			float a_R = sqrt(Gamma_R * R_R * T_R);
+			float R_mix_L = R_dry * (1 - Y_L) + R_v * Y_L;
+			float R_mix_R = R_dry * (1 - Y_R) + R_v * Y_R;
+			float Cv_mix_L = Compute_Cv(T_L, Y_L);
+			float Cv_mix_R = Compute_Cv(T_R, Y_R);
+			float Gamma_L = 1 + R_mix_L / Cv_mix_L;
+			float Gamma_R = 1 + R_mix_R / Cv_mix_R;
+			float E_L = 0.5 * u_L * u_L + Cv_mix_L * T_L;
+			float E_R = 0.5 * u_R * u_R + Cv_mix_R * T_R;
+			float a_L = sqrt(Gamma_L * R_mix_L * T_L); // Sound speed a = (R*T)^0.5
+			float a_R = sqrt(Gamma_R * R_mix_R * T_R);
 			float W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
-			Calc_HLL_flux(rho_L, rho_R, u_L, u_R, T_L, T_R, P_L, P_R, Y_L, Y_R, e_L, e_R, a_L, a_R,
+			Calc_HLL_flux(rho_L, rho_R, u_L, u_R, T_L, T_R, P_L, P_R, Y_L, Y_R, E_L, E_R, a_L, a_R,
 				      mass_flux, momentum_flux, energy_flux, mass_fraction_flux, i);
 			mass_fraction_flux[i] -= D * ((Y_R - Y_L) / dx);
 			if (W_LOCAL_MAX > W_GLOBAL_MAX){
@@ -81,7 +79,7 @@ int main(){
 		float dt = CFL * (dx / W_GLOBAL_MAX);
 
 		Calc_primitive_variable(p0, p1, p2, p3, p4, p5, P_sat, P_v, mass, momentum, energy, mass_fraction,
-					mass_flux, momentum_flux, energy_flux, mass_fraction_flux, R_mix, Cv_mix, Gamma_mix, R_v, dx, dt, N_CELLS);
+					mass_flux, momentum_flux, energy_flux, mass_fraction_flux, R_mix, Cv_mix, R_v, dx, dt, N_CELLS);
 		t += dt;
 	}
 
