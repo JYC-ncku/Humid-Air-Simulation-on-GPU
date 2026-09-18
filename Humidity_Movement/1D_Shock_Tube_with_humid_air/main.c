@@ -21,7 +21,7 @@ float MAX_Wave_Speed(double u_L, double u_R, double a_L, double a_R){
 
 int main(){
 	int N_CELLS = 800;
-	float *x, *p0, *p1, *p2, *p3, *p4, *p5, *P_sat, *P_v, *R_mix, *Cv_mix, *Gamma_mix,
+	float *x, *p0, *p1, *p2, *p3, *p4, *p5, *P_sat, *P_v,
 	      *mass, *momentum, *energy, *mass_fraction, *mass_flux, *momentum_flux, *energy_flux, *mass_fraction_flux;
 	float L = 0.01; // unit: m
 	float t = 0;
@@ -39,7 +39,7 @@ int main(){
 	float R_v = R_bar / MW_H2O; // unit:J/(kg*k) R = R_bar / Molecular weight
 	float R_dry = R_bar / MW_air;
 
-	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &P_sat, &P_v, &R_mix, &Cv_mix, &Gamma_mix,
+	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &P_sat, &P_v,
 			&mass, &momentum, &energy, &mass_fraction, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux, N_CELLS);
 	Initial(x, p0, p1, p2, p3, p4, p5, P_sat, P_v, mass, momentum, energy, mass_fraction, dx, R_dry, R_v, N_CELLS);
 
@@ -79,7 +79,7 @@ int main(){
 		float dt = CFL * (dx / W_GLOBAL_MAX);
 
 		Calc_primitive_variable(p0, p1, p2, p3, p4, p5, P_sat, P_v, mass, momentum, energy, mass_fraction,
-					mass_flux, momentum_flux, energy_flux, mass_fraction_flux, R_mix, Cv_mix, R_v, dx, dt, N_CELLS);
+					mass_flux, momentum_flux, energy_flux, mass_fraction_flux, R_dry, R_v, dx, dt, N_CELLS);
 		t += dt;
 	}
 
@@ -90,7 +90,7 @@ int main(){
 	}
 	fclose(pFile);
 
-	Free_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &P_sat, &P_v, &R_mix, &Cv_mix, &Gamma_mix, &mass, &momentum, &energy, &mass_fraction, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux);
+	Free_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &P_sat, &P_v, &mass, &momentum, &energy, &mass_fraction, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux);
 return 0;
 }
 

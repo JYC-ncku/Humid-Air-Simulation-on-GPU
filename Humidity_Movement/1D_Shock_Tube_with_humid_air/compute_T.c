@@ -3,7 +3,7 @@
 #include <math.h>
 
 float compute_T(float T, float Y, float e_target){
-	float T_new, Cv, H, e, R; // R is Residual function.
+	float T_new, e, R; // R is Residual function.
 	float a1, a2, a3, a4, a5; // N2
 	float b1, b2, b3, b4, b5; // O2
 	float c1, c2, c3, c4, c5; // H2O
@@ -61,7 +61,7 @@ float compute_T(float T, float Y, float e_target){
 		float Cv_mix = Cv_dry * (1 - Y) + Y * Cv_H2O;
 		e = Cv_mix * T;
 		R = e - e_target;
-		T_new = T - (R/Cv);
+		T_new = T - (R/Cv_mix);
 
 		//Compute error;
 		error = fabs(T_new - T);
