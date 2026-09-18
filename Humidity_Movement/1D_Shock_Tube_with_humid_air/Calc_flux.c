@@ -17,8 +17,8 @@ void Calc_HLL_flux(float rho_L, float rho_R, float u_L, float u_R, float T_L, fl
 	float mass_flux_R = rho_R * u_R;
 	float momentum_flux_L = rho_L * u_L * u_L + P_L;
 	float momentum_flux_R = rho_R * u_R * u_R + P_R;
-	float energy_flux_L = (E_L + P_L) * u_L;
-	float energy_flux_R = (E_R + P_R) * u_R;
+	float energy_flux_L = (energy_L + P_L) * u_L;
+	float energy_flux_R = (energy_R + P_R) * u_R;
 	float mass_fraction_flux_L = mass_flux_L * Y_L;
 	float mass_fraction_flux_R = mass_flux_R * Y_R;
 	if (W_L >= 0.0){

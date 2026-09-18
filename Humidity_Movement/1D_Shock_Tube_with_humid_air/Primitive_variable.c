@@ -14,16 +14,22 @@ void Calc_primitive_variable(float *p0, float *p1, float *p2, float *p3, float *
 		//Get new variable
 		p0[i] = mass[i];
 		p1[i] = momentum[i] / mass[i];
+		p4[i] = mass_fraction[i] / p0[i];
 		float e_target = (energy[i] / p0[i]) - 0.5 * p1[i] * p1[i];
 		float T_old = p2[i];
 		float phi_old = p4[i];
 		p2[i] = compute_T(T_old, phi_old, e_target);
 		float R_mix = R_dry * (1.0 - p4[i]) + R_v * p4[i];
 		p3[i] = p0[i] * R_mix * p2[i];
-		p4[i] = mass_fraction[i] / p0[i];
 
-		P_sat[i] = 0.611 * exp((17.27 * (p2[i] - 273.15)) / ((p2[i] - 273.15) + 237.3)); // Tetens equation
+		P_sat[i] = 611.0 * exp((17.27 * (p2[i] - 273.15)) / ((p2[i] - 273.15) + 237.3)); // Tetens equation
 		P_v[i] = (p0[i] * p4[i]) * R_v * p2[i];
 		p5[i] = P_v[i] / P_sat[i];
+
+		float phi_max = 0.0045;
+		if (p4[i] > phi_max){
+			p4[i] = phi_max;
+			p5[i] = 1.0; // 100%!
+		}
 	}
 }
