@@ -1,4 +1,6 @@
-The purpose of this program is to simulate a 1D Euler Equation problem using the "HLL flux" method and compare the final results with those obtained from the Rusanov flux method.
+This program employs the HLL Riemann solver to solve the 1D shock tube problem, incorporating moisture calculations with empirical formulas for Cv (Constant-volume heat capacity).
+The advection terms are discretized using a 1st-order scheme, while the diffusion terms are handled via a 2nd-order Central Difference.
+
 Initial condition:
 ```
 u = velocity = 0 m/s (everywhere), T = temperature = 300 K (everywhere)
@@ -14,20 +16,31 @@ compile this code using :
 Final results for each number of cells (200, 400, 800).
 
 Density of each cells:
-![HLL_vs_Rusanov_for_200_cells_of_Density.png](./HLL_vs_Rusanov_for_200_cells_of_Density.png)
-![HLL_vs_Rusanov_for_400_cells_of_Density.png](./HLL_vs_Rusanov_for_400_cells_of_Density.png)
-![HLL_vs_Rusanov_for_800_cells_of_Density.png](./HLL_vs_Rusanov_for_800_cells_of_Density.png)
+![Result_of_density_with_200_cells.png](./Result_of_density_with_200_cells.png)
+![Result_of_density_with_400_cells.png](./Result_of_density_with_400_cells.png)
+![Result_of_density_with_800_cells.png](./Result_of_density_with_800_cells.png)
+
 Velocity of each cells:
-![HLL_vs_Rusanov_for_200_cells_of_Velocity.png](./HLL_vs_Rusanov_for_200_cells_of_Velocity.png)
-![HLL_vs_Rusanov_for_400_cells_of_Velocity.png](./HLL_vs_Rusanov_for_400_cells_of_Velocity.png)
-![HLL_vs_Rusanov_for_800_cells_of_Velocity.png](./HLL_vs_Rusanov_for_800_cells_of_Velocity.png)
+![Result_of_X-Velocity_with_200_cells.png](./Result_of_X-Velocity_with_200_cells.png)
+![Result_of_X-Velocity_with_400_cells.png](./Result_of_X-Velocity_with_400_cells.png)
+![Result_of_X-Velocity_with_800_cells.png](./Result_of_X-Velocity_with_800_cells.png)
 
 Temperature of each cells:
-![HLL_vs_Rusanov_for_200_cells_of_Temperature.png](./HLL_vs_Rusanov_for_200_cells_of_Temperature.png)
-![HLL_vs_Rusanov_for_400_cells_of_Temperature.png](./HLL_vs_Rusanov_for_400_cells_of_Temperature.png)
-![HLL_vs_Rusanov_for_800_cells_of_Temperature.png](./HLL_vs_Rusanov_for_800_cells_of_Temperature.png)
+![Result_of_Temperature_with_200_cells.png](./Result_of_Temperature_with_200_cells.png)
+![Result_of_Temperature_with_400_cells.png](./Result_of_Temperature_with_400_cells.png)
+![Result_of_Temperature_with_800_cells.png](./Result_of_Temperature_with_800_cells.png)
 
 Pressure of each cells:
-![HLL_vs_Rusanov_for_200_cells_of_Pressure.png](./HLL_vs_Rusanov_for_200_cells_of_Pressure.png)
-![HLL_vs_Rusanov_for_400_cells_of_Pressure.png](./HLL_vs_Rusanov_for_400_cells_of_Pressure.png)
-![HLL_vs_Rusanovn_for_800_cells_of_Pressure.png](./HLL_vs_Rusanov_for_800_cells_of_Pressure.png)
+![Result_of_Pressure_with_200_cells.png](./Result_of_Pressure_with_200_cells.png)
+![Result_of_Pressure_with_400_cells.png](./Result_of_Pressure_with_400_cells.png)
+![Result_of_Pressure_with_800_cells.png](./Result_of_Pressure_with_800_cells.png)
+
+Mass Fraction of each cells:
+![Result_of_Mass_Fraction_with_200_cells.png](./Result_of_Mass_Fraction_with_200_cells.png)
+![Result_of_Mass_Fraction_with_400_cells.png](./Result_of_Mass_Fraction_with_400_cells.png)
+![Result_of_Mass_Fraction_with_800_cells.png](./Result_of_Mass_Fraction_with_800_cells.png)
+
+Relative Humidity of each cells:
+![Result_of_Relative Humidity_with_200_cells.png](./Result_of_Relative Humidity_with_200_cells.png)
+![Result_of_Relative Humidity_with_400_cells.png](./Result_of_Relative Humidity_with_400_cells.png)
+![Result_of_Relative Humidity_with_800_cells.png](./Result_of_Relative Humidity_with_800_cells.png)
