@@ -1,14 +1,18 @@
 #include <stdlib.h>
+#include <math.h>
 #include "Compute_Cv.h"
 
 void Initial(float *x, float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, float *mass, float *momentum, float *energy, float *mass_fraction,
 	     float R_dry, float R_v, float dx, int N_CELLS){
+	float P_sat, P_v, phi_max;
 	for (int i = 1; i < N_CELLS + 1; i++){
 		if ( i < N_CELLS/2){
 			p1[i] = 0.0;
 			p2[i] = 300.0; //unit: K
 			p3[i] = 5 * 101325.0; //unit: Pa
-			p4[i] = 0.0045; //phi_max
+			P_sat = 611.0 * exp((17.27 * (p2[i] - 273.15)) / ((p2[i] - 273.15) + 237.3)); // Tetens equation
+			phi_max = (P_sat / R_v) / (((p3[i] - P_sat) / R_dry) + (P_sat / R_v));
+			p4[i] = phi_max; //phi_max
 			float R_mix_L = R_dry * (1 - p4[i]) + R_v * p4[i];
 			p0[i] = p3[i] / (R_mix_L * p2[i]);
 		} else{
