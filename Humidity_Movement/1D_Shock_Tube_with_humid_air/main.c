@@ -7,10 +7,10 @@
 #include "Calc_flux.h"
 #include "Primitive_variable.h"
 
-float MAX_Wave_Speed(double u_L, double u_R, double a_L, double a_R){
-    double W_L = fabs(u_L) + a_L;
-    double W_R = fabs(u_R) + a_R;
-    double W_LOCAL_MAX;
+float MAX_Wave_Speed(float u_L, float u_R, float a_L, float a_R){
+    float W_L = fabs(u_L) + a_L;
+    float W_R = fabs(u_R) + a_R;
+    float W_LOCAL_MAX;
     if (W_L > W_R){
         W_LOCAL_MAX = W_L;
     }else {
@@ -21,7 +21,7 @@ float MAX_Wave_Speed(double u_L, double u_R, double a_L, double a_R){
 
 int main(){
 	int N_CELLS = 200;
-	float *x, *p0, *p1, *p2, *p3, *p4, *p5, *P_sat, *P_v,
+	float *x, *p0, *p1, *p2, *p3, *p4, *p5,
 	      *mass, *momentum, *energy, *mass_fraction, *mass_flux, *momentum_flux, *energy_flux, *mass_fraction_flux;
 	float L = 0.01; // unit: m
 	float t = 0;
@@ -39,9 +39,9 @@ int main(){
 	float R_v = R_bar / MW_H2O; // unit:J/(kg*k) R = R_bar / Molecular weight
 	float R_dry = R_bar / MW_air;
 
-	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &P_sat, &P_v,
+	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5,
 			&mass, &momentum, &energy, &mass_fraction, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux, N_CELLS);
-	Initial(x, p0, p1, p2, p3, p4, p5, P_sat, P_v, mass, momentum, energy, mass_fraction, R_dry, R_v, dx, N_CELLS);
+	Initial(x, p0, p1, p2, p3, p4, p5, mass, momentum, energy, mass_fraction, R_dry, R_v, dx, N_CELLS);
 	int step = 0;
 	while(t < t_FINAL){
 		float W_GLOBAL_MAX = 1e-10;
@@ -78,7 +78,7 @@ int main(){
 
 		float dt = CFL * (dx / W_GLOBAL_MAX);
 
-		Calc_primitive_variable(p0, p1, p2, p3, p4, p5, P_sat, P_v, mass, momentum, energy, mass_fraction,
+		Calc_primitive_variable(p0, p1, p2, p3, p4, p5, mass, momentum, energy, mass_fraction,
 					mass_flux, momentum_flux, energy_flux, mass_fraction_flux, R_dry, R_v, dx, dt, N_CELLS);
 		t += dt;
 		step++;
@@ -94,7 +94,7 @@ int main(){
 	}
 	fclose(pFile);
 
-	Free_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &P_sat, &P_v, &mass, &momentum, &energy, &mass_fraction, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux);
+	Free_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &mass, &momentum, &energy, &mass_fraction, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux);
 return 0;
 }
 

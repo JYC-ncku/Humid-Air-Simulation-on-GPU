@@ -1,8 +1,9 @@
 #include <stdlib.h>
 #include <math.h>
+#include <stdio.h>
 #include "compute_T.h"
 
-void Calc_primitive_variable(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, float *P_sat, float *P_v, float *mass, float *momentum, float *energy, float *mass_fraction,
+void Calc_primitive_variable(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, float *mass, float *momentum, float *energy, float *mass_fraction,
 			     float *mass_flux, float *momentum_flux, float *energy_flux, float *mass_fraction_flux, float R_dry, float R_v, float dx, float dt,
 			     int N_CELLS){
 	for (int i = 1; i < N_CELLS + 1; i++){
@@ -22,11 +23,13 @@ void Calc_primitive_variable(float *p0, float *p1, float *p2, float *p3, float *
 		float R_mix = R_dry * (1.0 - p4[i]) + R_v * p4[i];
 		p3[i] = p0[i] * R_mix * p2[i];
 
-		P_sat[i] = 611.0 * exp((17.27 * (p2[i] - 273.15)) / ((p2[i] - 273.15) + 237.3)); // Tetens equation
-		P_v[i] = (p0[i] * p4[i]) * R_v * p2[i];
-		p5[i] = P_v[i] / P_sat[i];
+		float P_sat = 611.0 * exp((17.27 * (p2[i] - 273.15)) / ((p2[i] - 273.15) + 237.3)); // Tetens equation
+		float P_v = (p0[i] * p4[i]) * R_v * p2[i];
+		p5[i] = P_v / P_sat;
 
-		float phi_max = 0.0045;
+//		float phi_max = 0.0045;
+		float phi_max = (P_sat / R_v) / (((p3[i] - P_sat) / R_dry) + (P_sat / R_v));
+
 		if (p4[i] > phi_max || p5[i] > 1.0){
 			p4[i] = phi_max;
 			p5[i] = 1.0; // 100%!
