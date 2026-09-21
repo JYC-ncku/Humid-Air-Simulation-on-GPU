@@ -8,7 +8,7 @@ u = velocity = 0 m/s (everywhere), T = temperature = 300 K (everywhere)
 Pressure = 5 bar   (x < 0.5L)
 	   0.5 bar (x >= 0.5L)
 L = 0.01 m
-Computed time = 7 ms
+Computed time = 7e-6 s
 ```
 compile this code using :
 ```
