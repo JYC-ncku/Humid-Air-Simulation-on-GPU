@@ -27,7 +27,7 @@ void Calc_primitive_variable(float *p0, float *p1, float *p2, float *p3, float *
 		p5[i] = P_v[i] / P_sat[i];
 
 		float phi_max = 0.0045;
-		if (p4[i] > phi_max){
+		if (p4[i] > phi_max || p5[i] > 1.0){
 			p4[i] = phi_max;
 			p5[i] = 1.0; // 100%!
 		}

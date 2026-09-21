@@ -25,7 +25,7 @@ int main(){
 	      *mass, *momentum, *energy, *mass_fraction, *mass_flux, *momentum_flux, *energy_flux, *mass_fraction_flux;
 	float L = 0.01; // unit: m
 	float t = 0;
-	float t_FINAL = 0.2;
+	float t_FINAL = 7e-6;
 //	float R = 1.0;
 //	float GAMMA = 1.4;
 	float CFL = 0.5;
