@@ -77,8 +77,8 @@ int main(){
 				float a_L = sqrt(Gamma_L * R_mix_L * T_L); // Sound speed a = (R*T)^0.5
 				float a_R = sqrt(Gamma_R * R_mix_R * T_R);
 				float W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
-				Calc_HLL_flux(rho_L, rho_R, u_L, u_R, T_L, T_R, P_L, P_R, Y_L, Y_R, E_L, E_R, a_L, a_R,
-					      mass_flux, momentum_X_flux, momentum_Y_flux, energy_flux, mass_fraction_flux, INDEX);
+				Calc_HLL_X_flux(rho_L, rho_R, u_L, u_R, v_L, v_R, T_L, T_R, P_L, P_R, Y_L, Y_R, E_L, E_R, a_L, a_R,
+					        mass_flux, momentum_X_flux, momentum_Y_flux, energy_flux, mass_fraction_flux, INDEX);
 				mass_fraction_flux[INDEX] -= D * ((Y_R - Y_L) / dx);
 				if (W_LOCAL_MAX > W_GLOBAL_MAX){
 					W_GLOBAL_MAX = W_LOCAL_MAX;
@@ -111,16 +111,16 @@ int main(){
 				float E_T = 0.5 * u_T * u_T + Cv_mix_T * T_T;
 				float a_B = sqrt(Gamma_B * R_mix_B * T_B); // Sound speed a = (R*T)^0.5
 				float a_T = sqrt(Gamma_T * R_mix_T * T_T);
-				float W_LOCAL_MAX = MAX_Wave_Speed(u_B, u_T, a_B, a_T);
-				Calc_HLL_flux(rho_B, rho_T, u_B, u_T, T_B, T_T, P_B, P_T, Y_B, Y_T, E_B, E_T, a_B, a_T,
-					      mass_flux, momentum_X_flux, momentum_Y_flux, energy_flux, mass_fraction_flux, INDEX);
+				float W_LOCAL_MAX = MAX_Wave_Speed(v_B, v_T, a_B, a_T);
+				Calc_HLL_Y_flux(rho_B, rho_T, u_B, u_T, v_B, v_T, T_B, T_T, P_B, P_T, Y_B, Y_T, E_B, E_T, a_B, a_T,
+					        mass_flux, momentum_X_flux, momentum_Y_flux, energy_flux, mass_fraction_flux, INDEX);
 				mass_fraction_flux[INDEX] -= D * ((Y_T - Y_B) / dx);
 				if (W_LOCAL_MAX > W_GLOBAL_MAX){
 					W_GLOBAL_MAX = W_LOCAL_MAX;
 				}
 			}
 		}
-		float dt = CFL * (dx / W_GLOBAL_MAX);
+		float dt = CFL * (dx / W_GLOBAL_MAX); // dx = dy
 
 		Calc_primitive_variable(p0, p1, p2, p3, p4, p5,
 					mass, momentum_X, momentum_Y, energy, mass_fraction,

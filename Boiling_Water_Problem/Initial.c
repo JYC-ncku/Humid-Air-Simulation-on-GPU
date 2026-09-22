@@ -24,7 +24,7 @@ void Initial(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, f
 			momentum_Y[INDEX] = p0[INDEX] * p2[INDEX];
 			energy[INDEX] = 0.5 * p0[INDEX] * (p1[INDEX] * p1[INDEX] + p2[INDEX] * p2[INDEX]) + p0[INDEX] * Cv_mix * p2[INDEX];
 			mass_fraction[INDEX] = p0[INDEX] * p5[INDEX];
-			p5[INDEX] = 0.0;
+			p6[INDEX] = 0.0;
 		}
 	}
 }
