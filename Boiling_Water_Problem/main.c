@@ -79,7 +79,42 @@ int main(){
 				float W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
 				Calc_HLL_flux(rho_L, rho_R, u_L, u_R, T_L, T_R, P_L, P_R, Y_L, Y_R, E_L, E_R, a_L, a_R,
 					      mass_flux, momentum_X_flux, momentum_Y_flux, energy_flux, mass_fraction_flux, INDEX);
-				mass_fraction_flux[i] -= D * ((Y_R - Y_L) / dx);
+				mass_fraction_flux[INDEX] -= D * ((Y_R - Y_L) / dx);
+				if (W_LOCAL_MAX > W_GLOBAL_MAX){
+					W_GLOBAL_MAX = W_LOCAL_MAX;
+				}
+			}
+		}
+		for (int i = 1; i < NX + 2; i++){
+			for (int j = 1; j < NY + 2; j ++){
+				int INDEX_B = i * (NY+2) + (j-1);
+				int INDEX = i * (NY+2) + j;
+				float rho_B = p0[INDEX_B];
+				float rho_T = p0[INDEX];
+				float u_B = p1[INDEX_B];
+				float u_T = p1[INDEX];
+				float v_B = p2[INDEX_B];
+				float v_T = p2[INDEX];
+				float T_B = p3[INDEX_B];
+				float T_T = p3[INDEX];
+				float P_B = p4[INDEX_B];
+				float P_T = p4[INDEX];
+				float Y_B = p5[INDEX_B];
+				float Y_T = p5[INDEX];
+				float R_mix_B = R_dry * (1 - Y_B) + R_v * Y_B;
+				float R_mix_T = R_dry * (1 - Y_T) + R_v * Y_T;
+				float Cv_mix_B = Compute_Cv(T_B, Y_B);
+				float Cv_mix_T = Compute_Cv(T_T, Y_T);
+				float Gamma_B = 1 + R_mix_B / Cv_mix_B;
+				float Gamma_T = 1 + R_mix_T / Cv_mix_T;
+				float E_B = 0.5 * u_B * u_B + Cv_mix_B * T_B;
+				float E_T = 0.5 * u_T * u_T + Cv_mix_T * T_T;
+				float a_B = sqrt(Gamma_B * R_mix_B * T_B); // Sound speed a = (R*T)^0.5
+				float a_T = sqrt(Gamma_T * R_mix_T * T_T);
+				float W_LOCAL_MAX = MAX_Wave_Speed(u_B, u_T, a_B, a_T);
+				Calc_HLL_flux(rho_B, rho_T, u_B, u_T, T_B, T_T, P_B, P_T, Y_B, Y_T, E_B, E_T, a_B, a_T,
+					      mass_flux, momentum_X_flux, momentum_Y_flux, energy_flux, mass_fraction_flux, INDEX);
+				mass_fraction_flux[INDEX] -= D * ((Y_T - Y_B) / dx);
 				if (W_LOCAL_MAX > W_GLOBAL_MAX){
 					W_GLOBAL_MAX = W_LOCAL_MAX;
 				}
