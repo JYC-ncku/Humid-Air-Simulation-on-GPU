@@ -4,21 +4,21 @@
 void Allocate_memory(float **array1, float **array2, float **array3, float **array4, float **array5, float **array6,
 		     float **array7, float **array8, float **array9, float **array10,float **array11, float **array12,
 		     float **array13, float **array14, float **array15, int N_CELLS){
-	*array1 = (float*)malloc((N_CELLS+2) * sizeof(float));
-	*array2 = (float*)malloc((N_CELLS+2) * sizeof(float));
-	*array3 = (float*)malloc((N_CELLS+2) * sizeof(float));
-	*array4 = (float*)malloc((N_CELLS+2) * sizeof(float));
-	*array5 = (float*)malloc((N_CELLS+2) * sizeof(float));
-	*array6 = (float*)malloc((N_CELLS+2) * sizeof(float));
-	*array7 = (float*)malloc((N_CELLS+2) * sizeof(float));
-	*array8 = (float*)malloc((N_CELLS+2) * sizeof(float));
-	*array9 = (float*)malloc((N_CELLS+2) * sizeof(float));
-	*array10 = (float*)malloc((N_CELLS+2) * sizeof(float));
-	*array11 = (float*)malloc((N_CELLS+2) * sizeof(float));
-	*array12 = (float*)malloc((N_CELLS+2) * sizeof(float));
-	*array13 = (float*)malloc((N_CELLS+2) * sizeof(float));
-	*array14 = (float*)malloc((N_CELLS+2) * sizeof(float));
-	*array15 = (float*)malloc((N_CELLS+2) * sizeof(float));
+	*array1 = (float*)malloc(N_CELLS * sizeof(float));
+	*array2 = (float*)malloc(N_CELLS * sizeof(float));
+	*array3 = (float*)malloc(N_CELLS * sizeof(float));
+	*array4 = (float*)malloc(N_CELLS * sizeof(float));
+	*array5 = (float*)malloc(N_CELLS * sizeof(float));
+	*array6 = (float*)malloc(N_CELLS * sizeof(float));
+	*array7 = (float*)malloc(N_CELLS * sizeof(float));
+	*array8 = (float*)malloc(N_CELLS * sizeof(float));
+	*array9 = (float*)malloc(N_CELLS * sizeof(float));
+	*array10 = (float*)malloc(N_CELLS * sizeof(float));
+	*array11 = (float*)malloc(N_CELLS * sizeof(float));
+	*array12 = (float*)malloc(N_CELLS * sizeof(float));
+	*array13 = (float*)malloc(N_CELLS * sizeof(float));
+	*array14 = (float*)malloc(N_CELLS * sizeof(float));
+	*array15 = (float*)malloc(N_CELLS * sizeof(float));
 	if (*array1 == NULL || *array2 == NULL || *array3 == NULL || *array4 == NULL || *array5 == NULL || *array6 == NULL ||
 	    *array7 == NULL || *array8 == NULL || *array9 == NULL || *array10 == NULL || *array11 == NULL || *array12 == NULL ||
 	    *array13 == NULL || *array14 == NULL || *array15 == NULL){

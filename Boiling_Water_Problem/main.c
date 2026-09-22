@@ -20,17 +20,20 @@ float MAX_Wave_Speed(float u_L, float u_R, float a_L, float a_R){
 }
 
 int main(){
-	int N_CELLS = 400;
+	int NX = 400;
+	int NY = 200;
+	int N_CELLS = (NX+2) * (NY+2); // 2 Ghost cells
 	float *x, *p0, *p1, *p2, *p3, *p4, *p5,
 	      *mass, *momentum, *energy, *mass_fraction, *mass_flux, *momentum_flux, *energy_flux, *mass_fraction_flux;
-	float L = 0.01; // unit: m
+	float L = 1.0; // unit: m
+	float H = 0.5; // unit: m
 	float t = 0;
 	float t_FINAL = 7e-6;
 //	float R = 1.0;
 //	float GAMMA = 1.4;
 	float CFL = 0.5;
-	float dx = L/N_CELLS;
-
+	float dx = L/NX;
+	float dy = H/NY;
 	float D = 1.837e-5; //Diffusivity of water vapor. unit:(m^2/s)
 
 	float R_bar = 8.3145; // unti:J/(mol*K)
