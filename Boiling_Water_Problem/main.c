@@ -25,7 +25,7 @@ int main(){
 	int N_CELLS = (NX+2) * (NY+2); // 2 Ghost cells
 	 // p0: Density (rho), p1: X-velocity (u), p2: Y-velocity (v), p3: Temperature (T), p4: Pressure (p), p5: Mass fraction (Y_v), p6: Relative humidity (RH)
 	float *x, *p0, *p1, *p2, *p3, *p4, *p5, *p6,
-	      *mass, *momentum, *energy, *mass_fraction, *mass_flux, *momentum_flux, *energy_flux, *mass_fraction_flux;
+	      *mass, *momentum_X, *momentum_Y, *energy, *mass_fraction, *mass_flux, *momentum_X_flux, *momentum_Y_flux, *energy_flux, *mass_fraction_flux;
 	float L = 1.0; // unit: m
 	float H = 0.5; // unit: m
 	float t = 0;
@@ -44,46 +44,53 @@ int main(){
 	float R_dry = R_bar / MW_air;
 
 	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &p6,
-			&mass, &momentum, &energy, &mass_fraction, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux, N_CELLS);
-	Initial(x, p0, p1, p2, p3, p4, p5, mass, momentum, energy, mass_fraction, R_dry, R_v, dx, N_CELLS);
+			&mass, &momentum_X, &momentum_Y, &energy, &mass_fraction, &mass_flux, &momentum_X_flux, &momentum_Y_flux, &energy_flux, &mass_fraction_flux, N_CELLS);
+	Initial(p0, p1, p2, p3, p4, p5, p6, mass, momentum_X, momentum_Y, energy, mass_fraction, R_dry, R_v, NX, NY);
 	int step = 0;
 	while(t < t_FINAL){
 		float W_GLOBAL_MAX = 1e-10;
 		Boundary(p0, p1, p2, p3, p4, N_CELLS);
-		for (int i = 1; i < N_CELLS + 2; i++){
-			float rho_L = p0[i-1];
-			float rho_R = p0[i];
-			float u_L = p1[i-1];
-			float u_R = p1[i];
-			float T_L = p2[i-1];
-			float T_R = p2[i];
-			float P_L = p3[i-1];
-			float P_R = p3[i];
-			float Y_L = p4[i-1];
-			float Y_R = p4[i];
-			float R_mix_L = R_dry * (1 - Y_L) + R_v * Y_L;
-			float R_mix_R = R_dry * (1 - Y_R) + R_v * Y_R;
-			float Cv_mix_L = Compute_Cv(T_L, Y_L);
-			float Cv_mix_R = Compute_Cv(T_R, Y_R);
-			float Gamma_L = 1 + R_mix_L / Cv_mix_L;
-			float Gamma_R = 1 + R_mix_R / Cv_mix_R;
-			float E_L = 0.5 * u_L * u_L + Cv_mix_L * T_L;
-			float E_R = 0.5 * u_R * u_R + Cv_mix_R * T_R;
-			float a_L = sqrt(Gamma_L * R_mix_L * T_L); // Sound speed a = (R*T)^0.5
-			float a_R = sqrt(Gamma_R * R_mix_R * T_R);
-			float W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
-			Calc_HLL_flux(rho_L, rho_R, u_L, u_R, T_L, T_R, P_L, P_R, Y_L, Y_R, E_L, E_R, a_L, a_R,
-				      mass_flux, momentum_flux, energy_flux, mass_fraction_flux, i);
-			mass_fraction_flux[i] -= D * ((Y_R - Y_L) / dx);
-			if (W_LOCAL_MAX > W_GLOBAL_MAX){
-				W_GLOBAL_MAX = W_LOCAL_MAX;
+		for (int i = 1; i < NX + 2; i++){
+			for (int j = 1; j < NY + 2; j ++){
+				int INDEX_L = (i-1) * (NY+2) + j;
+				int INDEX = i * (NY+2) + j;
+				float rho_L = p0[INDEX_L];
+				float rho_R = p0[INDEX];
+				float u_L = p1[INDEX_L];
+				float u_R = p1[INDEX];
+				float v_L = p2[INDEX_L];
+				float v_R = p2[INDEX];
+				float T_L = p3[INDEX_L];
+				float T_R = p3[INDEX];
+				float P_L = p4[INDEX_L];
+				float P_R = p4[INDEX];
+				float Y_L = p5[INDEX_L];
+				float Y_R = p5[INDEX];
+				float R_mix_L = R_dry * (1 - Y_L) + R_v * Y_L;
+				float R_mix_R = R_dry * (1 - Y_R) + R_v * Y_R;
+				float Cv_mix_L = Compute_Cv(T_L, Y_L);
+				float Cv_mix_R = Compute_Cv(T_R, Y_R);
+				float Gamma_L = 1 + R_mix_L / Cv_mix_L;
+				float Gamma_R = 1 + R_mix_R / Cv_mix_R;
+				float E_L = 0.5 * u_L * u_L + Cv_mix_L * T_L;
+				float E_R = 0.5 * u_R * u_R + Cv_mix_R * T_R;
+				float a_L = sqrt(Gamma_L * R_mix_L * T_L); // Sound speed a = (R*T)^0.5
+				float a_R = sqrt(Gamma_R * R_mix_R * T_R);
+				float W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
+				Calc_HLL_flux(rho_L, rho_R, u_L, u_R, T_L, T_R, P_L, P_R, Y_L, Y_R, E_L, E_R, a_L, a_R,
+					      mass_flux, momentum_X_flux, momentum_Y_flux, energy_flux, mass_fraction_flux, INDEX);
+				mass_fraction_flux[i] -= D * ((Y_R - Y_L) / dx);
+				if (W_LOCAL_MAX > W_GLOBAL_MAX){
+					W_GLOBAL_MAX = W_LOCAL_MAX;
+				}
 			}
 		}
-
 		float dt = CFL * (dx / W_GLOBAL_MAX);
 
-		Calc_primitive_variable(p0, p1, p2, p3, p4, p5, mass, momentum, energy, mass_fraction,
-					mass_flux, momentum_flux, energy_flux, mass_fraction_flux, R_dry, R_v, dx, dt, N_CELLS);
+		Calc_primitive_variable(p0, p1, p2, p3, p4, p5,
+					mass, momentum_X, momentum_Y, energy, mass_fraction,
+					mass_flux, momentum_X_flux, momentum_Y_flux, energy_flux, mass_fraction_flux,
+					R_dry, R_v, dx, dt, NX, NY);
 		t += dt;
 		step++;
 		if (step % 100 == 0) {
@@ -98,7 +105,8 @@ int main(){
 	}
 	fclose(pFile);
 
-	Free_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &p6, &mass, &momentum, &energy, &mass_fraction, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux);
+	Free_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &p6, &mass, &momentum_X, &momentum_Y, &energy, &mass_fraction,
+		    &mass_flux, &momentum_X_flux, &momentum_Y_flux, &energy_flux, &mass_fraction_flux);
 return 0;
 }
 
