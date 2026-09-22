@@ -54,7 +54,7 @@ int main(){
 	int step = 0;
 	while(t < t_FINAL){
 		float W_GLOBAL_MAX = 1e-10;
-		Boundary(p0, p1, p2, p3, p4, N_CELLS);
+		Boundary(p0, p1, p2, p3, p4, p5, p6, R_dry, R_v, NX, NY);
 		for (int i = 1; i < NX + 2; i++){
 			for (int j = 1; j < NY + 2; j ++){
 				int INDEX_L = (i-1) * (NY+2) + j;
