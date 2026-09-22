@@ -24,12 +24,14 @@ int main(){
 	int NY = 200;
 	int N_CELLS = (NX+2) * (NY+2); // 2 Ghost cells
 	 // p0: Density (rho), p1: X-velocity (u), p2: Y-velocity (v), p3: Temperature (T), p4: Pressure (p), p5: Mass fraction (Y_v), p6: Relative humidity (RH)
-	float *x, *p0, *p1, *p2, *p3, *p4, *p5, *p6,
-	      *mass, *momentum_X, *momentum_Y, *energy, *mass_fraction, *mass_flux, *momentum_X_flux, *momentum_Y_flux, *energy_flux, *mass_fraction_flux;
+	float *p0, *p1, *p2, *p3, *p4, *p5, *p6,
+	      *mass, *momentum_X, *momentum_Y, *energy, *mass_fraction,
+	      *mass_flux_X, *momentum_X_flux_X, *momentum_Y_flux_X, *energy_flux_X, *mass_fraction_flux_X,
+	      *mass_flux_Y, *momentum_X_flux_Y, *momentum_Y_flux_Y, *energy_flux_Y, *mass_fraction_flux_Y;
 	float L = 1.0; // unit: m
 	float H = 0.5; // unit: m
 	float t = 0;
-	float t_FINAL = 7e-6;
+	float t_FINAL = 5.0; // unit: s
 //	float R = 1.0;
 //	float GAMMA = 1.4;
 	float CFL = 0.5;
@@ -43,8 +45,11 @@ int main(){
 	float R_v = R_bar / MW_H2O; // unit:J/(kg*k) R = R_bar / Molecular weight
 	float R_dry = R_bar / MW_air;
 
-	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &p6,
-			&mass, &momentum_X, &momentum_Y, &energy, &mass_fraction, &mass_flux, &momentum_X_flux, &momentum_Y_flux, &energy_flux, &mass_fraction_flux, N_CELLS);
+	Allocate_memory(&p0, &p1, &p2, &p3, &p4, &p5, &p6,
+			&mass, &momentum_X, &momentum_Y, &energy, &mass_fraction,
+			&mass_flux_X, &momentum_X_flux_X, &momentum_Y_flux_X, &energy_flux_X, &mass_fraction_flux_X,
+			&mass_flux_Y, &momentum_X_flux_Y, &momentum_Y_flux_Y, &energy_flux_Y, &mass_fraction_flux_Y,
+			N_CELLS);
 	Initial(p0, p1, p2, p3, p4, p5, p6, mass, momentum_X, momentum_Y, energy, mass_fraction, R_dry, R_v, NX, NY);
 	int step = 0;
 	while(t < t_FINAL){
@@ -78,8 +83,8 @@ int main(){
 				float a_R = sqrt(Gamma_R * R_mix_R * T_R);
 				float W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
 				Calc_HLL_X_flux(rho_L, rho_R, u_L, u_R, v_L, v_R, T_L, T_R, P_L, P_R, Y_L, Y_R, E_L, E_R, a_L, a_R,
-					        mass_flux, momentum_X_flux, momentum_Y_flux, energy_flux, mass_fraction_flux, INDEX);
-				mass_fraction_flux[INDEX] -= D * ((Y_R - Y_L) / dx);
+					        mass_flux_X, momentum_X_flux_X, momentum_Y_flux_X, energy_flux_X, mass_fraction_flux_X, INDEX);
+				mass_fraction_flux_X[INDEX] -= D * ((Y_R - Y_L) / dx);
 				if (W_LOCAL_MAX > W_GLOBAL_MAX){
 					W_GLOBAL_MAX = W_LOCAL_MAX;
 				}
@@ -113,8 +118,8 @@ int main(){
 				float a_T = sqrt(Gamma_T * R_mix_T * T_T);
 				float W_LOCAL_MAX = MAX_Wave_Speed(v_B, v_T, a_B, a_T);
 				Calc_HLL_Y_flux(rho_B, rho_T, u_B, u_T, v_B, v_T, T_B, T_T, P_B, P_T, Y_B, Y_T, E_B, E_T, a_B, a_T,
-					        mass_flux, momentum_X_flux, momentum_Y_flux, energy_flux, mass_fraction_flux, INDEX);
-				mass_fraction_flux[INDEX] -= D * ((Y_T - Y_B) / dx);
+					        mass_flux_Y, momentum_X_flux_Y, momentum_Y_flux_Y, energy_flux_Y, mass_fraction_flux_Y, INDEX);
+				mass_fraction_flux_Y[INDEX] -= D * ((Y_T - Y_B) / dy);
 				if (W_LOCAL_MAX > W_GLOBAL_MAX){
 					W_GLOBAL_MAX = W_LOCAL_MAX;
 				}
@@ -122,10 +127,11 @@ int main(){
 		}
 		float dt = CFL * (dx / W_GLOBAL_MAX); // dx = dy
 
-		Calc_primitive_variable(p0, p1, p2, p3, p4, p5,
+		Calc_primitive_variable(p0, p1, p2, p3, p4, p5, p6,
 					mass, momentum_X, momentum_Y, energy, mass_fraction,
-					mass_flux, momentum_X_flux, momentum_Y_flux, energy_flux, mass_fraction_flux,
-					R_dry, R_v, dx, dt, NX, NY);
+					mass_flux_X, momentum_X_flux_X, momentum_Y_flux_X, energy_flux_X, mass_fraction_flux_X,
+					mass_flux_Y, momentum_Y_flux_Y, momentum_Y_flux_Y, energy_flux_Y, mass_fraction_flux_Y,
+					R_dry, R_v, dx, dy, dt, NX, NY);
 		t += dt;
 		step++;
 		if (step % 100 == 0) {
@@ -134,14 +140,19 @@ int main(){
 	}
 
 	FILE *pFile = fopen("Results_of_400x200_cells.txt", "w");
-	for (int i = 1; i < N_CELLS + 1; i++){
-		float X = (i - 0.5) * dx;
-		fprintf(pFile, "%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, p0[i], p1[i], p2[i], p3[i], p4[i], p5[i]);
+	for (int i = 1; i < NX + 1; i++){
+		for (int j = 1; j < NY + 1; j++){
+			int INDEX = i * (NY+2) + j;
+			float X = (i - 0.5) * dx;
+			float Y = (j - 0.5) * dy;
+		fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, Y, p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX], p5[INDEX]);
+		}
 	}
 	fclose(pFile);
 
-	Free_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &p6, &mass, &momentum_X, &momentum_Y, &energy, &mass_fraction,
-		    &mass_flux, &momentum_X_flux, &momentum_Y_flux, &energy_flux, &mass_fraction_flux);
+	Free_memory(&p0, &p1, &p2, &p3, &p4, &p5, &p6, &mass, &momentum_X, &momentum_Y, &energy, &mass_fraction,
+		    &mass_flux_X, &momentum_X_flux_X, &momentum_Y_flux_X, &energy_flux_X, &mass_fraction_flux_X,
+		    &mass_flux_Y, &momentum_X_flux_Y, &momentum_Y_flux_Y, &energy_flux_Y, &mass_fraction_flux_Y);
 return 0;
 }
 
