@@ -23,7 +23,8 @@ int main(){
 	int NX = 400;
 	int NY = 200;
 	int N_CELLS = (NX+2) * (NY+2); // 2 Ghost cells
-	float *x, *p0, *p1, *p2, *p3, *p4, *p5,
+	 // p0: Density (rho), p1: X-velocity (u), p2: Y-velocity (v), p3: Temperature (T), p4: Pressure (p), p5: Mass fraction (Y_v), p6: Relative humidity (RH)
+	float *x, *p0, *p1, *p2, *p3, *p4, *p5, *p6,
 	      *mass, *momentum, *energy, *mass_fraction, *mass_flux, *momentum_flux, *energy_flux, *mass_fraction_flux;
 	float L = 1.0; // unit: m
 	float H = 0.5; // unit: m
@@ -42,7 +43,7 @@ int main(){
 	float R_v = R_bar / MW_H2O; // unit:J/(kg*k) R = R_bar / Molecular weight
 	float R_dry = R_bar / MW_air;
 
-	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5,
+	Allocate_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &p6,
 			&mass, &momentum, &energy, &mass_fraction, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux, N_CELLS);
 	Initial(x, p0, p1, p2, p3, p4, p5, mass, momentum, energy, mass_fraction, R_dry, R_v, dx, N_CELLS);
 	int step = 0;
@@ -90,14 +91,14 @@ int main(){
 		}
 	}
 
-	FILE *pFile = fopen("Results_of_400_cells.txt", "w");
+	FILE *pFile = fopen("Results_of_400x200_cells.txt", "w");
 	for (int i = 1; i < N_CELLS + 1; i++){
 		float X = (i - 0.5) * dx;
 		fprintf(pFile, "%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, p0[i], p1[i], p2[i], p3[i], p4[i], p5[i]);
 	}
 	fclose(pFile);
 
-	Free_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &mass, &momentum, &energy, &mass_fraction, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux);
+	Free_memory(&x, &p0, &p1, &p2, &p3, &p4, &p5, &p6, &mass, &momentum, &energy, &mass_fraction, &mass_flux, &momentum_flux, &energy_flux, &mass_fraction_flux);
 return 0;
 }
 
