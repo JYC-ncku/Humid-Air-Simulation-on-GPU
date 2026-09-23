@@ -63,14 +63,14 @@ void Calc_HLL_Y_flux(float rho_B, float rho_T, float u_B, float u_T, float v_B, 
 	float mass_fraction_B = mass_B * Y_B;
 	float mass_fraction_T = mass_T * Y_T;
 
-	float mass_flux_B = rho_B * u_B;
-	float mass_flux_T = rho_T * u_T;
+	float mass_flux_B = rho_B * v_B;
+	float mass_flux_T = rho_T * v_T;
 	float momentum_X_flux_B = rho_B * u_B * v_B;
 	float momentum_X_flux_T = rho_T * u_T * v_T;
 	float momentum_Y_flux_B = rho_B * v_B * v_B + P_B;
 	float momentum_Y_flux_T = rho_T * v_T * v_T + P_T;
-	float energy_flux_B = (energy_B + P_B) * u_B;
-	float energy_flux_T = (energy_T + P_T) * u_T;
+	float energy_flux_B = (energy_B + P_B) * v_B;
+	float energy_flux_T = (energy_T + P_T) * v_T;
 	float mass_fraction_flux_B = mass_flux_B * Y_B;
 	float mass_fraction_flux_T = mass_flux_T * Y_T;
 	if (W_B >= 0.0){

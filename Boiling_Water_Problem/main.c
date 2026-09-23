@@ -20,8 +20,8 @@ float MAX_Wave_Speed(float u_L, float u_R, float a_L, float a_R){
 }
 
 int main(){
-	int NX = 400;
-	int NY = 200;
+	int NX = 40;
+	int NY = 20;
 	int N_CELLS = (NX+2) * (NY+2); // 2 Ghost cells
 	 // p0: Density (rho), p1: X-velocity (u), p2: Y-velocity (v), p3: Temperature (T), p4: Pressure (p), p5: Mass fraction (Y_v), p6: Relative humidity (RH)
 	float *p0, *p1, *p2, *p3, *p4, *p5, *p6,
@@ -31,7 +31,7 @@ int main(){
 	float L = 1.0; // unit: m
 	float H = 0.5; // unit: m
 	float t = 0;
-	float t_FINAL = 5.0; // unit: s
+	float t_FINAL = 1.0; // unit: s
 //	float R = 1.0;
 //	float GAMMA = 1.4;
 	float CFL = 0.5;
@@ -56,7 +56,7 @@ int main(){
 		float W_GLOBAL_MAX = 1e-10;
 		Boundary(p0, p1, p2, p3, p4, p5, p6, R_dry, R_v, NX, NY);
 		for (int i = 1; i < NX + 2; i++){
-			for (int j = 1; j < NY + 2; j ++){
+			for (int j = 1; j < NY + 1; j ++){
 				int INDEX_L = (i-1) * (NY+2) + j;
 				int INDEX = i * (NY+2) + j;
 				float rho_L = p0[INDEX_L];
@@ -90,7 +90,7 @@ int main(){
 				}
 			}
 		}
-		for (int i = 1; i < NX + 2; i++){
+		for (int i = 1; i < NX + 1; i++){
 			for (int j = 1; j < NY + 2; j ++){
 				int INDEX_B = i * (NY+2) + (j-1);
 				int INDEX = i * (NY+2) + j;
@@ -145,7 +145,7 @@ int main(){
 			int INDEX = i * (NY+2) + j;
 			float X = (i - 0.5) * dx;
 			float Y = (j - 0.5) * dy;
-		fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, Y, p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX], p5[INDEX]);
+		fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, Y, p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX], p5[INDEX], p6[INDEX]);
 		}
 	}
 	fclose(pFile);
