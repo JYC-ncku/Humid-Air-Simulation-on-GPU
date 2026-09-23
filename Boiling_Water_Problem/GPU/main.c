@@ -24,10 +24,14 @@ int main(){
 	int NY = 20;
 	int N_CELLS = (NX+2) * (NY+2); // 2 Ghost cells
 	 // p0: Density (rho), p1: X-velocity (u), p2: Y-velocity (v), p3: Temperature (T), p4: Pressure (p), p5: Mass fraction (Y_v), p6: Relative humidity (RH)
-	float *p0, *p1, *p2, *p3, *p4, *p5, *p6,
-	      *mass, *momentum_X, *momentum_Y, *energy, *mass_fraction,
-	      *mass_flux_X, *momentum_X_flux_X, *momentum_Y_flux_X, *energy_flux_X, *mass_fraction_flux_X,
-	      *mass_flux_Y, *momentum_X_flux_Y, *momentum_Y_flux_Y, *energy_flux_Y, *mass_fraction_flux_Y;
+	float *h_p0, *h_p1, *h_p2, *h_p3, *h_p4, *h_p5, *h_p6,
+	      *h_mass, *h_momentum_X, *h_momentum_Y, *h_energy, *h_mass_fraction,
+	      *h_mass_flux_X, *h_momentum_X_flux_X, *h_momentum_Y_flux_X, *h_energy_flux_X, *h_mass_fraction_flux_X,
+	      *h_mass_flux_Y, *h_momentum_X_flux_Y, *h_momentum_Y_flux_Y, *h_energy_flux_Y, *h_mass_fraction_flux_Y,
+	      *d_p0, *d_p1, *d_p2, *d_p3, *d_p4, *d_p5, *d_p6,
+	      *d_mass, *d_momentum_X, *d_momentum_Y, *d_energy, *d_mass_fraction,
+	      *d_mass_flux_X, *d_momentum_X_flux_X, *d_momentum_Y_flux_X, *d_energy_flux_X, *d_mass_fraction_flux_X,
+	      *d_mass_flux_Y, *d_momentum_X_flux_Y, *d_momentum_Y_flux_Y, *d_energy_flux_Y, *d_mass_fraction_flux_Y
 	float L = 1.0; // unit: m
 	float H = 0.5; // unit: m
 	float t = 0;
