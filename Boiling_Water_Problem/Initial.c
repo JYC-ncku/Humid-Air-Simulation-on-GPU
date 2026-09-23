@@ -14,17 +14,18 @@ void Initial(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, f
 			p3[INDEX] = 300.0; // T = 300 K
 			p4[INDEX] = 101325.0; // P = 1 atm
 			p5[INDEX] = 0.0 ; // phi = 0
+			p6[INDEX] = 0.0; // RH = 0
 			R_mix = R_dry * (1 - p5[INDEX]) + R_v * p5[INDEX];
-			Cv_mix = Compute_Cv(T_i, Y_i);
-			p0[INDEX] = p4[INDEX] / (R_mix * p3[INDEX]);
 			T_i = p3[INDEX];
 			Y_i = p5[INDEX];
+			Cv_mix = Compute_Cv(T_i, Y_i);
+			p0[INDEX] = p4[INDEX] / (R_mix * p3[INDEX]);
+
 			mass[INDEX] = p0[INDEX];
 			momentum_X[INDEX] = p0[INDEX] * p1[INDEX];
 			momentum_Y[INDEX] = p0[INDEX] * p2[INDEX];
-			energy[INDEX] = 0.5 * p0[INDEX] * (p1[INDEX] * p1[INDEX] + p2[INDEX] * p2[INDEX]) + p0[INDEX] * Cv_mix * p2[INDEX];
+			energy[INDEX] = 0.5 * p0[INDEX] * (p1[INDEX] * p1[INDEX] + p2[INDEX] * p2[INDEX]) + p0[INDEX] * Cv_mix * p3[INDEX];
 			mass_fraction[INDEX] = p0[INDEX] * p5[INDEX];
-			p6[INDEX] = 0.0;
 		}
 	}
 }

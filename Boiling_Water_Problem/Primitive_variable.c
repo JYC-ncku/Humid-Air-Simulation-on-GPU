@@ -39,15 +39,25 @@ void Calc_primitive_variable(float *p0, float *p1, float *p2, float *p3, float *
 			p4[INDEX] = p0[INDEX] * R_mix * p3[INDEX];
 
 			P_sat = 611.0 * exp((17.27 * (p3[INDEX] - 273.15)) / ((p3[INDEX] - 273.15) + 237.3)); // Tetens equation
-			P_v = (p0[INDEX] * p5[INDEX]) * R_v * p2[INDEX];
+			P_v = (p0[INDEX] * p5[INDEX]) * R_v * p3[INDEX];
 			p6[INDEX] = P_v / P_sat;
-
-			phi_max = (P_sat / R_v) / (((p4[INDEX] - P_sat) / R_dry) + (P_sat / R_v));
+			if (p4[INDEX] <= P_sat) {
+				phi_max = 1.0; // 壓力低於飽和蒸氣壓，允許 100% 水氣
+			} else {
+				phi_max = (P_sat / R_v) / (((p4[INDEX] - P_sat) / R_dry) + (P_sat / R_v));
+			}
 
 			if (p5[INDEX] > phi_max || p6[INDEX] > 1.0){
 				p5[INDEX] = phi_max;
 				p6[INDEX] = 1.0; // 100%!
+				mass_fraction[INDEX] = p5[INDEX] * p0[INDEX];
 			}
+			if (p5[INDEX] < 0.0 || p6[INDEX] < 0.0){
+				p5[INDEX] = 0.0;
+				p6[INDEX] = 0.0;
+			mass_fraction[INDEX] = 0.0;
+			}
+
 		}
 	}
 }

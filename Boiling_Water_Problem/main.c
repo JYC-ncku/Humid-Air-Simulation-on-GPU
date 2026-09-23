@@ -31,10 +31,10 @@ int main(){
 	float L = 1.0; // unit: m
 	float H = 0.5; // unit: m
 	float t = 0;
-	float t_FINAL = 1.0; // unit: s
+	float t_FINAL = 5.0; // unit: s
 //	float R = 1.0;
 //	float GAMMA = 1.4;
-	float CFL = 0.5;
+	float CFL = 0.25;
 	float dx = L/NX;
 	float dy = H/NY;
 	float D = 1.837e-5; //Diffusivity of water vapor. unit:(m^2/s)
@@ -77,14 +77,15 @@ int main(){
 				float Cv_mix_R = Compute_Cv(T_R, Y_R);
 				float Gamma_L = 1 + R_mix_L / Cv_mix_L;
 				float Gamma_R = 1 + R_mix_R / Cv_mix_R;
-				float E_L = 0.5 * u_L * u_L + Cv_mix_L * T_L;
-				float E_R = 0.5 * u_R * u_R + Cv_mix_R * T_R;
+				float E_L = 0.5 * (u_L * u_L + v_L * v_L) + Cv_mix_L * T_L;
+				float E_R = 0.5 * (u_R * u_R + v_R * v_R) + Cv_mix_R * T_R;
 				float a_L = sqrt(Gamma_L * R_mix_L * T_L); // Sound speed a = (R*T)^0.5
 				float a_R = sqrt(Gamma_R * R_mix_R * T_R);
 				float W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
 				Calc_HLL_X_flux(rho_L, rho_R, u_L, u_R, v_L, v_R, T_L, T_R, P_L, P_R, Y_L, Y_R, E_L, E_R, a_L, a_R,
 					        mass_flux_X, momentum_X_flux_X, momentum_Y_flux_X, energy_flux_X, mass_fraction_flux_X, INDEX);
-				mass_fraction_flux_X[INDEX] -= D * ((Y_R - Y_L) / dx);
+				float rho_face_X = 0.5 * (rho_L + rho_R);
+				mass_fraction_flux_X[INDEX] -= rho_face_X * D * ((Y_R - Y_L) / dx);
 				if (W_LOCAL_MAX > W_GLOBAL_MAX){
 					W_GLOBAL_MAX = W_LOCAL_MAX;
 				}
@@ -112,25 +113,26 @@ int main(){
 				float Cv_mix_T = Compute_Cv(T_T, Y_T);
 				float Gamma_B = 1 + R_mix_B / Cv_mix_B;
 				float Gamma_T = 1 + R_mix_T / Cv_mix_T;
-				float E_B = 0.5 * u_B * u_B + Cv_mix_B * T_B;
-				float E_T = 0.5 * u_T * u_T + Cv_mix_T * T_T;
+				float E_B = 0.5 * (u_B * u_B + v_B * v_B) + Cv_mix_B * T_B;
+				float E_T = 0.5 * (u_T * u_T + v_T * v_T) + Cv_mix_T * T_T;
 				float a_B = sqrt(Gamma_B * R_mix_B * T_B); // Sound speed a = (R*T)^0.5
 				float a_T = sqrt(Gamma_T * R_mix_T * T_T);
 				float W_LOCAL_MAX = MAX_Wave_Speed(v_B, v_T, a_B, a_T);
 				Calc_HLL_Y_flux(rho_B, rho_T, u_B, u_T, v_B, v_T, T_B, T_T, P_B, P_T, Y_B, Y_T, E_B, E_T, a_B, a_T,
 					        mass_flux_Y, momentum_X_flux_Y, momentum_Y_flux_Y, energy_flux_Y, mass_fraction_flux_Y, INDEX);
-				mass_fraction_flux_Y[INDEX] -= D * ((Y_T - Y_B) / dy);
+				float rho_face_Y = 0.5 * (rho_B + rho_T);
+				mass_fraction_flux_Y[INDEX] -= rho_face_Y * D * ((Y_T - Y_B) / dy);
 				if (W_LOCAL_MAX > W_GLOBAL_MAX){
 					W_GLOBAL_MAX = W_LOCAL_MAX;
 				}
 			}
 		}
-		float dt = CFL * (dx / W_GLOBAL_MAX); // dx = dy
+		float dt = CFL * (dx /(2.0 * W_GLOBAL_MAX)); // dx = dy
 
 		Calc_primitive_variable(p0, p1, p2, p3, p4, p5, p6,
 					mass, momentum_X, momentum_Y, energy, mass_fraction,
 					mass_flux_X, momentum_X_flux_X, momentum_Y_flux_X, energy_flux_X, mass_fraction_flux_X,
-					mass_flux_Y, momentum_Y_flux_Y, momentum_Y_flux_Y, energy_flux_Y, mass_fraction_flux_Y,
+					mass_flux_Y, momentum_X_flux_Y, momentum_Y_flux_Y, energy_flux_Y, mass_fraction_flux_Y,
 					R_dry, R_v, dx, dy, dt, NX, NY);
 		t += dt;
 		step++;
@@ -139,7 +141,7 @@ int main(){
 		}
 	}
 
-	FILE *pFile = fopen("Results_of_400x200_cells.txt", "w");
+	FILE *pFile = fopen("Results_of_40x20_cells.txt", "w");
 	for (int i = 1; i < NX + 1; i++){
 		for (int j = 1; j < NY + 1; j++){
 			int INDEX = i * (NY+2) + j;
