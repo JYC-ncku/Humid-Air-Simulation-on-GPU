@@ -25,9 +25,6 @@ int main(){
 	int N_CELLS = (NX+2) * (NY+2); // 2 Ghost cells
 	 // p0: Density (rho), p1: X-velocity (u), p2: Y-velocity (v), p3: Temperature (T), p4: Pressure (p), p5: Mass fraction (Y_v), p6: Relative humidity (RH)
 	float *h_p0, *h_p1, *h_p2, *h_p3, *h_p4, *h_p5, *h_p6,
-	      *h_mass, *h_momentum_X, *h_momentum_Y, *h_energy, *h_mass_fraction,
-	      *h_mass_flux_X, *h_momentum_X_flux_X, *h_momentum_Y_flux_X, *h_energy_flux_X, *h_mass_fraction_flux_X,
-	      *h_mass_flux_Y, *h_momentum_X_flux_Y, *h_momentum_Y_flux_Y, *h_energy_flux_Y, *h_mass_fraction_flux_Y,
 	      *d_p0, *d_p1, *d_p2, *d_p3, *d_p4, *d_p5, *d_p6,
 	      *d_mass, *d_momentum_X, *d_momentum_Y, *d_energy, *d_mass_fraction,
 	      *d_mass_flux_X, *d_momentum_X_flux_X, *d_momentum_Y_flux_X, *d_energy_flux_X, *d_mass_fraction_flux_X,
@@ -51,25 +48,21 @@ int main(){
 	float R_dry = R_bar / MW_air;
 
 	Allocate_memory(&h_p0, &h_p1, &h_p2, &h_p3, &h_p4, &h_p5, &h_p6,
-			&h_mass, &h_momentum_X, &h_momentum_Y, &h_energy, &h_mass_fraction,
-			&h_mass_flux_X, &h_momentum_X_flux_X, &h_momentum_Y_flux_X, &h_energy_flux_X, &h_mass_fraction_flux_X,
-			&h_mass_flux_Y, &h_momentum_X_flux_Y, &h_momentum_Y_flux_Y, &h_energy_flux_Y, &h_mass_fraction_flux_Y,
 			&d_p0, &d_p1, &d_p2, &d_p3, &d_p4, &d_p5, &d_p6,
 			&d_mass, &d_momentum_X, &d_momentum_Y, &d_energy, &d_mass_fraction,
 			&d_mass_flux_X, &d_momentum_X_flux_X, &d_momentum_Y_flux_X, &d_energy_flux_X, &d_mass_fraction_flux_X,
 			&d_mass_flux_Y, &d_momentum_X_flux_Y, &d_momentum_Y_flux_Y, &d_energy_flux_Y, &d_mass_fraction_flux_Y,
-			&W_GLOBAL_MAX);
+			&W_GLOBAL_MAX, N_CELLS);
 
 	Initial(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction, R_dry, R_v, NX, NY, N_CELLS);
 	int step = 0;
 	while(t < t_FINAL){
-		float W_GLOBAL_MAX = 1e-10;
-		Boundary(p0, p1, p2, p3, p4, p5, p6, R_dry, R_v, NX, NY);
+		Boundary(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, R_dry, R_v, NX, NY);
 
 		Calc_Tot_Flux(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5,
 			      d_mass_flux_X, d_momentum_X_flux_X, d_momentum_Y_flux_X, d_energy_flux_X, d_mass_fraction_flux_X,
 			      d_mass_flux_Y, d_momentum_X_flux_Y, d_momentum_Y_flux_Y, d_energy_flux_Y, d_mass_fraction_flux_Y,
-			      W_GLOBAL_MAX, R_dry, R_v, D, NX, NY, N_CELLS);
+			      W_GLOBAL_MAX, R_dry, R_v, D, dx, dy, NX, NY, N_CELLS);
 
 		float dt = CFL * (dx / (2.0 * W_GLOBAL_MAX)); // dx = dy
 
@@ -91,15 +84,13 @@ int main(){
 			int INDEX = i * (NY+2) + j;
 			float X = (i - 0.5) * dx;
 			float Y = (j - 0.5) * dy;
-		fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, Y, p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX], p5[INDEX], p6[INDEX]);
+		fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n",
+				X, Y, h_p0[INDEX], h_p1[INDEX], h_p2[INDEX], h_p3[INDEX], h_p4[INDEX], h_p5[INDEX], h_p6[INDEX]);
 		}
 	}
 	fclose(pFile);
 
 	Free_memory(&h_p0, &h_p1, &h_p2, &h_p3, &h_p4, &h_p5, &h_p6,
-		    &h_mass, &h_momentum_X, &h_momentum_Y, &h_energy, &h_mass_fraction,
-		    &h_mass_flux_X, &h_momentum_X_flux_X, &h_momentum_Y_flux_X, &h_energy_flux_X, &h_mass_fraction_flux_X,
-		    &h_mass_flux_Y, &h_momentum_X_flux_Y, &h_momentum_Y_flux_Y, &h_energy_flux_Y, &h_mass_fraction_flux_Y,
 		    &d_p0, &d_p1, &d_p2, &d_p3, &d_p4, &d_p5, &d_p6,
 		    &d_mass, &d_momentum_X, &d_momentum_Y, &d_energy, &d_mass_fraction,
 		    &d_mass_flux_X, &d_momentum_X_flux_X, &d_momentum_Y_flux_X, &d_energy_flux_X, &d_mass_fraction_flux_X,
