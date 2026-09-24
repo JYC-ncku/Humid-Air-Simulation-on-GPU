@@ -54,7 +54,7 @@ int main(){
 			&mass_flux_X, &momentum_X_flux_X, &momentum_Y_flux_X, &energy_flux_X, &mass_fraction_flux_X,
 			&mass_flux_Y, &momentum_X_flux_Y, &momentum_Y_flux_Y, &energy_flux_Y, &mass_fraction_flux_Y,
 			N_CELLS);
-	Initial(p0, p1, p2, p3, p4, p5, p6, mass, momentum_X, momentum_Y, energy, mass_fraction, R_dry, R_v, NX, NY);
+	Initial(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction, R_dry, R_v, NX, NY, N_CELLS);
 	int step = 0;
 	while(t < t_FINAL){
 		float W_GLOBAL_MAX = 1e-10;
@@ -133,11 +133,11 @@ int main(){
 		}
 		float dt = CFL * (dx /(2.0 * W_GLOBAL_MAX)); // dx = dy
 
-		Calc_primitive_variable(p0, p1, p2, p3, p4, p5, p6,
-					mass, momentum_X, momentum_Y, energy, mass_fraction,
-					mass_flux_X, momentum_X_flux_X, momentum_Y_flux_X, energy_flux_X, mass_fraction_flux_X,
-					mass_flux_Y, momentum_X_flux_Y, momentum_Y_flux_Y, energy_flux_Y, mass_fraction_flux_Y,
-					R_dry, R_v, dx, dy, dt, NX, NY);
+		Calc_primitive_variable(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6,
+					d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction,
+					d_mass_flux_X, d_momentum_X_flux_X, d_momentum_Y_flux_X, d_energy_flux_X, d_mass_fraction_flux_X,
+					d_mass_flux_Y, d_momentum_X_flux_Y, d_momentum_Y_flux_Y, d_energy_flux_Y, d_mass_fraction_flux_Y,
+					R_dry, R_v, dx, dy, dt, NX, NY, N_CELLS);
 		t += dt;
 		step++;
 		if (step % 100 == 0) {
