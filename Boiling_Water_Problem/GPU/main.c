@@ -77,6 +77,14 @@ int main(){
 			printf("Current time = %.6f / %.2f\n", t, t_FINAL);
 		}
 	}
+	//Get the data from device
+	Get_From_Device(&h_p0, &d_p0, N_CELLS);
+	Get_From_Device(&h_p1, &d_p1, N_CELLS);
+	Get_From_Device(&h_p2, &d_p2, N_CELLS);
+	Get_From_Device(&h_p3, &d_p3, N_CELLS);
+	Get_From_Device(&h_p4, &d_p4, N_CELLS);
+	Get_From_Device(&h_p5, &d_p5, N_CELLS);
+	Get_From_Device(&h_p6, &d_p6, N_CELLS);
 
 	FILE *pFile = fopen("Results_of_40x20_cells.txt", "w");
 	for (int i = 1; i < NX + 1; i++){

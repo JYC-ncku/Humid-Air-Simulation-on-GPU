@@ -11,3 +11,7 @@ void Free_memory(float **array1, float **array2, float **array3, float **array4,
 		 float **array19, float **array20, float **array21, float **array22, float **array23, float **array24,
 		 float **array25, float **array26, float **array27, float **array28, float **array29, float **array30,
 		 float **array31);
+
+void Sent_To_Device(float **d_a, float **h_a, int N_CELLS);
+
+void Get_From_Device(float **h_a, float **d_a, int N_CELLS);
