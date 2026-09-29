@@ -20,8 +20,8 @@ float MAX_Wave_Speed(float u_L, float u_R, float a_L, float a_R){
 }
 
 int main(){
-	int NX = 40;
-	int NY = 20;
+	int NX = 400;
+	int NY = 200;
 	int N_CELLS = (NX+2) * (NY+2); // 2 Ghost cells
 	 // p0: Density (rho), p1: X-velocity (u), p2: Y-velocity (v), p3: Temperature (T), p4: Pressure (p), p5: Mass fraction (Y_v), p6: Relative humidity (RH)
 	float *h_p0, *h_p1, *h_p2, *h_p3, *h_p4, *h_p5, *h_p6,
@@ -33,7 +33,7 @@ int main(){
 	float L = 1.0; // unit: m
 	float H = 0.5; // unit: m
 	float t = 0;
-	float t_FINAL = 5.0; // unit: s
+	float t_FINAL = 1.0; // unit: s
 //	float R = 1.0;
 //	float GAMMA = 1.4;
 	float CFL = 0.25;
@@ -86,7 +86,7 @@ int main(){
 	Get_From_Device(&h_p5, &d_p5, N_CELLS);
 	Get_From_Device(&h_p6, &d_p6, N_CELLS);
 
-	FILE *pFile = fopen("Results_of_40x20_cells.txt", "w");
+	FILE *pFile = fopen("Results_of_400x200_cells_1s.txt", "w");
 	for (int i = 1; i < NX + 1; i++){
 		for (int j = 1; j < NY + 1; j++){
 			int INDEX = i * (NY+2) + j;

@@ -5,4 +5,4 @@ GPU:
 CPU:
 	g++ main.c -c
 clean:
-	rm *.o main.exe
+	rm *.o
