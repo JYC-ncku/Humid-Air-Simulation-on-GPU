@@ -7,18 +7,6 @@
 #include "Calc_flux.h"
 #include "Primitive_variable.h"
 
-float MAX_Wave_Speed(float u_L, float u_R, float a_L, float a_R){
-    float W_L = fabs(u_L) + a_L;
-    float W_R = fabs(u_R) + a_R;
-    float W_LOCAL_MAX;
-    if (W_L > W_R){
-        W_LOCAL_MAX = W_L;
-    }else {
-        W_LOCAL_MAX = W_R;
-    }
-    return W_LOCAL_MAX;
-}
-
 int main(){
 	int NX = 400;
 	int NY = 200;
