@@ -2,18 +2,6 @@
 #include <math.h>
 #include "Compute_Cv.h"
 
-__device__ float MAX_Wave_Speed(float u_L, float u_R, float a_L, float a_R){
-    float W_L = fabs(u_L) + a_L;
-    float W_R = fabs(u_R) + a_R;
-    float W_LOCAL_MAX;
-    if (W_L > W_R){
-        W_LOCAL_MAX = W_L;
-    }else {
-        W_LOCAL_MAX = W_R;
-    }
-    return W_LOCAL_MAX;
-}
-
 __device__ void Calc_HLL_X_flux(float rho_L, float rho_R, float u_L, float u_R, float v_L, float v_R, float T_L, float T_R, float P_L, float P_R, float Y_L, float Y_R,
 				float E_L, float E_R, float a_L, float a_R,
 				float *d_mass_flux_X, float *d_momentum_X_flux_X, float *d_momentum_Y_flux_X, float *d_energy_flux_X, float *d_mass_fraction_flux_X,
@@ -118,7 +106,7 @@ __device__ void Calc_HLL_Y_flux(float rho_B, float rho_T, float u_B, float u_T, 
 __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float *d_p5,
 				  float *d_mass_flux_X, float *d_momentum_X_flux_X, float *d_momentum_Y_flux_X, float *d_energy_flux_X, float *d_mass_fraction_flux_X,
 				  float *d_mass_flux_Y, float *d_momentum_X_flux_Y, float *d_momentum_Y_flux_Y, float *d_energy_flux_Y, float *d_mass_fraction_flux_Y,
-				  float *W_GLOBAL_MAX, float R_dry, float R_v, float D, float dx, float dy, int NX, int NY, int N_CELLS){
+				  float R_dry, float R_v, float D, float dx, float dy, int NX, int NY, int N_CELLS){
 	int INDEX = blockIdx.x * blockDim.x + threadIdx.x;
 	int i = (int) INDEX / (NY+2);
 	int j = (int) INDEX - i * (NY+2);
@@ -149,13 +137,9 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 			float E_R = 0.5 * (u_R * u_R + v_R * v_R) + Cv_mix_R * T_R;
 			float a_L = sqrt(Gamma_L * R_mix_L * T_L); // Sound speed a = (R*T)^0.5
 			float a_R = sqrt(Gamma_R * R_mix_R * T_R);
-			float W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
 			Calc_HLL_X_flux(rho_L, rho_R, u_L, u_R, v_L, v_R, T_L, T_R, P_L, P_R, Y_L, Y_R, E_L, E_R, a_L, a_R,
 				        d_mass_flux_X, d_momentum_X_flux_X, d_momentum_Y_flux_X, d_energy_flux_X, d_mass_fraction_flux_X,
 				        D, dx, INDEX);
-			if (W_LOCAL_MAX > W_GLOBAL_MAX[INDEX]){
-				W_GLOBAL_MAX[INDEX] = W_LOCAL_MAX;
-			}
 		}
 		//Y-dir
 		if (i >= 1 && i < NX + 1 && j >= 1 && j < NY + 2){
@@ -181,13 +165,9 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 			float E_T = 0.5 * (u_T * u_T + v_T * v_T) + Cv_mix_T * T_T;
 			float a_B = sqrt(Gamma_B * R_mix_B * T_B); // Sound speed a = (R*T)^0.5
 			float a_T = sqrt(Gamma_T * R_mix_T * T_T);
-			float W_LOCAL_MAX = MAX_Wave_Speed(v_B, v_T, a_B, a_T);
 			Calc_HLL_Y_flux(rho_B, rho_T, u_B, u_T, v_B, v_T, T_B, T_T, P_B, P_T, Y_B, Y_T, E_B, E_T, a_B, a_T,
 				        d_mass_flux_Y, d_momentum_X_flux_Y, d_momentum_Y_flux_Y, d_energy_flux_Y, d_mass_fraction_flux_Y,
 				        D, dy, INDEX);
-			if (W_LOCAL_MAX > W_GLOBAL_MAX[INDEX]){
-				W_GLOBAL_MAX[INDEX] = W_LOCAL_MAX;
-			}
 		}
 	}
 }
@@ -195,11 +175,11 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 void Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float *d_p5,
 		   float *d_mass_flux_X, float *d_momentum_X_flux_X, float *d_momentum_Y_flux_X, float *d_energy_flux_X, float *d_mass_fraction_flux_X,
 		   float *d_mass_flux_Y, float *d_momentum_X_flux_Y, float *d_momentum_Y_flux_Y, float *d_energy_flux_Y, float *d_mass_fraction_flux_Y,
-		   float *W_GLOBAL_MAX, float R_dry, float R_v, float D, float dx, float dy, int NX, int NY, int N_CELLS){
+		   float R_dry, float R_v, float D, float dx, float dy, int NX, int NY, int N_CELLS){
 	int TPB = 128;
 	int GPB = (TPB + N_CELLS - 1) / TPB;
 	GPU_Calc_Tot_Flux<<<GPB, TPB>>>(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5,
 					d_mass_flux_X, d_momentum_X_flux_X, d_momentum_Y_flux_X, d_energy_flux_X, d_mass_fraction_flux_X,
 					d_mass_flux_Y, d_momentum_X_flux_Y, d_momentum_Y_flux_Y, d_energy_flux_Y, d_mass_fraction_flux_Y,
-					W_GLOBAL_MAX, R_dry, R_v, D, dx, dy, NX, NY, N_CELLS);
+					R_dry, R_v, D, dx, dy, NX, NY, N_CELLS);
 }

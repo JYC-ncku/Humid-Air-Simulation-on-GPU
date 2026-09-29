@@ -29,7 +29,7 @@ int main(){
 	      *d_mass, *d_momentum_X, *d_momentum_Y, *d_energy, *d_mass_fraction,
 	      *d_mass_flux_X, *d_momentum_X_flux_X, *d_momentum_Y_flux_X, *d_energy_flux_X, *d_mass_fraction_flux_X,
 	      *d_mass_flux_Y, *d_momentum_X_flux_Y, *d_momentum_Y_flux_Y, *d_energy_flux_Y, *d_mass_fraction_flux_Y,
-	      *W_GLOBAL_MAX;
+	      *MAX_Freq, *d_MAX_CFL;
 	float L = 1.0; // unit: m
 	float H = 0.5; // unit: m
 	float t = 0;
@@ -52,19 +52,19 @@ int main(){
 			&d_mass, &d_momentum_X, &d_momentum_Y, &d_energy, &d_mass_fraction,
 			&d_mass_flux_X, &d_momentum_X_flux_X, &d_momentum_Y_flux_X, &d_energy_flux_X, &d_mass_fraction_flux_X,
 			&d_mass_flux_Y, &d_momentum_X_flux_Y, &d_momentum_Y_flux_Y, &d_energy_flux_Y, &d_mass_fraction_flux_Y,
-			&W_GLOBAL_MAX, N_CELLS);
+			&MAX_Freq, &d_MAX_CFL, N_CELLS);
 
-	Initial(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction, R_dry, R_v, NX, NY, N_CELLS);
+	Initial(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction, MAX_Freq, R_dry, R_v, NX, NY, N_CELLS);
 	int step = 0;
 	while(t < t_FINAL){
-		Boundary(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, R_dry, R_v, NX, NY);
+		float dt = Compute_dt(MAX_Freq, d_MAX_CFL, d_p0, d_p1, d_p2, d_p3, d_p5, dx, dy, R_dry, R_v, NX, NY, N_CELLS);
+
+		Boundary(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, R_dry, R_v, NX, NY, N_CELLS);
 
 		Calc_Tot_Flux(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5,
 			      d_mass_flux_X, d_momentum_X_flux_X, d_momentum_Y_flux_X, d_energy_flux_X, d_mass_fraction_flux_X,
 			      d_mass_flux_Y, d_momentum_X_flux_Y, d_momentum_Y_flux_Y, d_energy_flux_Y, d_mass_fraction_flux_Y,
-			      W_GLOBAL_MAX, R_dry, R_v, D, dx, dy, NX, NY, N_CELLS);
-
-		float dt = CFL * (dx / (2.0 * W_GLOBAL_MAX)); // dx = dy
+			      R_dry, R_v, D, dx, dy, NX, NY, N_CELLS);
 
 		Calc_primitive_variable(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6,
 					d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction,
@@ -95,7 +95,7 @@ int main(){
 		    &d_mass, &d_momentum_X, &d_momentum_Y, &d_energy, &d_mass_fraction,
 		    &d_mass_flux_X, &d_momentum_X_flux_X, &d_momentum_Y_flux_X, &d_energy_flux_X, &d_mass_fraction_flux_X,
 		    &d_mass_flux_Y, &d_momentum_X_flux_Y, &d_momentum_Y_flux_Y, &d_energy_flux_Y, &d_mass_fraction_flux_Y,
-		    &W_GLOBAL_MAX);
+		    &MAX_Freq, &d_MAX_CFL);
 return 0;
 }
 
