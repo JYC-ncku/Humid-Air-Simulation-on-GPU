@@ -129,7 +129,7 @@ int main(){
 			float a_R_star = sqrt(Gamma_R * R_mix_R * T_R_star);
 			Calc_HLL_flux(rho_L_star, rho_R_star, u_L_star, u_R_star, T_L_star, T_R_star, P_L_star, P_R_star, Y_L_star, Y_R_star, E_L_star, E_R_star, a_L_star, a_R_star,
 				      mass_flux, momentum_flux, energy_flux, mass_fraction_flux, i);
-			mass_fraction_flux[i] -= D * ((Y_R_star - Y_L_star) / dx);
+			mass_fraction_flux[i] -= D * ((Y_R - Y_C) / dx);
 		}
 
 		Calc_primitive_variable(p0, p1, p2, p3, p4, p5, mass, momentum, energy, mass_fraction,

@@ -8,10 +8,10 @@ void Calc_primitive_variable(float *p0, float *p1, float *p2, float *p3, float *
 			     int N_CELLS){
 	for (int i = 2; i < N_CELLS + 2; i++){
 	        // Use FVM to get new conservation values
-		mass[i] = mass[i] - (dt / dx) * (mass_flux[i+1] - mass_flux[i]);
-		momentum[i] = momentum[i] - (dt / dx) * (momentum_flux[i+1] - momentum_flux[i]);
-		energy[i] = energy[i] - (dt / dx) * (energy_flux[i+1] - energy_flux[i]);
-		mass_fraction[i] = mass_fraction[i] - (dt / dx) * (mass_fraction_flux[i+1] - mass_fraction_flux[i]);
+		mass[i] = mass[i] - (dt / dx) * (mass_flux[i] - mass_flux[i-1]);
+		momentum[i] = momentum[i] - (dt / dx) * (momentum_flux[i] - momentum_flux[i-1]);
+		energy[i] = energy[i] - (dt / dx) * (energy_flux[i] - energy_flux[i-1]);
+		mass_fraction[i] = mass_fraction[i] - (dt / dx) * (mass_fraction_flux[i] - mass_fraction_flux[i-1]);
 		//Get new variable
 		p0[i] = mass[i];
 		p1[i] = momentum[i] / mass[i];
