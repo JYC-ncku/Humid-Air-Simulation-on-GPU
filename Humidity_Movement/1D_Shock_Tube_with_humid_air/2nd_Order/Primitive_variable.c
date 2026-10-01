@@ -6,7 +6,7 @@
 void Calc_primitive_variable(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, float *mass, float *momentum, float *energy, float *mass_fraction,
 			     float *mass_flux, float *momentum_flux, float *energy_flux, float *mass_fraction_flux, float R_dry, float R_v, float dx, float dt,
 			     int N_CELLS){
-	for (int i = 1; i < N_CELLS + 1; i++){
+	for (int i = 2; i < N_CELLS + 2; i++){
 	        // Use FVM to get new conservation values
 		mass[i] = mass[i] - (dt / dx) * (mass_flux[i+1] - mass_flux[i]);
 		momentum[i] = momentum[i] - (dt / dx) * (momentum_flux[i+1] - momentum_flux[i]);

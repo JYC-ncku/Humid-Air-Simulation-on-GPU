@@ -5,7 +5,7 @@
 void Initial(float *x, float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, float *mass, float *momentum, float *energy, float *mass_fraction,
 	     float R_dry, float R_v, float dx, int N_CELLS){
 	float P_sat, P_v, phi_max;
-	for (int i = 1; i < N_CELLS + 1; i++){
+	for (int i = 2; i < N_CELLS + 2; i++){
 		if ( i < N_CELLS/2){
 			p1[i] = 0.0;
 			p2[i] = 300.0; //unit: K

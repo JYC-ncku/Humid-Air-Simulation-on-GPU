@@ -7,6 +7,20 @@
 #include "Calc_flux.h"
 #include "Primitive_variable.h"
 
+float MINMOD(float U_L, float U_C, float U_R, float dx){
+	float dU_dx;
+	float Forward = (U_R - U_C) / dx;
+	float Backward = (U_C - U_L) / dx;
+	if (Backward * Forward < 0){
+		dU_dx = 0;
+	} else if ( fabs(Forward) < fabs(Backward) ){
+			dU_dx = Forward;
+		} else {
+			dU_dx = Backward;
+	}
+	return dU_dx;
+}
+
 float Compute_dt(float *p1, float *p2, float *p4, float dx, float CFL, float R_dry, float R_v, int N_CELLS){
 	float MAX_Freq = -1.0;
 	float R_mix, Cv_mix, Gamma_mix, dt;
@@ -31,6 +45,7 @@ float Compute_dt(float *p1, float *p2, float *p4, float dx, float CFL, float R_d
 	dt = CFL / MAX_Freq;
 	return dt;
 }
+
 int main(){
 	int N_CELLS = 200;
 	float *x, *p0, *p1, *p2, *p3, *p4, *p5,
@@ -38,8 +53,6 @@ int main(){
 	float L = 0.01; // unit: m
 	float t = 0;
 	float t_FINAL = 7e-6;
-//	float R = 1.0;
-//	float GAMMA = 1.4;
 	float CFL = 0.5;
 	float dx = L/N_CELLS;
 
@@ -60,28 +73,63 @@ int main(){
 		Boundary(p0, p1, p2, p3, p4, N_CELLS);
 		for (int i = 1; i < N_CELLS + 2; i++){
 			float rho_L = p0[i-1];
-			float rho_R = p0[i];
+			float rho_C = p0[i];
+			float rho_R = p0[i+1];
+			float rho_RR = p0[i+2];
+			float drho_dx_L = MINMOD(rho_L, rho_C, rho_R, dx);
+			float drho_dx_R = MINMOD(rho_C, rho_R, rho_RR, dx);
+			float rho_L_star = rho_C + 0.5 * dx * drho_dx_L;
+			float rho_R_star = rho_R - 0.5 * dx * drho_dx_R;
+
 			float u_L = p1[i-1];
-			float u_R = p1[i];
+			float u_C = p1[i];
+			float u_R = p1[i+1];
+			float u_RR = p1[i+2];
+			float du_dx_L = MINMOD(u_L, u_C, u_R, dx);
+			float du_dx_R = MINMOD(u_C, u_R, u_RR, dx);
+			float u_L_star = u_C + 0.5 * dx * du_dx_L;
+			float u_R_star = u_R - 0.5 * dx * du_dx_R;
+
 			float T_L = p2[i-1];
-			float T_R = p2[i];
+			float T_C = p2[i];
+			float T_R = p2[i+1];
+			float T_RR = p2[i+2];
+			float dT_dx_L = MINMOD(T_L, T_C, T_R, dx);
+			float dT_dx_R = MINMOD(T_C, T_R, T_RR, dx);
+			float T_L_star = T_C + 0.5 * dx * dT_dx_L;
+			float T_R_star = T_R - 0.5 * dx * dT_dx_R;
+
 			float P_L = p3[i-1];
-			float P_R = p3[i];
+			float P_C = p3[i];
+			float P_R = p3[i+1];
+			float P_RR = p3[i+2];
+			float dP_dx_L = MINMOD(P_L, P_C, P_R, dx);
+			float dP_dx_R = MINMOD(P_C, P_R, P_RR, dx);
+			float P_L_star = P_C + 0.5 * dx * dP_dx_L;
+			float P_R_star = P_R - 0.5 * dx * dP_dx_R;
+
 			float Y_L = p4[i-1];
-			float Y_R = p4[i];
-			float R_mix_L = R_dry * (1 - Y_L) + R_v * Y_L;
-			float R_mix_R = R_dry * (1 - Y_R) + R_v * Y_R;
-			float Cv_mix_L = Compute_Cv(T_L, Y_L);
-			float Cv_mix_R = Compute_Cv(T_R, Y_R);
+			float Y_C = p4[i];
+			float Y_R = p4[i+1];
+			float Y_RR = p4[i+2];
+			float dY_dx_L = MINMOD(Y_L, Y_C, Y_R, dx);
+			float dY_dx_R = MINMOD(Y_C, Y_R, Y_RR, dx);
+			float Y_L_star = Y_C + 0.5 * dx * dY_dx_L;
+			float Y_R_star = Y_R - 0.5 * dx * dY_dx_R;
+
+			float R_mix_L = R_dry * (1 - Y_L_star) + R_v * Y_L_star;
+			float R_mix_R = R_dry * (1 - Y_R_star) + R_v * Y_R_star;
+			float Cv_mix_L = Compute_Cv(T_L_star, Y_L_star);
+			float Cv_mix_R = Compute_Cv(T_R_star, Y_R_star);
 			float Gamma_L = 1 + R_mix_L / Cv_mix_L;
 			float Gamma_R = 1 + R_mix_R / Cv_mix_R;
-			float E_L = 0.5 * u_L * u_L + Cv_mix_L * T_L;
-			float E_R = 0.5 * u_R * u_R + Cv_mix_R * T_R;
-			float a_L = sqrt(Gamma_L * R_mix_L * T_L); // Sound speed a = (R*T)^0.5
-			float a_R = sqrt(Gamma_R * R_mix_R * T_R);
-			Calc_HLL_flux(rho_L, rho_R, u_L, u_R, T_L, T_R, P_L, P_R, Y_L, Y_R, E_L, E_R, a_L, a_R,
+			float E_L_star = 0.5 * u_L_star * u_L_star + Cv_mix_L * T_L_star;
+			float E_R_star = 0.5 * u_R_star * u_R_star + Cv_mix_R * T_R_star;
+			float a_L_star = sqrt(Gamma_L * R_mix_L * T_L_star); // Sound speed a = (GAMMA*R*T)^0.5
+			float a_R_star = sqrt(Gamma_R * R_mix_R * T_R_star);
+			Calc_HLL_flux(rho_L_star, rho_R_star, u_L_star, u_R_star, T_L_star, T_R_star, P_L_star, P_R_star, Y_L_star, Y_R_star, E_L_star, E_R_star, a_L_star, a_R_star,
 				      mass_flux, momentum_flux, energy_flux, mass_fraction_flux, i);
-			mass_fraction_flux[i] -= D * ((Y_R - Y_L) / dx);
+			mass_fraction_flux[i] -= D * ((Y_R_star - Y_L_star) / dx);
 		}
 
 		Calc_primitive_variable(p0, p1, p2, p3, p4, p5, mass, momentum, energy, mass_fraction,
@@ -94,7 +142,7 @@ int main(){
 	}
 
 	FILE *pFile = fopen("Results_of_200_cells.txt", "w");
-	for (int i = 1; i < N_CELLS + 1; i++){
+	for (int i = 2; i < N_CELLS + 2; i++){
 		float X = (i - 0.5) * dx;
 		fprintf(pFile, "%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, p0[i], p1[i], p2[i], p3[i], p4[i], p5[i]);
 	}
