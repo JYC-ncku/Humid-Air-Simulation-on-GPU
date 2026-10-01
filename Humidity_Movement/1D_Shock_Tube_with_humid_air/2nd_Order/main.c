@@ -6,6 +6,7 @@
 #include "Boundary.h"
 #include "Calc_flux.h"
 #include "Primitive_variable.h"
+#include "Compute_Cv.h"
 
 float MINMOD(float U_L, float U_C, float U_R, float dx){
 	float dU_dx;
@@ -47,13 +48,13 @@ float Compute_dt(float *p1, float *p2, float *p4, float dx, float CFL, float R_d
 }
 
 int main(){
-	int N_CELLS = 200;
+	int N_CELLS = 1000;
 	float *x, *p0, *p1, *p2, *p3, *p4, *p5,
 	      *mass, *momentum, *energy, *mass_fraction, *mass_flux, *momentum_flux, *energy_flux, *mass_fraction_flux;
 	float L = 0.01; // unit: m
 	float t = 0;
 	float t_FINAL = 7e-6;
-	float CFL = 0.5;
+	float CFL = 0.05;
 	float dx = L/N_CELLS;
 
 	float D = 1.837e-5; //Diffusivity of water vapor. unit:(m^2/s)
@@ -99,15 +100,6 @@ int main(){
 			float T_L_star = T_C + 0.5 * dx * dT_dx_L;
 			float T_R_star = T_R - 0.5 * dx * dT_dx_R;
 
-			float P_L = p3[i-1];
-			float P_C = p3[i];
-			float P_R = p3[i+1];
-			float P_RR = p3[i+2];
-			float dP_dx_L = MINMOD(P_L, P_C, P_R, dx);
-			float dP_dx_R = MINMOD(P_C, P_R, P_RR, dx);
-			float P_L_star = P_C + 0.5 * dx * dP_dx_L;
-			float P_R_star = P_R - 0.5 * dx * dP_dx_R;
-
 			float Y_L = p4[i-1];
 			float Y_C = p4[i];
 			float Y_R = p4[i+1];
@@ -123,13 +115,18 @@ int main(){
 			float Cv_mix_R = Compute_Cv(T_R_star, Y_R_star);
 			float Gamma_L = 1 + R_mix_L / Cv_mix_L;
 			float Gamma_R = 1 + R_mix_R / Cv_mix_R;
+
+			float P_L_star = rho_L_star * R_mix_L * T_L_star;
+			float P_R_star = rho_R_star * R_mix_R * T_R_star;
+
 			float E_L_star = 0.5 * u_L_star * u_L_star + Cv_mix_L * T_L_star;
 			float E_R_star = 0.5 * u_R_star * u_R_star + Cv_mix_R * T_R_star;
 			float a_L_star = sqrt(Gamma_L * R_mix_L * T_L_star); // Sound speed a = (GAMMA*R*T)^0.5
 			float a_R_star = sqrt(Gamma_R * R_mix_R * T_R_star);
 			Calc_HLL_flux(rho_L_star, rho_R_star, u_L_star, u_R_star, T_L_star, T_R_star, P_L_star, P_R_star, Y_L_star, Y_R_star, E_L_star, E_R_star, a_L_star, a_R_star,
 				      mass_flux, momentum_flux, energy_flux, mass_fraction_flux, i);
-			mass_fraction_flux[i] -= D * ((Y_R - Y_C) / dx);
+			float rho_face_X = 0.5 * (rho_L + rho_R);
+			mass_fraction_flux[i] -= rho_face_X * D * ((Y_R - Y_C) / dx);
 		}
 
 		Calc_primitive_variable(p0, p1, p2, p3, p4, p5, mass, momentum, energy, mass_fraction,
@@ -141,8 +138,8 @@ int main(){
 		}
 	}
 
-	FILE *pFile = fopen("Results_of_200_cells.txt", "w");
-	for (int i = 2; i < N_CELLS + 2; i++){
+	FILE *pFile = fopen("Results_of_1000_cells.txt", "w");
+	for (int i = 2; i < N_CELLS + 1; i++){
 		float X = (i - 0.5) * dx;
 		fprintf(pFile, "%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, p0[i], p1[i], p2[i], p3[i], p4[i], p5[i]);
 	}

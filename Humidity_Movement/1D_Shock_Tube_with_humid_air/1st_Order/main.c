@@ -20,7 +20,7 @@ float MAX_Wave_Speed(float u_L, float u_R, float a_L, float a_R){
 }
 
 int main(){
-	int N_CELLS = 400;
+	int N_CELLS = 1000;
 	float *x, *p0, *p1, *p2, *p3, *p4, *p5,
 	      *mass, *momentum, *energy, *mass_fraction, *mass_flux, *momentum_flux, *energy_flux, *mass_fraction_flux;
 	float L = 0.01; // unit: m
@@ -70,7 +70,8 @@ int main(){
 			float W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
 			Calc_HLL_flux(rho_L, rho_R, u_L, u_R, T_L, T_R, P_L, P_R, Y_L, Y_R, E_L, E_R, a_L, a_R,
 				      mass_flux, momentum_flux, energy_flux, mass_fraction_flux, i);
-			mass_fraction_flux[i] -= D * ((Y_R - Y_L) / dx);
+			float rho_face_X = 0.5 * (rho_L + rho_R);
+			mass_fraction_flux[i] -= rho_face_X * D * ((Y_R - Y_L) / dx);
 			if (W_LOCAL_MAX > W_GLOBAL_MAX){
 				W_GLOBAL_MAX = W_LOCAL_MAX;
 			}
@@ -87,7 +88,7 @@ int main(){
 		}
 	}
 
-	FILE *pFile = fopen("Results_of_400_cells.txt", "w");
+	FILE *pFile = fopen("Results_of_1000_cells.txt", "w");
 	for (int i = 1; i < N_CELLS + 1; i++){
 		float X = (i - 0.5) * dx;
 		fprintf(pFile, "%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, p0[i], p1[i], p2[i], p3[i], p4[i], p5[i]);

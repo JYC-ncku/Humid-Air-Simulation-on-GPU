@@ -6,6 +6,7 @@
 void Calc_primitive_variable(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, float *mass, float *momentum, float *energy, float *mass_fraction,
 			     float *mass_flux, float *momentum_flux, float *energy_flux, float *mass_fraction_flux, float R_dry, float R_v, float dx, float dt,
 			     int N_CELLS){
+	float phi_max;
 	for (int i = 1; i < N_CELLS + 1; i++){
 	        // Use FVM to get new conservation values
 		mass[i] = mass[i] - (dt / dx) * (mass_flux[i+1] - mass_flux[i]);
@@ -27,12 +28,21 @@ void Calc_primitive_variable(float *p0, float *p1, float *p2, float *p3, float *
 		float P_v = (p0[i] * p4[i]) * R_v * p2[i];
 		p5[i] = P_v / P_sat;
 
-//		float phi_max = 0.0045;
-		float phi_max = (P_sat / R_v) / (((p3[i] - P_sat) / R_dry) + (P_sat / R_v));
+		if (p3[i] <= P_sat) {
+			phi_max = 1.0; // 壓力低於飽和蒸氣壓，允許 100% 水氣
+		} else {
+			phi_max = (P_sat / R_v) / (((p3[i] - P_sat) / R_dry) + (P_sat / R_v));
+		}
 
 		if (p4[i] > phi_max || p5[i] > 1.0){
 			p4[i] = phi_max;
 			p5[i] = 1.0; // 100%!
+			mass_fraction[i] = p4[i] * p0[i];
+		}
+		if (p4[i] < 0.0 || p5[i] < 0.0){
+			p4[i] = 0.0;
+			p5[i] = 0.0;
+			mass_fraction[i] = 0.0;
 		}
 	}
 }
