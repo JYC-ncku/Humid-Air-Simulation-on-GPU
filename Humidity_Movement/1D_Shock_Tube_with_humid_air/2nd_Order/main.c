@@ -7,18 +7,30 @@
 #include "Calc_flux.h"
 #include "Primitive_variable.h"
 
-float MAX_Wave_Speed(float u_L, float u_R, float a_L, float a_R){
-    float W_L = fabs(u_L) + a_L;
-    float W_R = fabs(u_R) + a_R;
-    float W_LOCAL_MAX;
-    if (W_L > W_R){
-        W_LOCAL_MAX = W_L;
-    }else {
-        W_LOCAL_MAX = W_R;
-    }
-    return W_LOCAL_MAX;
+float Compute_dt(float *p1, float *p2, float *p4, float dx, float CFL, float R_dry, float R_v, int N_CELLS){
+	float MAX_Freq = -1.0;
+	float R_mix, Cv_mix, Gamma_mix, dt;
+	// Only care inner cells.
+	for (int i = 2; i < N_CELLS + 2; i++){
+		float u = p1[i];
+		float T = p2[i];
+		float Y = p4[i];
+		if (T<0){
+			printf("Error: Negative temperature in cell %d: T = %f\n. Aborting.", i, T);
+		exit(1);
+		}
+		R_mix = R_dry * (1.0 - p4[i]) + R_v * p4[i];
+		Cv_mix = Compute_Cv(T, Y);
+		Gamma_mix = 1.0 + R_mix / Cv_mix;
+		float a = sqrt(Gamma_mix * R_mix * T);
+		float Freq = (fabs(u) + a) / dx;
+		if (Freq>MAX_Freq){
+			MAX_Freq = Freq;
+		}
+	}
+	dt = CFL / MAX_Freq;
+	return dt;
 }
-
 int main(){
 	int N_CELLS = 200;
 	float *x, *p0, *p1, *p2, *p3, *p4, *p5,
@@ -44,7 +56,7 @@ int main(){
 	Initial(x, p0, p1, p2, p3, p4, p5, mass, momentum, energy, mass_fraction, R_dry, R_v, dx, N_CELLS);
 	int step = 0;
 	while(t < t_FINAL){
-		float W_GLOBAL_MAX = 1e-10;
+		float dt = Compute_dt(p1, p2, p4, dx, CFL, R_dry, R_v, N_CELLS);
 		Boundary(p0, p1, p2, p3, p4, N_CELLS);
 		for (int i = 1; i < N_CELLS + 2; i++){
 			float rho_L = p0[i-1];
@@ -67,16 +79,10 @@ int main(){
 			float E_R = 0.5 * u_R * u_R + Cv_mix_R * T_R;
 			float a_L = sqrt(Gamma_L * R_mix_L * T_L); // Sound speed a = (R*T)^0.5
 			float a_R = sqrt(Gamma_R * R_mix_R * T_R);
-			float W_LOCAL_MAX = MAX_Wave_Speed(u_L, u_R, a_L, a_R);
 			Calc_HLL_flux(rho_L, rho_R, u_L, u_R, T_L, T_R, P_L, P_R, Y_L, Y_R, E_L, E_R, a_L, a_R,
 				      mass_flux, momentum_flux, energy_flux, mass_fraction_flux, i);
 			mass_fraction_flux[i] -= D * ((Y_R - Y_L) / dx);
-			if (W_LOCAL_MAX > W_GLOBAL_MAX){
-				W_GLOBAL_MAX = W_LOCAL_MAX;
-			}
 		}
-
-		float dt = CFL * (dx / W_GLOBAL_MAX);
 
 		Calc_primitive_variable(p0, p1, p2, p3, p4, p5, mass, momentum, energy, mass_fraction,
 					mass_flux, momentum_flux, energy_flux, mass_fraction_flux, R_dry, R_v, dx, dt, N_CELLS);
