@@ -21,9 +21,9 @@ Density of each cells:
 ![Result_of_Density_800_cells.png](./Result_of_Density_800_cells.png)
 
 Velocity of each cells:
-![Result_of_X-dir_velocity_200_cells.png](./Result_of_X-velocity_200_cells.png)
-![Result_of_X-dir_velocity_400_cells.png](./Result_of_X-velocity_400_cells.png)
-![Result_of_X-dir_velocity_800_cells.png](./Result_of_X-velocity_800_cells.png)
+![Result_of_X-dir_velocity_200_cells.png](./Result_of_X-dir_velocity_200_cells.png)
+![Result_of_X-dir_velocity_400_cells.png](./Result_of_X-dir_velocity_400_cells.png)
+![Result_of_X-dir_velocity_800_cells.png](./Result_of_X-dir_velocity_800_cells.png)
 
 Temperature of each cells:
 ![Result_of_Temperature_200_cells.png](./Result_of_Temperature_200_cells.png)
