@@ -16,31 +16,31 @@ compile this code using :
 Final results for each number of cells (200, 400, 800).
 
 Density of each cells:
-![Result_of_Density__200_cells.png](./Result_of_Density__200_cells.png)
-![Result_of_Density__400_cells.png](./Result_of_Density__400_cells.png)
-![Result_of_Density__800_cells.png](./Result_of_Density__800_cells.png)
+![Result_of_Density_200_cells.png](./Result_of_Density_200_cells.png)
+![Result_of_Density_400_cells.png](./Result_of_Density_400_cells.png)
+![Result_of_Density_800_cells.png](./Result_of_Density_800_cells.png)
 
 Velocity of each cells:
-![Result_of_X-dir_velocity__200_cells.png](./Result_of_X-velocity__200_cells.png)
-![Result_of_X-dir_velocity__400_cells.png](./Result_of_X-velocity__400_cells.png)
-![Result_of_X-dir_velocity__800_cells.png](./Result_of_X-velocity__800_cells.png)
+![Result_of_X-dir_velocity_200_cells.png](./Result_of_X-velocity_200_cells.png)
+![Result_of_X-dir_velocity_400_cells.png](./Result_of_X-velocity_400_cells.png)
+![Result_of_X-dir_velocity_800_cells.png](./Result_of_X-velocity_800_cells.png)
 
 Temperature of each cells:
-![Result_of_Temperature__200_cells.png](./Result_of_Temperature__200_cells.png)
-![Result_of_Temperature__400_cells.png](./Result_of_Temperature__400_cells.png)
-![Result_of_Temperature__800_cells.png](./Result_of_Temperature__800_cells.png)
+![Result_of_Temperature_200_cells.png](./Result_of_Temperature_200_cells.png)
+![Result_of_Temperature_400_cells.png](./Result_of_Temperature_400_cells.png)
+![Result_of_Temperature_800_cells.png](./Result_of_Temperature_800_cells.png)
 
 Pressure of each cells:
-![Result_of_Pressure__200_cells.png](./Result_of_Pressure__200_cells.png)
-![Result_of_Pressure__400_cells.png](./Result_of_Pressure__400_cells.png)
-![Result_of_Pressure__800_cells.png](./Result_of_Pressure__800_cells.png)
+![Result_of_Pressure_200_cells.png](./Result_of_Pressure_200_cells.png)
+![Result_of_Pressure_400_cells.png](./Result_of_Pressure_400_cells.png)
+![Result_of_Pressure_800_cells.png](./Result_of_Pressure_800_cells.png)
 
 Mass Fraction of each cells:
-![Result_of_Mass_Fraction__200_cells.png](./Result_of_Mass_Fraction__200_cells.png)
-![Result_of_Mass_Fraction__400_cells.png](./Result_of_Mass_Fraction__400_cells.png)
-![Result_of_Mass_Fraction__800_cells.png](./Result_of_Mass_Fraction__800_cells.png)
+![Result_of_Mass_Fraction_200_cells.png](./Result_of_Mass_Fraction_200_cells.png)
+![Result_of_Mass_Fraction_400_cells.png](./Result_of_Mass_Fraction_400_cells.png)
+![Result_of_Mass_Fraction_800_cells.png](./Result_of_Mass_Fraction_800_cells.png)
 
 Relative Humidity of each cells:
-![Result_of_Relative_Humidity__200_cells.png](./Result_of_Relative_Humidity__200_cells.png)
-![Result_of_Relative_Humidity__400_cells.png](./Result_of_Relative_Humidity__400_cells.png)
-![Result_of_Relative_Humidity__800_cells.png](./Result_of_Relative_Humidity__800_cells.png)
+![Result_of_Relative_Humidity_200_cells.png](./Result_of_Relative_Humidity_200_cells.png)
+![Result_of_Relative_Humidity_400_cells.png](./Result_of_Relative_Humidity_400_cells.png)
+![Result_of_Relative_Humidity_800_cells.png](./Result_of_Relative_Humidity_800_cells.png)
