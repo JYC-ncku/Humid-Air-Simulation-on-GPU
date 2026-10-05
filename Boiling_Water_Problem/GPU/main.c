@@ -21,7 +21,7 @@ int main(){
 	float L = 1.0; // unit: m
 	float H = 0.5; // unit: m
 	float t = 0;
-	float t_FINAL = 5.0; // unit: s
+	float t_FINAL = 4.0; // unit: s
 //	float R = 1.0;
 //	float GAMMA = 1.4;
 	float CFL = 0.25;
@@ -47,7 +47,7 @@ int main(){
 	while(t < t_FINAL){
 		float dt = Compute_dt(MAX_Freq, d_MAX_CFL, d_p0, d_p1, d_p2, d_p3, d_p5, dx, dy, R_dry, R_v, NX, NY, N_CELLS);
 
-		Boundary(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, R_dry, R_v, NX, NY, N_CELLS);
+		Boundary(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
 
 		Calc_Tot_Flux(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5,
 			      d_mass_flux_X, d_momentum_X_flux_X, d_momentum_Y_flux_X, d_energy_flux_X, d_mass_fraction_flux_X,
@@ -74,7 +74,7 @@ int main(){
 	Get_From_Device(&h_p5, &d_p5, N_CELLS);
 	Get_From_Device(&h_p6, &d_p6, N_CELLS);
 
-	FILE *pFile = fopen("Results_of_400x200_cells_5s.txt", "w");
+	FILE *pFile = fopen("Results_of_400x200_cells_4s.txt", "w");
 	for (int i = 1; i < NX + 1; i++){
 		for (int j = 1; j < NY + 1; j++){
 			int INDEX = i * (NY+2) + j;
