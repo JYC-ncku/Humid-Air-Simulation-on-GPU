@@ -1,17 +1,28 @@
 #include <stdlib.h>
 #include <math.h>
 
-void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, float *p6, float R_dry, float R_v, int NX, int NY){
+void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, float *p6, float R_dry, float R_v, float dx, float dy, int NX, int NY){
 	float R_mix_L, R_mix_B, P_sat, phi_max;
 	// LEFT and RIGHT (INFLOW and OUTFLOW)
 	for (int j = 1 ; j < NY + 1; j++){
 		int LEFT_GHOST = 0 * (NY+2) + j;
+		int LEFT_INNER = 1 * (NY+2) + j;
 		int RIGHT_GHOST = (NX+1) * (NY+2) + j;
 		int RIGHT_INNER = NX * (NY+2) + j;
-		p1[LEFT_GHOST] = 5.0; // u = 5 m/s
+		float y_center = (j - 0.5) * dy;
+		float U_max = 5.0;
+		float Delta = 0.1; // Boundary thickness
+//		p1[LEFT_GHOST] = 5.0; // u = 5 m/s
+		if (y_center < Delta) {
+			float ratio = y_center / Delta;
+			p1[LEFT_GHOST] = U_max * (2.0 * ratio - ratio * ratio);
+		} else {
+			p1[LEFT_GHOST] = U_max;
+		}
+
 		p2[LEFT_GHOST] = 0.0; // v = 0 m/s
 		p3[LEFT_GHOST] = 300.0; // T = 300 K
-		p4[LEFT_GHOST] = 101325.0; // P = 1 atm
+		p4[LEFT_GHOST] = p4[LEFT_INNER];
 		p5[LEFT_GHOST] = 0.0; // phi = 0
 		R_mix_L = R_dry * (1 - p5[LEFT_GHOST]) + R_v * p5[LEFT_GHOST];
 		p0[LEFT_GHOST] = p4[LEFT_GHOST] / (R_mix_L * p3[LEFT_GHOST]);
@@ -29,18 +40,25 @@ void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, 
 		int TOP_GHOST = i * (NY+2) + (NY+1);
 		int BOTTOM_INNER = i * (NY+2) + 1;
 		int TOP_INNER = i * (NY+2) + NY;
-		p1[BOTTOM_GHOST] = p1[BOTTOM_INNER];
-		p2[BOTTOM_GHOST] = -p2[BOTTOM_INNER];
-		p3[BOTTOM_GHOST] = 373.0; //T = 373 K (Boiling water)
-		p4[BOTTOM_GHOST] = p4[BOTTOM_INNER]; // P = 1 atm
-		P_sat = 611.0 * exp((17.27 * (p3[BOTTOM_GHOST] - 273.15)) / ((p3[BOTTOM_GHOST] - 273.15) + 237.3)); // Tetens equation
-		if (p4[BOTTOM_GHOST] <= P_sat) {
-			phi_max = 1.0;
-		} else {
-			phi_max = (P_sat / R_v) / (((p4[BOTTOM_GHOST] - P_sat) / R_dry) + (P_sat / R_v));
-		}
+		float x_center = (i - 0.5) * dx;
 
-		p5[BOTTOM_GHOST] = phi_max;
+		p1[BOTTOM_GHOST] = -p1[BOTTOM_INNER];
+		p2[BOTTOM_GHOST] = -p2[BOTTOM_INNER];
+		p4[BOTTOM_GHOST] = p4[BOTTOM_INNER]; // P = 1 atm
+
+		if (x_center >= 0.2 && x_center <= 0.7){
+			p3[BOTTOM_GHOST] = 373.15; //T = 373.15 K (Boiling water)
+			P_sat = 611.0 * exp((17.27 * (p3[BOTTOM_GHOST] - 273.15)) / ((p3[BOTTOM_GHOST] - 273.15) + 237.3)); // Tetens equation
+			if (p4[BOTTOM_GHOST] <= P_sat) {
+				phi_max = 1.0;
+			} else {
+				phi_max = (P_sat / R_v) / (((p4[BOTTOM_GHOST] - P_sat) / R_dry) + (P_sat / R_v));
+			}
+			p5[BOTTOM_GHOST] = phi_max;
+		} else {
+			p3[BOTTOM_GHOST] = 300.15;
+			p5[BOTTOM_GHOST] = 0.0;
+		}
 		R_mix_B = R_dry * (1 - p5[BOTTOM_GHOST]) + R_v * p5[BOTTOM_GHOST];
 		p0[BOTTOM_GHOST] = p4[BOTTOM_GHOST] / (R_mix_B * p3[BOTTOM_GHOST]);
 
