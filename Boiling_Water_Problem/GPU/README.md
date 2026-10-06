@@ -66,3 +66,5 @@ CPU time:
 
 GPU time:
 ![GPU_1s.PNG](./GPU_1s.png)
+
+The GPU parallel implementation achieves a speedup factor of (795 * 60 + 18.808) / (17 * 60 + 51.984) = 44.51 over the single-core CPU execution, representing an acceleration of nearly 45×.
