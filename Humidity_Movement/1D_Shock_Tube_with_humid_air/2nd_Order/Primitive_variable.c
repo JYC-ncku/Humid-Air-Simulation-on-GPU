@@ -44,6 +44,7 @@ void Calc_primitive_variable(float *p0, float *p1, float *p2, float *p3, float *
 			p4[i] = 0.0;
 			p5[i] = 0.0;
 			mass_fraction[i] = 0.0;
+
 		}
 	}
 }
