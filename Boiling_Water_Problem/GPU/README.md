@@ -11,9 +11,14 @@ Additionally, I used the Newton–Raphson method to iteratively obtain more prec
 
 The final results will present the full flow-field contours of x-direction velocity, temperature, mass fraction, and relative humidity at t = 1s, 2s, and 3s of physical simulation time.
 
+This program provides an effective means to verify and validate the accuracy of the mass fraction calculations
+
+Due to the excessive computation time required by the CPU implementation, the solver was ported to CUDA for GPU parallel computing to accelerate execution.
+
 ```
 Initial condition:
-u = X-direction velocity = 5 m/s (everywhere), v = Y-direction veloctiy = 0m/s (everywhere), T = temperature = 300.15 K (everywhere)
+u = X-direction velocity = 5 m/s (everywhere), v = Y-direction veloctiy = 0m/s (everywhere)
+T = temperature = 300.15 K (everywhere)
 P = 1 atm (everywhere), phi = Mass fraction = 0 (everywhere)
 
 ```
@@ -29,6 +34,7 @@ CPU:
 clean:
 	rm *.o
  ```
+
 
 Final results for X-dir Veloctiy, Temperature, Mass fraction, Relative Humidity:
 
@@ -52,3 +58,11 @@ Relative Humidity vs Location:
 ![Relative_Humidity_at_1s.png](./Relative_Humidity_at_1s.png)
 ![Relative_Humidity_at_2s.png](./Relative_Humidity_at_2s.png)
 ![Relative_Humidity_at_3s.png](./Relative_Humidity_at_3s.png)
+
+As observed, the results at t = 1s, 2s, and 3s exhibit negligible variations, indicating that the simulation has already achieved a steady state by t = 1s.
+
+CPU time:
+![CPU_1s.png](./CPU_1s.png)
+
+GPU time:
+![GPU_1s.PNG](./GPU_1s.png)
