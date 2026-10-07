@@ -48,7 +48,7 @@ float Compute_dt(float *p1, float *p2, float *p4, float dx, float CFL, float R_d
 }
 
 int main(){
-	int N_CELLS = 1000;
+	int N_CELLS = 1600;
 	float *x, *p0, *p1, *p2, *p3, *p4, *p5,
 	      *mass, *momentum, *energy, *mass_fraction, *mass_flux, *momentum_flux, *energy_flux, *mass_fraction_flux;
 	float L = 0.01; // unit: m
@@ -138,7 +138,7 @@ int main(){
 		}
 	}
 
-	FILE *pFile = fopen("Results_of_1000_cells.txt", "w");
+	FILE *pFile = fopen("Results_of_1600_cells.txt", "w");
 	for (int i = 2; i < N_CELLS + 2; i++){
 		float X = (i - 1.5) * dx;
 		fprintf(pFile, "%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, p0[i], p1[i], p2[i], p3[i], p4[i], p5[i]);
