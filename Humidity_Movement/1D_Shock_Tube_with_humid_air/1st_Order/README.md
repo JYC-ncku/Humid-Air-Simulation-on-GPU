@@ -14,34 +14,22 @@ compile this code using :
 ```
 	gcc main.c memory.c Initial.c Boundary.c Calc_flux.c Primitive_variable.c compute_T.c Compute_Cv.c -O3 -o main.exe -lm
 ```
-Final results for each number of cells (200, 400, 800).
+Final results for each number of cells.
 
 Density of each cells:
-![Result_of_density_with_200_cells.png](./Result_of_density_with_200_cells.png)
-![Result_of_density_with_400_cells.png](./Result_of_density_with_400_cells.png)
-![Result_of_density_with_800_cells.png](./Result_of_density_with_800_cells.png)
+![Result_of_density.png](./Result_of_density.png)
 
 Velocity of each cells:
-![Result_of_X-Velocity_with_200_cells.png](./Result_of_X-Velocity_with_200_cells.png)
-![Result_of_X-Velocity_with_400_cells.png](./Result_of_X-Velocity_with_400_cells.png)
-![Result_of_X-Velocity_with_800_cells.png](./Result_of_X-Velocity_with_800_cells.png)
+![Result_of_X-Velocity.png](./Result_of_X-Velocity.png)
 
 Temperature of each cells:
-![Result_of_Temperature_with_200_cells.png](./Result_of_Temperature_with_200_cells.png)
-![Result_of_Temperature_with_400_cells.png](./Result_of_Temperature_with_400_cells.png)
-![Result_of_Temperature_with_800_cells.png](./Result_of_Temperature_with_800_cells.png)
+![Result_of_Temperature.png](./Result_of_Temperature.png)
 
 Pressure of each cells:
-![Result_of_Pressure_with_200_cells.png](./Result_of_Pressure_with_200_cells.png)
-![Result_of_Pressure_with_400_cells.png](./Result_of_Pressure_with_400_cells.png)
-![Result_of_Pressure_with_800_cells.png](./Result_of_Pressure_with_800_cells.png)
+![Result_of_Pressure.png](./Result_of_Pressure.png)
 
 Mass Fraction of each cells:
-![Result_of_Mass_Fraction_with_200_cells.png](./Result_of_Mass_Fraction_with_200_cells.png)
-![Result_of_Mass_Fraction_with_400_cells.png](./Result_of_Mass_Fraction_with_400_cells.png)
-![Result_of_Mass_Fraction_with_800_cells.png](./Result_of_Mass_Fraction_with_800_cells.png)
+![Result_of_Mass_Fraction.png](./Result_of_Mass_Fraction.png)
 
 Relative Humidity of each cells:
-![Result_of_Relative_Humidity_with_200_cells.png](./Result_of_Relative_Humidity_with_200_cells.png)
-![Result_of_Relative_Humidity_with_400_cells.png](./Result_of_Relative_Humidity_with_400_cells.png)
-![Result_of_Relative_Humidity_with_800_cells.png](./Result_of_Relative_Humidity_with_800_cells.png)
+![Result_of_Relative_Humidity.png](./Result_of_Relative_Humidity.png)
