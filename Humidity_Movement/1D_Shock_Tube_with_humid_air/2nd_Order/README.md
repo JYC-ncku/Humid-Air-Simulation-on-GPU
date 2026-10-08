@@ -40,10 +40,10 @@ Pressure of each cells:
 ![Result_of_Pressure_1600_cells.png](./Result_of_Pressure_1600_cells.png)
 
 Mass Fraction of each cells:
-![Result_of_Mass_Fraction_200_cells.png](./Result_of_Mass_Fraction_200_cells.png)
-![Result_of_Mass_Fraction_400_cells.png](./Result_of_Mass_Fraction_400_cells.png)
-![Result_of_Mass_Fraction_800_cells.png](./Result_of_Mass_Fraction_800_cells.png)
-![Result_of_Mass_Fraction_1600_cells.png](./Result_of_Mass_Fraction_1600_cells.png)
+![Result_of_Mass_fraction_200_cells.png](./Result_of_Mass_fraction_200_cells.png)
+![Result_of_Mass_fraction_400_cells.png](./Result_of_Mass_fraction_400_cells.png)
+![Result_of_Mass_fraction_800_cells.png](./Result_of_Mass_fraction_800_cells.png)
+![Result_of_Mass_fraction_1600_cells.png](./Result_of_Mass_fraction_1600_cells.png)
 
 Relative Humidity of each cells:
 ![Result_of_Relative_Humidity_200_cells.png](./Result_of_Relative_Humidity_200_cells.png)
