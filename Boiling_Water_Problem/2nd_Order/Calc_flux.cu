@@ -136,7 +136,7 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 	int INDEX_TT = i * (NY + 4) + (j + 2);
 	if (INDEX < N_CELLS){
 		//X-dir
-		if (i >= 1 && i < NX + 2 && j >= 1 && j < NY + 1){
+		if (i >= 1 && i < NX + 2 && j >= 2 && j < NY + 2){
 			float rho_L = d_p0[INDEX_L];
 			float rho_C = d_p0[INDEX];
 			float rho_R = d_p0[INDEX_R];
@@ -201,7 +201,7 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 				        D, dx, INDEX);
 		}
 		//Y-dir
-		if (i >= 1 && i < NX + 1 && j >= 1 && j < NY + 2){
+		if (i >= 2 && i < NX + 2 && j >= 1 && j < NY + 2){
 			float rho_B = d_p0[INDEX_B];
 			float rho_C = d_p0[INDEX];
 			float rho_T = d_p0[INDEX_T];

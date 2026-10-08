@@ -6,11 +6,11 @@ __global__ void GPU_Initial(float *d_p0, float *d_p1, float *d_p2, float *d_p3, 
 			    float *d_mass, float *d_momentum_X, float *d_momentum_Y, float *d_energy, float *d_mass_fraction,
 			    float *MAX_Freq, float R_dry, float R_v, int NX, int NY, int N_CELLS){
 	int INDEX = blockIdx.x * blockDim.x + threadIdx.x;
-	int i = (int)INDEX / (NY+2);
-	int j = (int)INDEX - i * (NY+2);
+	int i = (int)INDEX / (NY+4);
+	int j = (int)INDEX - i * (NY+4);
 	float T_i, Y_i, Cv_mix, R_mix;
 	if (INDEX < N_CELLS){
-		if (i >= 1 && i < NX + 1 && j >= 1 && j < NY + 1){
+		if (i >= 2 && i < NX + 2 && j >= 2 && j < NY + 2){
 			d_p1[INDEX] = 5.0; // u = 5 m/s
 			d_p2[INDEX] = 0.0; // v = 0 m/s
 			d_p3[INDEX] = 300.0; // T = 300 K
