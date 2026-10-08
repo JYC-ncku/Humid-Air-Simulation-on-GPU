@@ -22,10 +22,10 @@ Density of each cells:
 ![Result_of_Density_1600_cells.png](./Result_of_Density_1600_cells.png)
 
 Velocity of each cells:
-![Result_of_X-dir_velocity_200_cells.png](./Result_of_X-dir_velocity_200_cells.png)
-![Result_of_X-dir_velocity_400_cells.png](./Result_of_X-dir_velocity_400_cells.png)
-![Result_of_X-dir_velocity_800_cells.png](./Result_of_X-dir_velocity_800_cells.png)
-![Result_of_X-dir_velocity_1600_cells.png](./Result_of_X-dir_velocity_1600_cells.png)
+![Result_of_X-dir_Velocity_200_cells.png](./Result_of_X-dir_Velocity_200_cells.png)
+![Result_of_X-dir_Velocity_400_cells.png](./Result_of_X-dir_Velocity_400_cells.png)
+![Result_of_X-dir_Velocity_800_cells.png](./Result_of_X-dir_Velocity_800_cells.png)
+![Result_of_X-dir_Velocity_1600_cells.png](./Result_of_X-dir_Velocity_1600_cells.png)
 
 Temperature of each cells:
 ![Result_of_Temperature_200_cells.png](./Result_of_Temperature_200_cells.png)
