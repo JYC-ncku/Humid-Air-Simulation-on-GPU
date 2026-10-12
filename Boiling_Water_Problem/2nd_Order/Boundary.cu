@@ -20,7 +20,6 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 
 			int LEFT_INNER = 2 * (NY+4) + j;
 			int RIGHT_INNER = (NX+1) * (NY+4) + j;
-			int RIGHT_INNER_INNER = NX * (NY+4) + j;
 //			d_p1[LEFT_GHOST] = 5.0; // u = 5 m/s
 			if (y_center < Delta) {
 				float ratio = y_center / Delta;
@@ -50,12 +49,12 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 			d_p4[RIGHT_GHOST] = d_p4[RIGHT_INNER];
 			d_p5[RIGHT_GHOST] = d_p5[RIGHT_INNER];
 
-			d_p0[RIGHT_RIGHT_GHOST] = d_p0[RIGHT_INNER_INNER];
-			d_p1[RIGHT_RIGHT_GHOST] = d_p1[RIGHT_INNER_INNER];
-			d_p2[RIGHT_RIGHT_GHOST] = d_p2[RIGHT_INNER_INNER];
-			d_p3[RIGHT_RIGHT_GHOST] = d_p3[RIGHT_INNER_INNER];
-			d_p4[RIGHT_RIGHT_GHOST] = d_p4[RIGHT_INNER_INNER];
-			d_p5[RIGHT_RIGHT_GHOST] = d_p5[RIGHT_INNER_INNER];
+			d_p0[RIGHT_RIGHT_GHOST] = d_p0[RIGHT_INNER];
+			d_p1[RIGHT_RIGHT_GHOST] = d_p1[RIGHT_INNER];
+			d_p2[RIGHT_RIGHT_GHOST] = d_p2[RIGHT_INNER];
+			d_p3[RIGHT_RIGHT_GHOST] = d_p3[RIGHT_INNER];
+			d_p4[RIGHT_RIGHT_GHOST] = d_p4[RIGHT_INNER];
+			d_p5[RIGHT_RIGHT_GHOST] = d_p5[RIGHT_INNER];
 		}
 		//BOTTOM and TOP
 		if (i >= 2 && i < NX + 1 && j == 0){
@@ -67,7 +66,6 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 			int BOTTOM_INNER = i * (NY+4) + 2;
 			int BOTTOM_INNER_INNER = i * (NY+4) + 3;
 			int TOP_INNER = i * (NY+4) + (NY+1);
-			int TOP_INNER_INNER = i * (NY+4) + NY;
 
 			d_p1[BOTTOM_GHOST] = -d_p1[BOTTOM_INNER];
 			d_p2[BOTTOM_GHOST] = -d_p2[BOTTOM_INNER];
@@ -107,12 +105,12 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 			d_p4[TOP_GHOST] = d_p4[TOP_INNER];
 			d_p5[TOP_GHOST] = d_p5[TOP_INNER];
 
-			d_p0[TOP_TOP_GHOST] = d_p0[TOP_INNER_INNER];
-			d_p1[TOP_TOP_GHOST] = d_p1[TOP_INNER_INNER];
-			d_p2[TOP_TOP_GHOST] = d_p2[TOP_INNER_INNER];
-			d_p3[TOP_TOP_GHOST] = d_p3[TOP_INNER_INNER];
-			d_p4[TOP_TOP_GHOST] = d_p4[TOP_INNER_INNER];
-			d_p5[TOP_TOP_GHOST] = d_p5[TOP_INNER_INNER];
+			d_p0[TOP_TOP_GHOST] = d_p0[TOP_INNER];
+			d_p1[TOP_TOP_GHOST] = d_p1[TOP_INNER];
+			d_p2[TOP_TOP_GHOST] = d_p2[TOP_INNER];
+			d_p3[TOP_TOP_GHOST] = d_p3[TOP_INNER];
+			d_p4[TOP_TOP_GHOST] = d_p4[TOP_INNER];
+			d_p5[TOP_TOP_GHOST] = d_p5[TOP_INNER];
 
 		}
 	}

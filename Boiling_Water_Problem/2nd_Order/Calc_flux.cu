@@ -18,6 +18,7 @@ __device__ float MINMOD(float U_L, float U_C, float U_R, float dx){
 
 __device__ void Calc_HLL_X_flux(float rho_L, float rho_R, float u_L, float u_R, float v_L, float v_R, float T_L, float T_R, float P_L, float P_R, float Y_L, float Y_R,
 				float E_L, float E_R, float a_L, float a_R,
+				float Y_center_L, float Y_center_R,
 				float *d_mass_flux_X, float *d_momentum_X_flux_X, float *d_momentum_Y_flux_X, float *d_energy_flux_X, float *d_mass_fraction_flux_X,
 				float D, float dx, int INDEX){
 	float W_L = fmin(u_L - a_L, u_R - a_R);
@@ -65,11 +66,12 @@ __device__ void Calc_HLL_X_flux(float rho_L, float rho_R, float u_L, float u_R, 
 	}
 
 	float rho_face_X = 0.5 * (rho_L + rho_R);
-	d_mass_fraction_flux_X[INDEX] -= rho_face_X * D * ((Y_R - Y_L) / dx); //Central difference
+	d_mass_fraction_flux_X[INDEX] -= rho_face_X * D * ((Y_center_R - Y_center_L) / dx); //Central difference
 }
 
 __device__ void Calc_HLL_Y_flux(float rho_B, float rho_T, float u_B, float u_T, float v_B, float v_T, float T_B, float T_T, float P_B, float P_T, float Y_B, float Y_T,
 				float E_B, float E_T, float a_B, float a_T,
+				float Y_center_B, float Y_center_T,
 				float *d_mass_flux_Y, float *d_momentum_X_flux_Y, float *d_momentum_Y_flux_Y, float *d_energy_flux_Y, float *d_mass_fraction_flux_Y,
 				float D, float dy, int INDEX){
 	float W_B = fmin(v_B - a_B, v_T - a_T);
@@ -117,7 +119,7 @@ __device__ void Calc_HLL_Y_flux(float rho_B, float rho_T, float u_B, float u_T, 
 	}
 
 	float rho_face_Y = 0.5 * (rho_B + rho_T);
-	d_mass_fraction_flux_Y[INDEX] -= rho_face_Y * D * ((Y_T - Y_B) / dy);
+	d_mass_fraction_flux_Y[INDEX] -= rho_face_Y * D * ((Y_center_T - Y_center_B) / dy);
 }
 
 
@@ -163,7 +165,16 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 			float dv_dx_R = MINMOD(v_C, v_R, v_RR, dx);
 			float v_L_star = v_C + 0.5 * dx * dv_dx_L;
 			float v_R_star = v_R - 0.5 * dx * dv_dx_R;
-
+/*
+			float P_L = d_p4[INDEX_L];
+			float P_C = d_p4[INDEX];
+			float P_R = d_p4[INDEX_R];
+			float P_RR = d_p4[INDEX_RR];
+			float dP_dx_L = MINMOD(P_L, P_C, P_R, dx);
+			float dP_dx_R = MINMOD(P_C, P_R, P_RR, dx);
+			float P_L_star = P_C + 0.5 * dx * dP_dx_L;
+			float P_R_star = P_R - 0.5 * dx * dP_dx_R;
+*/
 			float T_L = d_p3[INDEX_L];
 			float T_C = d_p3[INDEX];
 			float T_R = d_p3[INDEX_R];
@@ -182,10 +193,14 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 			float Y_L_star = Y_C + 0.5 * dx * dY_dx_L;
 			float Y_R_star = Y_R - 0.5 * dx * dY_dx_R;
 
-			float R_mix_L = R_dry * (1 - Y_L) + R_v * Y_L;
-			float R_mix_R = R_dry * (1 - Y_R) + R_v * Y_R;
-			float Cv_mix_L = Compute_Cv(T_L, Y_L);
-			float Cv_mix_R = Compute_Cv(T_R, Y_R);
+			float R_mix_L = R_dry * (1 - Y_L_star) + R_v * Y_L_star;
+			float R_mix_R = R_dry * (1 - Y_R_star) + R_v * Y_R_star;
+
+//			float T_L_star = P_L_star / (rho_L_star * R_mix_L);
+//			float T_R_star = P_R_star / (rho_R_star * R_mix_R);
+
+			float Cv_mix_L = Compute_Cv(T_L_star, Y_L_star);
+			float Cv_mix_R = Compute_Cv(T_R_star, Y_R_star);
 			float Gamma_L = 1 + R_mix_L / Cv_mix_L;
 			float Gamma_R = 1 + R_mix_R / Cv_mix_R;
 
@@ -197,6 +212,7 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 			float a_L_star = sqrt(Gamma_L * R_mix_L * T_L_star); // Sound speed a = (R*T)^0.5
 			float a_R_star = sqrt(Gamma_R * R_mix_R * T_R_star);
 			Calc_HLL_X_flux(rho_L_star, rho_R_star, u_L_star, u_R_star, v_L_star, v_R_star, T_L_star, T_R_star, P_L_star, P_R_star, Y_L_star, Y_R_star, E_L_star, E_R_star, a_L_star, a_R_star,
+					Y_C, Y_R,
 				        d_mass_flux_X, d_momentum_X_flux_X, d_momentum_Y_flux_X, d_energy_flux_X, d_mass_fraction_flux_X,
 				        D, dx, INDEX);
 		}
@@ -206,51 +222,64 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 			float rho_C = d_p0[INDEX];
 			float rho_T = d_p0[INDEX_T];
 			float rho_TT = d_p0[INDEX_TT];
-			float drho_dx_B = MINMOD(rho_B, rho_C, rho_T, dx);
-			float drho_dx_T = MINMOD(rho_C, rho_T, rho_TT, dx);
-			float rho_B_star = rho_C + 0.5 * dy * drho_dx_B;
-			float rho_T_star = rho_T - 0.5 * dy * drho_dx_T;
+			float drho_dy_B = MINMOD(rho_B, rho_C, rho_T, dy);
+			float drho_dy_T = MINMOD(rho_C, rho_T, rho_TT, dy);
+			float rho_B_star = rho_C + 0.5 * dy * drho_dy_B;
+			float rho_T_star = rho_T - 0.5 * dy * drho_dy_T;
 
 			float u_B = d_p1[INDEX_B];
 			float u_C = d_p1[INDEX];
 			float u_T = d_p1[INDEX_T];
 			float u_TT = d_p1[INDEX_TT];
-			float du_dx_B = MINMOD(u_B, u_C, u_T, dx);
-			float du_dx_T = MINMOD(u_C, u_T, u_TT, dx);
-			float u_B_star = u_C + 0.5 * dy * du_dx_B;
-			float u_T_star = u_T - 0.5 * dy * du_dx_T;
+			float du_dy_B = MINMOD(u_B, u_C, u_T, dy);
+			float du_dy_T = MINMOD(u_C, u_T, u_TT, dy);
+			float u_B_star = u_C + 0.5 * dy * du_dy_B;
+			float u_T_star = u_T - 0.5 * dy * du_dy_T;
 
 			float v_B = d_p2[INDEX_B];
 			float v_C = d_p2[INDEX];
 			float v_T = d_p2[INDEX_T];
 			float v_TT = d_p2[INDEX_TT];
-			float dv_dx_B = MINMOD(v_B, v_C, v_T, dx);
-			float dv_dx_T = MINMOD(v_C, v_T, v_TT, dx);
-			float v_B_star = v_C + 0.5 * dy * dv_dx_B;
-			float v_T_star = v_T - 0.5 * dy * dv_dx_T;
+			float dv_dy_B = MINMOD(v_B, v_C, v_T, dy);
+			float dv_dy_T = MINMOD(v_C, v_T, v_TT, dy);
+			float v_B_star = v_C + 0.5 * dy * dv_dy_B;
+			float v_T_star = v_T - 0.5 * dy * dv_dy_T;
 
 			float T_B = d_p3[INDEX_B];
 			float T_C = d_p3[INDEX];
 			float T_T = d_p3[INDEX_T];
 			float T_TT = d_p3[INDEX_TT];
-			float dT_dx_B = MINMOD(T_B, T_C, T_T, dx);
-			float dT_dx_T = MINMOD(T_C, T_T, T_TT, dx);
-			float T_B_star = T_C + 0.5 * dy * dT_dx_B;
-			float T_T_star = T_T - 0.5 * dy * dT_dx_T;
-
+			float dT_dy_B = MINMOD(T_B, T_C, T_T, dy);
+			float dT_dy_T = MINMOD(T_C, T_T, T_TT, dy);
+			float T_B_star = T_C + 0.5 * dy * dT_dy_B;
+			float T_T_star = T_T - 0.5 * dy * dT_dy_T;
+/*
+			float P_B = d_p4[INDEX_B];
+			float P_C = d_p4[INDEX];
+			float P_T = d_p4[INDEX_T];
+			float P_TT = d_p4[INDEX_TT];
+			float dP_dy_B = MINMOD(P_B, P_C, P_T, dy);
+			float dP_dy_T = MINMOD(P_C, P_T, P_TT, dy);
+			float P_B_star = P_C + 0.5 * dy * dP_dy_B;
+			float P_T_star = P_T - 0.5 * dy * dP_dy_T;
+*/
 			float Y_B = d_p5[INDEX_B];
 			float Y_C = d_p5[INDEX];
-			float Y_T = d_p3[INDEX_T];
-			float Y_TT = d_p3[INDEX_TT];
-			float dY_dx_B = MINMOD(Y_B, Y_C, Y_T, dx);
-			float dY_dx_T = MINMOD(Y_C, Y_T, Y_TT, dx);
-			float Y_B_star = Y_C + 0.5 * dy * dY_dx_B;
-			float Y_T_star = Y_T - 0.5 * dy * dY_dx_T;
+			float Y_T = d_p5[INDEX_T];
+			float Y_TT = d_p5[INDEX_TT];
+			float dY_dy_B = MINMOD(Y_B, Y_C, Y_T, dy);
+			float dY_dy_T = MINMOD(Y_C, Y_T, Y_TT, dy);
+			float Y_B_star = Y_C + 0.5 * dy * dY_dy_B;
+			float Y_T_star = Y_T - 0.5 * dy * dY_dy_T;
 
-			float R_mix_B = R_dry * (1 - Y_B) + R_v * Y_B;
-			float R_mix_T = R_dry * (1 - Y_T) + R_v * Y_T;
-			float Cv_mix_B = Compute_Cv(T_B, Y_B);
-			float Cv_mix_T = Compute_Cv(T_T, Y_T);
+			float R_mix_B = R_dry * (1 - Y_B_star) + R_v * Y_B_star;
+			float R_mix_T = R_dry * (1 - Y_T_star) + R_v * Y_T_star;
+
+//			float T_B_star = P_B_star / (rho_B_star * R_mix_B);
+//			float T_T_star = P_T_star / (rho_T_star * R_mix_T);
+
+			float Cv_mix_B = Compute_Cv(T_B_star, Y_B_star);
+			float Cv_mix_T = Compute_Cv(T_T_star, Y_T_star);
 			float Gamma_B = 1 + R_mix_B / Cv_mix_B;
 			float Gamma_T = 1 + R_mix_T / Cv_mix_T;
 
@@ -262,6 +291,7 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 			float a_B_star = sqrt(Gamma_B * R_mix_B * T_B_star); // Sound speed a = (R*T)^0.5
 			float a_T_star = sqrt(Gamma_T * R_mix_T * T_T_star);
 			Calc_HLL_Y_flux(rho_B_star, rho_T_star, u_B_star, u_T_star, v_B_star, v_T_star, T_B_star, T_T_star, P_B_star, P_T_star, Y_B_star, Y_T_star, E_B_star, E_T_star, a_B_star, a_T_star,
+					Y_C, Y_T,
 				        d_mass_flux_Y, d_momentum_X_flux_Y, d_momentum_Y_flux_Y, d_energy_flux_Y, d_mass_fraction_flux_Y,
 				        D, dy, INDEX);
 		}

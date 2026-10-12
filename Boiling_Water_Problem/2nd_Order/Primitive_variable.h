@@ -4,4 +4,4 @@ void Calc_primitive_variable(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 			     float *d_mass_flux_Y, float *d_momentum_X_flux_Y, float *d_momentum_Y_flux_Y, float *d_energy_flux_Y, float *d_mass_fraction_flux_Y,
 			     float R_dry, float R_v, float dx, float dy, float dt, int NX, int NY, int N_CELLS);
 
-float Compute_dt(float *MAX_Freq, float *d_MAX_CFL, float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p5, float dx, float dy, float R_dry, float R_v, int NX, int NY, int N_CELLS);
+float Compute_dt(float *MAX_Freq, float *d_MAX_CFL, float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p5, float dx, float dy, float R_dry, float R_v, float CFL, int NX, int NY, int N_CELLS);

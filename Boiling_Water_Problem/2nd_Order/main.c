@@ -8,9 +8,9 @@
 #include "Primitive_variable.h"
 
 int main(){
-	int NX = 40;
-	int NY = 20;
-	int N_CELLS = (NX+2) * (NY+2); // 2 Ghost cells
+	int NX = 400;
+	int NY = 200;
+	int N_CELLS = (NX+4) * (NY+4); // 2 Ghost cells
 	 // p0: Density (rho), p1: X-velocity (u), p2: Y-velocity (v), p3: Temperature (T), p4: Pressure (p), p5: Mass fraction (Y_v), p6: Relative humidity (RH)
 	float *h_p0, *h_p1, *h_p2, *h_p3, *h_p4, *h_p5, *h_p6,
 	      *d_p0, *d_p1, *d_p2, *d_p3, *d_p4, *d_p5, *d_p6,
@@ -45,7 +45,7 @@ int main(){
 	Initial(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction, MAX_Freq, R_dry, R_v, NX, NY, N_CELLS);
 	int step = 0;
 	while(t < t_FINAL){
-		float dt = Compute_dt(MAX_Freq, d_MAX_CFL, d_p0, d_p1, d_p2, d_p3, d_p5, dx, dy, R_dry, R_v, NX, NY, N_CELLS);
+		float dt = Compute_dt(MAX_Freq, d_MAX_CFL, d_p0, d_p1, d_p2, d_p3, d_p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
 
 		Boundary(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
 
@@ -74,12 +74,12 @@ int main(){
 	Get_From_Device(&h_p5, &d_p5, N_CELLS);
 	Get_From_Device(&h_p6, &d_p6, N_CELLS);
 
-	FILE *pFile = fopen("Results_of_40x20_cells_1s.txt", "w");
-	for (int i = 1; i < NX + 1; i++){
-		for (int j = 1; j < NY + 1; j++){
-			int INDEX = i * (NY+2) + j;
-			float X = (i - 0.5) * dx;
-			float Y = (j - 0.5) * dy;
+	FILE *pFile = fopen("Results_of_400x200_cells_1s.txt", "w");
+	for (int i = 2; i < NX + 2; i++){
+		for (int j = 2; j < NY + 2; j++){
+			int INDEX = i * (NY+4) + j;
+			float X = (i - 1.5) * dx;
+			float Y = (j - 1.5) * dy;
 		fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n",
 				X, Y, h_p0[INDEX], h_p1[INDEX], h_p2[INDEX], h_p3[INDEX], h_p4[INDEX], h_p5[INDEX], h_p6[INDEX]);
 		}
