@@ -12,7 +12,7 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 	float R_mix_L, R_mix_B, P_sat, phi_max;
 	if (INDEX < N_CELLS){
 		// LEFT and RIGHT (INFLOW and OUTFLOW)
-		if (j >= 2 && j < NY + 1 && i == 0){
+		if (j >= 2 && j < NY + 2 && i == 0){
 			int LEFT_LEFT_GHOST = 0 * (NY+4) + j;
 			int LEFT_GHOST = 1 * (NY+4) + j;
 			int RIGHT_RIGHT_GHOST = (NX+3) * (NY+4) + j;
@@ -57,7 +57,7 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 			d_p5[RIGHT_RIGHT_GHOST] = d_p5[RIGHT_INNER];
 		}
 		//BOTTOM and TOP
-		if (i >= 2 && i < NX + 1 && j == 0){
+		if (i >= 2 && i < NX + 2 && j == 0){
 			int BOTTOM_BOTTOM_GHOST = i * (NY+4) + 0;
 			int BOTTOM_GHOST = i * (NY+4) + 1;
 			int TOP_TOP_GHOST = i * (NY+4) + (NY+3);
