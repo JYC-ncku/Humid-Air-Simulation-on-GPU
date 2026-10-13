@@ -64,7 +64,13 @@ __device__ void Calc_HLL_X_flux(float rho_L, float rho_R, float u_L, float u_R, 
 		d_energy_flux_X[INDEX] = (W_R * energy_flux_L - W_L * energy_flux_R + W_L * W_R * (energy_R - energy_L)) / (W_R - W_L);
 		d_mass_fraction_flux_X[INDEX] = (W_R * mass_fraction_flux_L - W_L * mass_fraction_flux_R + W_L * W_R * (mass_fraction_R - mass_fraction_L)) / (W_R - W_L);
 	}
-
+/*
+	if (d_mass_flux_X[INDEX] > 0.0) {
+		d_mass_fraction_flux_X[INDEX] = d_mass_flux_X[INDEX] * Y_L;
+	} else {
+		d_mass_fraction_flux_X[INDEX] = d_mass_flux_X[INDEX] * Y_R;
+	}
+*/
 	float rho_face_X = 0.5 * (rho_L + rho_R);
 	d_mass_fraction_flux_X[INDEX] -= rho_face_X * D * ((Y_center_R - Y_center_L) / dx); //Central difference
 }
@@ -117,7 +123,13 @@ __device__ void Calc_HLL_Y_flux(float rho_B, float rho_T, float u_B, float u_T, 
 		d_energy_flux_Y[INDEX] = (W_T * energy_flux_B - W_B * energy_flux_T + W_B * W_T * (energy_T - energy_B)) / (W_T - W_B);
 		d_mass_fraction_flux_Y[INDEX] = (W_T * mass_fraction_flux_B - W_B * mass_fraction_flux_T + W_B * W_T * (mass_fraction_T - mass_fraction_B)) / (W_T - W_B);
 	}
-
+/*
+	if (d_mass_flux_Y[INDEX] > 0.0) {
+		d_mass_fraction_flux_Y[INDEX] = d_mass_flux_Y[INDEX] * Y_B;
+	} else {
+		d_mass_fraction_flux_Y[INDEX] = d_mass_flux_Y[INDEX] * Y_T;
+	}
+*/
 	float rho_face_Y = 0.5 * (rho_B + rho_T);
 	d_mass_fraction_flux_Y[INDEX] -= rho_face_Y * D * ((Y_center_T - Y_center_B) / dy);
 }
