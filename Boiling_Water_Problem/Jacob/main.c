@@ -14,6 +14,7 @@ int main(){
 	 // p0: Density (rho), p1: X-velocity (u), p2: Y-velocity (v), p3: Temperature (T), p4: Pressure (p), p5: Mass fraction (Y_v), p6: Relative humidity (RH)
 	float *h_p0, *h_p1, *h_p2, *h_p3, *h_p4, *h_p5, *h_p6,
 	      *d_p0, *d_p1, *d_p2, *d_p3, *d_p4, *d_p5, *d_p6,
+	      *d_mass, *d_momentum_X, *d_momentum_Y, *d_energy, *d_mass_fraction,
 	      *d_interface_p, *d_flux_X, *d_flux_Y,
 	      *MAX_Freq, *d_MAX_CFL;
 	float L = 1.0; // unit: m
@@ -22,7 +23,7 @@ int main(){
 	float t_FINAL = 1.0; // unit: s
 //	float R = 1.0;
 //	float GAMMA = 1.4;
-	float CFL = 0.5;
+	float CFL = 0.25;
 	float dx = L/NX;
 	float dy = H/NY;
 	float D = 1.837e-5; //Diffusivity of water vapor. unit:(m^2/s)
@@ -35,10 +36,11 @@ int main(){
 
 	Allocate_memory(&h_p0, &h_p1, &h_p2, &h_p3, &h_p4, &h_p5, &h_p6,
 			&d_p0, &d_p1, &d_p2, &d_p3, &d_p4, &d_p5, &d_p6,
+			&d_mass, &d_momentum_X, &d_momentum_Y, &d_energy, &d_mass_fraction,
 			&d_interface_p, &d_flux_X, &d_flux_Y,
 			&MAX_Freq, &d_MAX_CFL, N_CELLS);
 
-	Initial(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, MAX_Freq, R_dry, R_v, NX, NY, N_CELLS);
+	Initial(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction, MAX_Freq, d_MAX_CFL, R_dry, R_v, NX, NY, N_CELLS);
 	int step = 0;
 	while(t < t_FINAL){
 		float dt = Compute_dt(MAX_Freq, d_MAX_CFL, d_p0, d_p1, d_p2, d_p3, d_p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
@@ -46,14 +48,12 @@ int main(){
 		Boundary(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
 
 		Calc_Tot_Flux(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5,
-			      d_mass_flux_X, d_momentum_X_flux_X, d_momentum_Y_flux_X, d_energy_flux_X, d_mass_fraction_flux_X,
-			      d_mass_flux_Y, d_momentum_X_flux_Y, d_momentum_Y_flux_Y, d_energy_flux_Y, d_mass_fraction_flux_Y,
+			      d_interface_p, d_flux_X, d_flux_Y,
 			      R_dry, R_v, D, dx, dy, NX, NY, N_CELLS);
 
 		Calc_primitive_variable(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6,
 					d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction,
-					d_mass_flux_X, d_momentum_X_flux_X, d_momentum_Y_flux_X, d_energy_flux_X, d_mass_fraction_flux_X,
-					d_mass_flux_Y, d_momentum_X_flux_Y, d_momentum_Y_flux_Y, d_energy_flux_Y, d_mass_fraction_flux_Y,
+					d_flux_X, d_flux_Y,
 					R_dry, R_v, dx, dy, dt, NX, NY, N_CELLS);
 		t += dt;
 		step++;
@@ -84,6 +84,7 @@ int main(){
 
 	Free_memory(&h_p0, &h_p1, &h_p2, &h_p3, &h_p4, &h_p5, &h_p6,
 		    &d_p0, &d_p1, &d_p2, &d_p3, &d_p4, &d_p5, &d_p6,
+		    &d_mass, &d_momentum_X, &d_momentum_Y, &d_energy, &d_mass_fraction,
 		    &d_interface_p, &d_flux_X, &d_flux_Y,
 		    &MAX_Freq, &d_MAX_CFL);
 return 0;

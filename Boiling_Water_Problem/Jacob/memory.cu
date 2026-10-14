@@ -4,7 +4,8 @@
 void Allocate_memory(float **array1, float **array2, float **array3, float **array4, float **array5, float **array6,
 		     float **array7, float **array8, float **array9, float **array10,float **array11, float **array12,
 		     float **array13, float **array14, float **array15, float **array16, float **array17, float **array18,
-		     float **array19, int N_CELLS){
+		     float **array19, float **array20, float **array21, float **array22, float **array23, float **array24,
+		     int N_CELLS){
 	*array1 = (float*)malloc(N_CELLS * sizeof(float));
 	*array2 = (float*)malloc(N_CELLS * sizeof(float));
 	*array3 = (float*)malloc(N_CELLS * sizeof(float));
@@ -44,12 +45,22 @@ void Allocate_memory(float **array1, float **array2, float **array3, float **arr
 	printf("CUDA error (malloc array18) = %s\n", cudaGetErrorString(Error));
 	Error = cudaMalloc((void**)array19, (N_CELLS) * sizeof(float));
 	printf("CUDA error (malloc array19) = %s\n", cudaGetErrorString(Error));
+	Error = cudaMalloc((void**)array20, (N_CELLS) * 6 * sizeof(float));     // interface_p have 6 output
+	printf("CUDA error (malloc array20) = %s\n", cudaGetErrorString(Error));
+	Error = cudaMalloc((void**)array21, (N_CELLS) * 6 * sizeof(float));     // flux_X have 6 ouuput
+	printf("CUDA error (malloc array21) = %s\n", cudaGetErrorString(Error));
+	Error = cudaMalloc((void**)array22, (N_CELLS) * 6 * sizeof(float));     // flux_Y have 6 ouuput
+	printf("CUDA error (malloc array22) = %s\n", cudaGetErrorString(Error));
+	Error = cudaMalloc((void**)array23, (N_CELLS) * sizeof(float));
+	printf("CUDA error (malloc array23) = %s\n", cudaGetErrorString(Error));
+	Error = cudaMalloc((void**)array24, (N_CELLS) * sizeof(float));
+	printf("CUDA error (malloc array24) = %s\n", cudaGetErrorString(Error));
 }
 
 void Free_memory(float **array1, float **array2, float **array3, float **array4, float **array5, float **array6,
 		 float **array7, float **array8, float **array9, float **array10,float **array11, float **array12,
 		 float **array13, float **array14, float **array15, float **array16, float **array17, float **array18,
-		 float **array19){
+		 float **array19, float **array20, float **array21, float **array22, float **array23, float **array24){
 	free(*array1);
 	free(*array2);
 	free(*array3);
@@ -69,6 +80,11 @@ void Free_memory(float **array1, float **array2, float **array3, float **array4,
 	cudaFree(*array17);
 	cudaFree(*array18);
 	cudaFree(*array19);
+	cudaFree(*array20);
+	cudaFree(*array21);
+	cudaFree(*array22);
+	cudaFree(*array23);
+	cudaFree(*array24);
 	printf("Memory freed successfully!\n");
 }
 

@@ -13,7 +13,6 @@ __global__ void GPU_Compute_MAX_CFL(float *MAX_Freq, float *d_p0, float *d_p1, f
 	int j = (int)INDEX - i * (NY+4);
 	float R_mix, Cv_mix, Gamma_mix;
 	if (INDEX < N_CELLS){
-	MAX_Freq[INDEX] = 0.0;
 	// Only care inner cells.
 		if (i >= 2 && i < NX + 2 && j >= 2 && j < NY + 2){
 			float u = d_p1[INDEX];
@@ -37,8 +36,7 @@ __global__ void GPU_Compute_MAX_CFL(float *MAX_Freq, float *d_p0, float *d_p1, f
 
 __global__ void GPU_Calc_primitive_variable(float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float *d_p5, float *d_p6,
 					    float *d_mass, float *d_momentum_X, float *d_momentum_Y, float *d_energy, float *d_mass_fraction,
-					    float *d_mass_flux_X, float *d_momentum_X_flux_X, float *d_momentum_Y_flux_X, float *d_energy_flux_X, float *d_mass_fraction_flux_X,
-					    float *d_mass_flux_Y, float *d_momentum_X_flux_Y, float *d_momentum_Y_flux_Y, float *d_energy_flux_Y, float *d_mass_fraction_flux_Y,
+					    float *d_flux_X, float *d_flux_Y,
 					    float R_dry, float R_v, float dx, float dy, float dt, int NX, int NY, int N_CELLS){
 	int INDEX = blockIdx.x * blockDim.x + threadIdx.x;
 	int i = (int)INDEX / (NY+4);
@@ -46,20 +44,28 @@ __global__ void GPU_Calc_primitive_variable(float *d_p0, float *d_p1, float *d_p
 	float e_target, T_old, phi_new, phi_max,  R_mix, P_sat, P_v;
 	if (INDEX < N_CELLS){
 		if (i >= 2 && i < NX + 2 && j >= 2 && j < NY + 2){
+/*
 			int INDEX = i * (NY+4) + j;
 			int INDEX_L = (i-1) * (NY+4) + j;
 			int INDEX_B = i * (NY+4) + (j-1);
+*/
+			// 我們是 i*5，所以左界面是 (i-1)*5，右界面是 i*5
+			int L_interface = ((i - 1) * (NY + 4) + j) * 6;
+			int R_interface = INDEX * 6; // T_intewrface = R_interface
+			int B_interface = (i * (NY + 4) + (j - 1)) * 6;
+			int T_interface = INDEX * 6; // T_intewrface = R_interface
+
 		        // Use FVM to get new conservation values
-			d_mass[INDEX] = d_mass[INDEX] - (dt / dx) * (d_mass_flux_X[INDEX] - d_mass_flux_X[INDEX_L])
-						  - (dt / dy) * (d_mass_flux_Y[INDEX] - d_mass_flux_Y[INDEX_B]);
-			d_momentum_X[INDEX] = d_momentum_X[INDEX] - (dt / dx) * (d_momentum_X_flux_X[INDEX] - d_momentum_X_flux_X[INDEX_L])
-								  - (dt / dy) * (d_momentum_X_flux_Y[INDEX] - d_momentum_X_flux_Y[INDEX_B]);
-			d_momentum_Y[INDEX] = d_momentum_Y[INDEX] - (dt / dx) * (d_momentum_Y_flux_X[INDEX] - d_momentum_Y_flux_X[INDEX_L])
-								  - (dt / dy) * (d_momentum_Y_flux_Y[INDEX] - d_momentum_Y_flux_Y[INDEX_B]);
-			d_energy[INDEX] = d_energy[INDEX] - (dt / dx) * (d_energy_flux_X[INDEX] - d_energy_flux_X[INDEX_L])
-							  - (dt / dy) * (d_energy_flux_Y[INDEX] - d_energy_flux_Y[INDEX_B]);
-			d_mass_fraction[INDEX] = d_mass_fraction[INDEX] - (dt / dx) * (d_mass_fraction_flux_X[INDEX] - d_mass_fraction_flux_X[INDEX_L])
-									- (dt / dy) * (d_mass_fraction_flux_Y[INDEX] - d_mass_fraction_flux_Y[INDEX_B]);
+			d_mass[INDEX] = d_mass[INDEX] - (dt / dx) * (d_flux_X[R_interface + 0] - d_flux_X[L_interface + 0])
+						      - (dt / dy) * (d_flux_Y[T_interface + 0] - d_flux_Y[B_interface + 0]);
+			d_momentum_X[INDEX] = d_momentum_X[INDEX] - (dt / dx) * (d_flux_X[R_interface + 1] - d_flux_X[L_interface + 1])
+								  - (dt / dy) * (d_flux_Y[T_interface + 1] - d_flux_Y[B_interface + 1]);
+			d_momentum_Y[INDEX] = d_momentum_Y[INDEX] - (dt / dx) * (d_flux_X[R_interface + 2] - d_flux_X[L_interface + 2])
+								  - (dt / dy) * (d_flux_Y[T_interface + 2] - d_flux_Y[B_interface + 2]);
+			d_energy[INDEX] = d_energy[INDEX] - (dt / dx) * (d_flux_X[R_interface + 4] - d_flux_X[L_interface + 4])
+							  - (dt / dy) * (d_flux_Y[T_interface + 4] - d_flux_Y[B_interface + 4]);
+			d_mass_fraction[INDEX] = d_mass_fraction[INDEX] - (dt / dx) * (d_flux_X[R_interface + 5] - d_flux_X[L_interface + 5])
+									- (dt / dy) * (d_flux_Y[T_interface + 5] - d_flux_Y[B_interface + 5]);
 
 			//Get new variable
 			d_p0[INDEX] = d_mass[INDEX];
@@ -99,15 +105,13 @@ __global__ void GPU_Calc_primitive_variable(float *d_p0, float *d_p1, float *d_p
 
 void Calc_primitive_variable(float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float *d_p5, float *d_p6,
 			     float *d_mass, float *d_momentum_X, float *d_momentum_Y, float *d_energy, float *d_mass_fraction,
-			     float *d_mass_flux_X, float *d_momentum_X_flux_X, float *d_momentum_Y_flux_X, float *d_energy_flux_X, float *d_mass_fraction_flux_X,
-			     float *d_mass_flux_Y, float *d_momentum_X_flux_Y, float *d_momentum_Y_flux_Y, float *d_energy_flux_Y, float *d_mass_fraction_flux_Y,
+			     float *d_flux_X, float *d_flux_Y,
 			     float R_dry, float R_v, float dx, float dy, float dt, int NX, int NY, int N_CELLS){
 	int TPB = 128;
 	int GPB = (TPB + N_CELLS - 1) / TPB;
 	GPU_Calc_primitive_variable<<<GPB, TPB>>>(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6,
 						  d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction,
-						  d_mass_flux_X, d_momentum_X_flux_X, d_momentum_Y_flux_X, d_energy_flux_X, d_mass_fraction_flux_X,
-						  d_mass_flux_Y, d_momentum_X_flux_Y, d_momentum_Y_flux_Y, d_energy_flux_Y, d_mass_fraction_flux_Y,
+						  d_flux_X, d_flux_Y,
 						  R_dry, R_v, dx, dy, dt, NX, NY, N_CELLS);
 }
 

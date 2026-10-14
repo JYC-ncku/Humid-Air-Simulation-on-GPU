@@ -3,7 +3,8 @@
 #include "Compute_Cv.h"
 
 __global__ void GPU_Initial(float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float *d_p5, float *d_p6,
-			    float *MAX_Freq, float R_dry, float R_v, int NX, int NY, int N_CELLS){
+			    float *d_mass, float *d_momentum_X, float *d_momentum_Y, float *d_energy, float *d_mass_fraction,
+			    float *MAX_Freq, float *d_MAX_CFL, float R_dry, float R_v, int NX, int NY, int N_CELLS){
 	int INDEX = blockIdx.x * blockDim.x + threadIdx.x;
 	int i = (int)INDEX / (NY+4);
 	int j = (int)INDEX - i * (NY+4);
@@ -19,14 +20,27 @@ __global__ void GPU_Initial(float *d_p0, float *d_p1, float *d_p2, float *d_p3, 
 			R_mix = R_dry * (1 - d_p5[INDEX]) + R_v * d_p5[INDEX];
 			d_p0[INDEX] = d_p4[INDEX] / (R_mix * d_p3[INDEX]);
 			MAX_Freq[INDEX] = 0.0;
+			d_MAX_CFL[INDEX] = 0.0;
+
+			d_mass[INDEX] = d_p0[INDEX];
+			d_momentum_X[INDEX] = d_p0[INDEX] * d_p1[INDEX];
+			d_momentum_Y[INDEX] = d_p0[INDEX] * d_p2[INDEX];
+
+			float Cv_mix_init = Compute_Cv(d_p3[INDEX], d_p5[INDEX]);
+			float e_init = d_p3[INDEX] * Cv_mix_init;
+			d_energy[INDEX] = d_mass[INDEX] * (e_init + 0.5 * (d_p1[INDEX] * d_p1[INDEX] + d_p2[INDEX] * d_p2[INDEX]));
+
+			d_mass_fraction[INDEX] = d_mass[INDEX] * d_p5[INDEX];
 		}
 	}
 }
 
 void Initial(float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float *d_p5, float *d_p6,
-	     float *MAX_Freq, float R_dry, float R_v, int NX, int NY, int N_CELLS){
+	     float *d_mass, float *d_momentum_X, float *d_momentum_Y, float *d_energy, float *d_mass_fraction,
+	     float *MAX_Freq, float *d_MAX_CFL, float R_dry, float R_v, int NX, int NY, int N_CELLS){
 	     int TPB = 128;
 	     int GPB = (TPB + N_CELLS - 1) / TPB;
 	     GPU_Initial<<<GPB, TPB>>>(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6,
-				       MAX_Freq, R_dry,  R_v,  NX,  NY,  N_CELLS);
+				       d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction,
+				       MAX_Freq, d_MAX_CFL, R_dry,  R_v,  NX,  NY,  N_CELLS);
 }
