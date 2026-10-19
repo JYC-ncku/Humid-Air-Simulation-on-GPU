@@ -2,12 +2,15 @@
 #include <math.h>
 
 __device__ float Compute_Cv(float T, float Y){
+/*
 	float a1, a2, a3, a4, a5; // N2
 	float b1, b2, b3, b4, b5; // O2
 	float c1, c2, c3, c4, c5; // H2O
+*/
 	float R_N2 = 296.8; // R of N2 (J/kg.K)
 	float R_O2 = 259.84; // R of O2 (J/kg.k)
 	float R_H2O = 461.5; // R of H2O (J/kg.k)
+/*
 	if(T >= 1000.0){
 		a1 = 2.926640;
 		a2 = 0.14879768e-2;
@@ -45,10 +48,15 @@ __device__ float Compute_Cv(float T, float Y){
 		c4 = -5.48797062e-09;
 		c5 = 1.77197817e-12;
 	}
-	//Compute Cv
+	// Compute variable Cv
 	float Cv_N2 = R_N2 * (a1 + a2*T + (a3 * pow(T,2)) + (a4 * pow(T,3)) + (a5 * pow(T,4))) - R_N2;
 	float Cv_O2 = R_O2 * (b1 + b2*T + (b3 * pow(T,2)) + (b4 * pow(T,3)) + (b5 * pow(T,4))) - R_O2;
 	float Cv_H2O = R_H2O * (c1 + c2*T + (c3 * pow(T,2)) + (c4 * pow(T,3)) + (c5 * pow(T,4))) - R_H2O;
+*/
+	// Compute constant Cv
+	float Cv_N2 = 1040.0 - R_N2;
+	float Cv_O2 = 918.0 - R_O2;
+	float Cv_H2O = 1864.0 - R_H2O;
 	float Cv_dry = 0.79 * Cv_N2 + 0.21 * Cv_O2; // dry air = 79% N2 + 21% O2
 	float Cv_mix = Cv_dry * (1 - Y) + Y * Cv_H2O;
 	return Cv_mix;

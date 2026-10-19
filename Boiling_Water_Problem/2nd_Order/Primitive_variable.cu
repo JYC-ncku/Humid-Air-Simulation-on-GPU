@@ -43,7 +43,7 @@ __global__ void GPU_Calc_primitive_variable(float *d_p0, float *d_p1, float *d_p
 	int INDEX = blockIdx.x * blockDim.x + threadIdx.x;
 	int i = (int)INDEX / (NY+4);
 	int j = (int)INDEX - i * (NY+4);
-	float e_target, T_old, phi_new, phi_max,  R_mix, P_sat, P_v;
+	float e_target, T_old, phi_new, phi_max,  R_mix, P_sat, P_v, Cv_mix;
 	if (INDEX < N_CELLS){
 		if (i >= 2 && i < NX + 2 && j >= 2 && j < NY + 2){
 			int INDEX = i * (NY+4) + j;
@@ -69,7 +69,11 @@ __global__ void GPU_Calc_primitive_variable(float *d_p0, float *d_p1, float *d_p
 			e_target = (d_energy[INDEX] / d_p0[INDEX]) - 0.5 * (d_p1[INDEX] * d_p1[INDEX] + d_p2[INDEX] * d_p2[INDEX]);
 			T_old = d_p3[INDEX];
 			phi_new = d_p5[INDEX];
-			d_p3[INDEX] = compute_T(T_old, phi_new, e_target);
+
+//			d_p3[INDEX] = compute_T(T_old, phi_new, e_target);
+			Cv_mix = Compute_Cv(T_old, phi_new);
+			d_p3[INDEX] = e_target / Cv_mix;
+
 			R_mix = R_dry * (1.0 - d_p5[INDEX]) + R_v * d_p5[INDEX];
 			d_p4[INDEX] = d_p0[INDEX] * R_mix * d_p3[INDEX];
 
