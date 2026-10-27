@@ -22,8 +22,6 @@ int main(){
 	float H = 0.5; // unit: m
 	float t = 0;
 	float t_FINAL = 1.0; // unit: s
-//	float R = 1.0;
-//	float GAMMA = 1.4;
 	float CFL = 0.25;
 	float dx = L/NX;
 	float dy = H/NY;
