@@ -21,7 +21,7 @@ __device__ void Calc_HLL_X_flux(float rho_L, float rho_R, float u_L, float u_R, 
 				float Y_center_L, float Y_center_R,
 				float *d_mass_flux_X, float *d_momentum_X_flux_X, float *d_momentum_Y_flux_X, float *d_energy_flux_X, float *d_mass_fraction_flux_X,
 				float *d_p1, float *d_p2, float *d_p3,
-				float D, float dx, float dy, int INDEX, int i, int j, int NY){
+				float D, float mu, float K, float dx, float dy, int INDEX, int i, int j, int NY){
 	float W_L = fmin(u_L - a_L, u_R - a_R);
 	float W_R = fmax(u_L + a_L, u_R + a_R);
 	float mass_L = rho_L;
@@ -91,16 +91,12 @@ __device__ void Calc_HLL_X_flux(float rho_L, float rho_R, float u_L, float u_R, 
 	float dv_dy_R = (d_p2[INDEX_R_T] - d_p2[INDEX_R_B]) / (2.0 * dy);
 	float dv_dy = 0.5 * (dv_dy_C + dv_dy_R);
 
-	// 4. 物理常數
-	float mu = 1.83e-5; // 黏滯係數 (kg/m-s)
-	float k  = 0.026;   // 熱傳導係數 (W/m-K)
-
-	// 5. 計算應力張量與熱通量
+	// 4. 計算應力張量與熱通量
 	float tau_xx = (4.0 / 3.0) * mu * du_dx - (2.0 / 3.0) * mu * dv_dy;
 	float tau_xy = mu * (du_dy + dv_dx);
-	float q_x    = -k * dT_dx;
+	float q_x    = -K * dT_dx;
 
-	// 6. 擴散通量疊加 (總通量 = HLL - 擴散)
+	// 5. 擴散通量疊加 (總通量 = HLL - 擴散)
 	d_momentum_X_flux_X[INDEX] -= tau_xx;
 	d_momentum_Y_flux_X[INDEX] -= tau_xy;
 
@@ -125,7 +121,7 @@ __device__ void Calc_HLL_Y_flux(float rho_B, float rho_T, float u_B, float u_T, 
 				float Y_center_B, float Y_center_T,
 				float *d_mass_flux_Y, float *d_momentum_X_flux_Y, float *d_momentum_Y_flux_Y, float *d_energy_flux_Y, float *d_mass_fraction_flux_Y,
 				float *d_p1, float *d_p2, float *d_p3,
-				float D, float dx, float dy, int INDEX, int i, int j, int NY){
+				float D, float mu, float K, float dx, float dy, int INDEX, int i, int j, int NY){
 	float W_B = fmin(v_B - a_B, v_T - a_T);
 	float W_T = fmax(v_B + a_B, v_T + a_T);
 	float mass_B = rho_B;
@@ -196,16 +192,12 @@ __device__ void Calc_HLL_Y_flux(float rho_B, float rho_T, float u_B, float u_T, 
 	float dv_dx_T = (d_p2[INDEX_T_R] - d_p2[INDEX_T_L]) / (2.0 * dx);
 	float dv_dx = 0.5 * (dv_dx_C + dv_dx_T);
 
-	// 4. 物理常數
-	float mu = 1.83e-5; // 黏滯係數 (kg/m-s)
-	float k  = 0.026;   // 熱傳導係數 (W/m-K)
-
-	// 5. 計算應力張量與熱通量
+	// 4. 計算應力張量與熱通量
 	float tau_yy = (4.0 / 3.0) * mu * dv_dy - (2.0 / 3.0) * mu * du_dx;
 	float tau_yx = mu * (du_dy + dv_dx); // tau_xy 和 tau_yx 對稱
-	float q_y    = -k * dT_dy;
+	float q_y    = -K * dT_dy;
 
-	// 6. 擴散通量疊加
+	// 5. 擴散通量疊加
 	d_momentum_X_flux_Y[INDEX] -= tau_yx;
 	d_momentum_Y_flux_Y[INDEX] -= tau_yy;
 
@@ -230,7 +222,7 @@ __device__ void Calc_HLL_Y_flux(float rho_B, float rho_T, float u_B, float u_T, 
 __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float *d_p5,
 				  float *d_mass_flux_X, float *d_momentum_X_flux_X, float *d_momentum_Y_flux_X, float *d_energy_flux_X, float *d_mass_fraction_flux_X,
 				  float *d_mass_flux_Y, float *d_momentum_X_flux_Y, float *d_momentum_Y_flux_Y, float *d_energy_flux_Y, float *d_mass_fraction_flux_Y,
-				  float R_dry, float R_v, float D, float dx, float dy, int NX, int NY, int N_CELLS){
+				  float R_dry, float R_v, float D, float mu, float K, float dx, float dy, int NX, int NY, int N_CELLS){
 	int INDEX = blockIdx.x * blockDim.x + threadIdx.x;
 	int i = (int) INDEX / (NY+4);
 	int j = (int) INDEX - i * (NY+4);
@@ -319,7 +311,7 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 					Y_C, Y_R,
 				        d_mass_flux_X, d_momentum_X_flux_X, d_momentum_Y_flux_X, d_energy_flux_X, d_mass_fraction_flux_X,
 					d_p1, d_p2, d_p3,
-				        D, dx, dy, INDEX, i, j, NY);
+				        D, mu, K, dx, dy, INDEX, i, j, NY);
 		}
 		//Y-dir
 		if (i >= 2 && i < NX + 2 && j >= 1 && j < NY + 2){
@@ -399,7 +391,7 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 					Y_C, Y_T,
 				        d_mass_flux_Y, d_momentum_X_flux_Y, d_momentum_Y_flux_Y, d_energy_flux_Y, d_mass_fraction_flux_Y,
 					d_p1, d_p2, d_p3,
-				        D, dx, dy, INDEX, i, j, NY);
+				        D, mu, K, dx, dy, INDEX, i, j, NY);
 		}
 	}
 }
@@ -407,11 +399,11 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 void Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float *d_p5,
 		   float *d_mass_flux_X, float *d_momentum_X_flux_X, float *d_momentum_Y_flux_X, float *d_energy_flux_X, float *d_mass_fraction_flux_X,
 		   float *d_mass_flux_Y, float *d_momentum_X_flux_Y, float *d_momentum_Y_flux_Y, float *d_energy_flux_Y, float *d_mass_fraction_flux_Y,
-		   float R_dry, float R_v, float D, float dx, float dy, int NX, int NY, int N_CELLS){
+		   float R_dry, float R_v, float D, float mu, float K, float dx, float dy, int NX, int NY, int N_CELLS){
 	int TPB = 128;
 	int GPB = (TPB + N_CELLS - 1) / TPB;
 	GPU_Calc_Tot_Flux<<<GPB, TPB>>>(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5,
 					d_mass_flux_X, d_momentum_X_flux_X, d_momentum_Y_flux_X, d_energy_flux_X, d_mass_fraction_flux_X,
 					d_mass_flux_Y, d_momentum_X_flux_Y, d_momentum_Y_flux_Y, d_energy_flux_Y, d_mass_fraction_flux_Y,
-					R_dry, R_v, D, dx, dy, NX, NY, N_CELLS);
+					R_dry, R_v, D, mu, K, dx, dy, NX, NY, N_CELLS);
 }
