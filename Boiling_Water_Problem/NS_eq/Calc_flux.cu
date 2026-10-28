@@ -73,16 +73,16 @@ __device__ void Calc_HLL_X_flux(float rho_L, float rho_R, float u_L, float u_R, 
 	int INDEX_R_T = (i + 1) * (NY + 4) + (j + 1);
 	int INDEX_R_B = (i + 1) * (NY + 4) + (j - 1);
 
-// 1. 計算介面上的流速平均值 (黏性作功使用真實網格中心點平均)
+	// 1. Calc the average flow velocity on the interface
 	float u_interface = 0.5 * (d_p1[INDEX_C] + d_p1[INDEX_R]);
 	float v_interface = 0.5 * (d_p2[INDEX_C] + d_p2[INDEX_R]);
 
-	// 2. 計算 X 方向垂直梯度 (中心差分)
+	// 2. Calc vertical gradiant of X direction (central difference)
 	float du_dx = (d_p1[INDEX_R] - d_p1[INDEX_C]) / dx;
 	float dv_dx = (d_p2[INDEX_R] - d_p2[INDEX_C]) / dx;
 	float dT_dx = (d_p3[INDEX_R] - d_p3[INDEX_C]) / dx;
 
-	// 3. 計算 Y 方向交叉梯度 (將介面左右兩側的 Y 梯度進行平均)
+	// 3. Calc cross gradiant in the Y direction
 	float du_dy_C = (d_p1[INDEX_C_T] - d_p1[INDEX_C_B]) / (2.0 * dy);
 	float du_dy_R = (d_p1[INDEX_R_T] - d_p1[INDEX_R_B]) / (2.0 * dy);
 	float du_dy = 0.5 * (du_dy_C + du_dy_R);
@@ -91,16 +91,16 @@ __device__ void Calc_HLL_X_flux(float rho_L, float rho_R, float u_L, float u_R, 
 	float dv_dy_R = (d_p2[INDEX_R_T] - d_p2[INDEX_R_B]) / (2.0 * dy);
 	float dv_dy = 0.5 * (dv_dy_C + dv_dy_R);
 
-	// 4. 計算應力張量與熱通量
+	// 4. Calc the stress tensor and heat flux
 	float tau_xx = (4.0 / 3.0) * mu * du_dx - (2.0 / 3.0) * mu * dv_dy;
 	float tau_xy = mu * (du_dy + dv_dx);
 	float q_x    = -K * dT_dx;
 
-	// 5. 擴散通量疊加 (總通量 = HLL - 擴散)
+	// 5.Total flux = HLL - duffision)
 	d_momentum_X_flux_X[INDEX] -= tau_xx;
 	d_momentum_Y_flux_X[INDEX] -= tau_xy;
 
-	// 黏性作功 + 傅立葉熱傳導
+	// Viscousity + conductivity
 	float viscous_energy_flux = (u_interface * tau_xx) + (v_interface * tau_xy) - q_x;
 	d_energy_flux_X[INDEX] -= viscous_energy_flux;
 //------------------------------viscosity and thremal conductivity term----------------------------------
@@ -174,16 +174,16 @@ __device__ void Calc_HLL_Y_flux(float rho_B, float rho_T, float u_B, float u_T, 
 	int INDEX_T_R = (i + 1) * (NY + 4) + (j + 1);
 	int INDEX_T_L = (i - 1) * (NY + 4) + (j + 1);
 
-	// 1. 計算介面速度平均
+	// 1. Calc the average interface velocity
 	float u_interface = 0.5 * (d_p1[INDEX_C] + d_p1[INDEX_T]);
 	float v_interface = 0.5 * (d_p2[INDEX_C] + d_p2[INDEX_T]);
 
-	// 2. 計算 Y 方向垂直梯度 (中心差分)
+	// 2. Calc the vertical gradient in the Y direction (central difference)
 	float du_dy = (d_p1[INDEX_T] - d_p1[INDEX_C]) / dy;
 	float dv_dy = (d_p2[INDEX_T] - d_p2[INDEX_C]) / dy;
 	float dT_dy = (d_p3[INDEX_T] - d_p3[INDEX_C]) / dy;
 
-	// 3. 計算 X 方向交叉梯度 (將介面上下的 X 梯度進行平均)
+	// 3. Calc the cross-gradient in the X direction
 	float du_dx_C = (d_p1[INDEX_C_R] - d_p1[INDEX_C_L]) / (2.0 * dx);
 	float du_dx_T = (d_p1[INDEX_T_R] - d_p1[INDEX_T_L]) / (2.0 * dx);
 	float du_dx = 0.5 * (du_dx_C + du_dx_T);
@@ -192,16 +192,16 @@ __device__ void Calc_HLL_Y_flux(float rho_B, float rho_T, float u_B, float u_T, 
 	float dv_dx_T = (d_p2[INDEX_T_R] - d_p2[INDEX_T_L]) / (2.0 * dx);
 	float dv_dx = 0.5 * (dv_dx_C + dv_dx_T);
 
-	// 4. 計算應力張量與熱通量
+	// 4. Calc the stress tensor and heat flux
 	float tau_yy = (4.0 / 3.0) * mu * dv_dy - (2.0 / 3.0) * mu * du_dx;
 	float tau_yx = mu * (du_dy + dv_dx); // tau_xy 和 tau_yx 對稱
 	float q_y    = -K * dT_dy;
 
-	// 5. 擴散通量疊加
+	// 5. Total flux = HLL - duffision)
 	d_momentum_X_flux_Y[INDEX] -= tau_yx;
 	d_momentum_Y_flux_Y[INDEX] -= tau_yy;
 
-	// 黏性作功 + 傅立葉熱傳導
+	// Viscousity + conductivity
 	float viscous_energy_flux = (u_interface * tau_yx) + (v_interface * tau_yy) - q_y;
 	d_energy_flux_Y[INDEX] -= viscous_energy_flux;
 //-------------------------------------------------------------------------------------------
