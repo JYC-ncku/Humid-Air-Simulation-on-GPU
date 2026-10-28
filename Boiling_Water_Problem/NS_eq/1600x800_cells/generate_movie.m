@@ -10,7 +10,7 @@ f.Visible = 'off';
 % Mass_Fraction
 % Relative_Humidity
 
-v = VideoWriter('Mass_Fraction_Constant_CV.mp4');
+v = VideoWriter('X-dir_Velocity_Constant_CV.mp4');
 v.FrameRate = 5;    % Set frames per second (optional)
 v.Quality = 100;     % Set quality from 0 to 100 (optional)
 open(v);
@@ -18,13 +18,13 @@ for i = 1:1:NO_RESULTS
     filename = sprintf('Results_frame_%s.txt', generate_string(i-1));
 
 A = load(filename);
-    surf(reshape(A(:,1), 200, 400), reshape(A(:,2),200,400), reshape(A(:,6),200,400)) 
+    surf(reshape(A(:,1), 800, 1600), reshape(A(:,2), 800, 1600), reshape(A(:,3), 800, 1600)) 
     view(2)
     shading flat
     colorbar;
     xticks(0.1:0.1:0.9);
     yticks(0.05:0.05:0.45);
-    title('Relative Humidity between 0s ~ 1s (HLL & Constant CV)');
+    title('X-dir Velocity between 0s ~ 1s (HLL & Constant CV)');
     M(i) = getframe(f);
     pause(0.01)
     writeVideo(v, M(i));
