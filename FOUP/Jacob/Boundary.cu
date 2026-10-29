@@ -7,7 +7,7 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 	int j = (int)INDEX - i * (NY+4);
 	float x_center = (i - 0.5) * dx;
 	float y_center = (j - 0.5) * dy;
-	float U_max = 5.0;
+	float U_max = 0.1;
 	float Delta = 0.1; // Boundary thickness
 	float R_mix_L, R_mix_B, P_sat, phi_max;
 	if (INDEX < N_CELLS){
