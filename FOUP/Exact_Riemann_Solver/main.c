@@ -3,7 +3,7 @@
 #include <math.h>
 #include "memory.h"
 #include "Initial.h"
-//#include "Boundary.h"
+#include "Boundary.h"
 //#include "Calc_flux.h"
 //#include "Primitive_variable.h"
 
@@ -46,12 +46,12 @@ int main(){
 	float output_interval = 0.05; // 每 0.05 秒輸出一次
 	float next_output_time = 0.0; // 下一次輸出的時間點
 	int frame_count = 0;          // 影格編號
-
+*/
 	while(t < t_FINAL){
-		float dt = Compute_dt(MAX_Freq, MAX_CFL, p0, p1, p2, p3, p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
+//		float dt = Compute_dt(MAX_Freq, MAX_CFL, p0, p1, p2, p3, p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
 
 		Boundary(p0, p1, p2, p3, p4, p5, p6, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
-
+/*
 		Calc_Tot_Flux(p0, p1, p2, p3, p4, p5,
 			      interface_p, flux_X, flux_Y,
 			      R_dry, R_v, D, mu, K, dx, dy, NX, NY, N_CELLS);
@@ -80,6 +80,7 @@ int main(){
 
 		frame_count++;
 		next_output_time += output_interval; // 設定下一次拍照時間
+
 	}
 
 		t += dt;
@@ -87,8 +88,9 @@ int main(){
 		if (step % 100 == 0) {
 			printf("Current time = %.6f / %.2f\n", t, t_FINAL);
 		}
-	}
 */
+	}
+
 /*
 	FILE *pFile = fopen("Results_of_400x200_cells_1s.txt", "w");
 	for (int i = 2; i < NX + 2; i++){
