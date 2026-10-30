@@ -8,8 +8,8 @@
 #include "Primitive_variable.h"
 
 int main(){
-	int NX = 400;
-	int NY = 200;
+	int NX = 384;
+	int NY = 620;
 	int N_CELLS = (NX+4) * (NY+4); // 2 Ghost cells
 	 // p0: Density (rho), p1: X-velocity (u), p2: Y-velocity (v), p3: Temperature (T), p4: Pressure (p), p5: Mass fraction (Y_v), p6: Relative humidity (RH)
 	float *h_p0, *h_p1, *h_p2, *h_p3, *h_p4, *h_p5, *h_p6,
@@ -17,15 +17,15 @@ int main(){
 	      *d_mass, *d_momentum_X, *d_momentum_Y, *d_energy, *d_mass_fraction,
 	      *d_interface_p, *d_flux_X, *d_flux_Y,
 	      *MAX_Freq, *d_MAX_CFL;
-	float L = 1.0; // unit: m
-	float H = 0.5; // unit: m
+	float L = 0.959; // unit: m
+	float H = 1.55; // unit: m
 	float t = 0;
 	float t_FINAL = 1.0; // unit: s
 //	float R = 1.0;
 //	float GAMMA = 1.4;
 	float CFL = 0.25;
-	float dx = L/NX;
-	float dy = H/NY;
+	float dx = L/NX; // 0.0025
+	float dy = H/NY; // 0.0025
 	float D = 1.837e-5; // Diffusivity of water vapor. unit:(m^2/s)
 	float mu = 1.83e-5; // Dynamic Viscosity unit:(Pa * s)
 	float K = 0.026; // Thermal Conductivity (W/(m * K))
