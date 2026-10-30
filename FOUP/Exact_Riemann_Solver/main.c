@@ -3,9 +3,9 @@
 #include <math.h>
 #include "memory.h"
 #include "Initial.h"
-#include "Boundary.h"
-#include "Calc_flux.h"
-#include "Primitive_variable.h"
+//#include "Boundary.h"
+//#include "Calc_flux.h"
+//#include "Primitive_variable.h"
 
 int main(){
 	int NX = 384;
@@ -13,10 +13,9 @@ int main(){
 	int N_CELLS = (NX+4) * (NY+4); // 2 Ghost cells
 	 // p0: Density (rho), p1: X-velocity (u), p2: Y-velocity (v), p3: Temperature (T), p4: Pressure (p), p5: Mass fraction (Y_v), p6: Relative humidity (RH)
 	float *p0, *p1, *p2, *p3, *p4, *p5, *p6,
-	      *p0, *p1, *p2, *p3, *p4, *p5, *p6,
 	      *mass, *momentum_X, *momentum_Y, *energy, *mass_fraction,
 	      *interface_p, *flux_X, *flux_Y,
-	      *MAX_Freq, *MAX_CFL;
+	      *MAX_Freq, *MAX_CFL, *B;
 	float L = 0.959; // unit: m
 	float H = 1.55; // unit: m
 	float t = 0;
@@ -36,12 +35,12 @@ int main(){
 	float R_dry = R_bar / MW_air;
 
 	Allocate_memory(&p0, &p1, &p2, &p3, &p4, &p5, &p6,
-			&p0, &p1, &p2, &p3, &p4, &p5, &p6,
 			&mass, &momentum_X, &momentum_Y, &energy, &mass_fraction,
 			&interface_p, &flux_X, &flux_Y,
-			&MAX_Freq, &MAX_CFL, N_CELLS);
+			&MAX_Freq, &MAX_CFL, &B, N_CELLS);
 
 	Initial(p0, p1, p2, p3, p4, p5, p6, mass, momentum_X, momentum_Y, energy, mass_fraction, MAX_Freq, MAX_CFL, R_dry, R_v, NX, NY, N_CELLS);
+/*
 	int step = 0;
 
 	float output_interval = 0.05; // 每 0.05 秒輸出一次
@@ -89,6 +88,7 @@ int main(){
 			printf("Current time = %.6f / %.2f\n", t, t_FINAL);
 		}
 	}
+*/
 /*
 	FILE *pFile = fopen("Results_of_400x200_cells_1s.txt", "w");
 	for (int i = 2; i < NX + 2; i++){
@@ -103,9 +103,8 @@ int main(){
 	fclose(pFile);
 */
 	Free_memory(&p0, &p1, &p2, &p3, &p4, &p5, &p6,
-		    &p0, &p1, &p2, &p3, &p4, &p5, &p6,
 		    &mass, &momentum_X, &momentum_Y, &energy, &mass_fraction,
 		    &interface_p, &flux_X, &flux_Y,
-		    &MAX_Freq, &MAX_CFL);
+		    &MAX_Freq, &MAX_CFL, &B);
 return 0;
 }
