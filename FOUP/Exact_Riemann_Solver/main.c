@@ -5,7 +5,7 @@
 #include "Initial.h"
 #include "Boundary.h"
 #include "Calc_flux.h"
-//#include "Primitive_variable.h"
+#include "Primitive_variable.h"
 
 int main(){
 	int NX = 384;
@@ -15,7 +15,7 @@ int main(){
 	float *p0, *p1, *p2, *p3, *p4, *p5, *p6,
 	      *mass, *momentum_X, *momentum_Y, *energy, *mass_fraction,
 	      *interface_p, *flux_X, *flux_Y,
-	      *MAX_Freq, *MAX_CFL, *B;
+	      *MAX_Freq, *B;
 	float L = 0.959; // unit: m
 	float H = 1.55; // unit: m
 	float t = 0;
@@ -37,9 +37,9 @@ int main(){
 	Allocate_memory(&p0, &p1, &p2, &p3, &p4, &p5, &p6,
 			&mass, &momentum_X, &momentum_Y, &energy, &mass_fraction,
 			&interface_p, &flux_X, &flux_Y,
-			&MAX_Freq, &MAX_CFL, &B, N_CELLS);
+			&MAX_Freq, &B, N_CELLS);
 
-	Initial(p0, p1, p2, p3, p4, p5, p6, mass, momentum_X, momentum_Y, energy, mass_fraction, MAX_Freq, MAX_CFL, R_dry, R_v, NX, NY, N_CELLS);
+	Initial(p0, p1, p2, p3, p4, p5, p6, mass, momentum_X, momentum_Y, energy, mass_fraction, MAX_Freq, R_dry, R_v, NX, NY, N_CELLS);
 /*
 	int step = 0;
 
@@ -48,19 +48,19 @@ int main(){
 	int frame_count = 0;          // 影格編號
 */
 	while(t < t_FINAL){
-//		float dt = Compute_dt(MAX_Freq, MAX_CFL, p0, p1, p2, p3, p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
+		float dt = Compute_dt(MAX_Freq,  p0, p1, p2, p3, p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
 
 		Boundary(p0, p1, p2, p3, p4, p5, p6, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
 
 		Calc_Tot_Flux(p0, p1, p2, p3, p4, p5,
 			      interface_p, flux_X, flux_Y,
 			      R_dry, R_v, D, mu, K, dx, dy, NX, NY, N_CELLS);
-/*
+
 		Calc_primitive_variable(p0, p1, p2, p3, p4, p5, p6,
 					mass, momentum_X, momentum_Y, energy, mass_fraction,
 					flux_X, flux_Y,
 					R_dry, R_v, dx, dy, dt, NX, NY, N_CELLS);
-
+/*
 	if (t >= next_output_time) {
 		printf("Saving Frame %03d at t = %.3f...\n", frame_count, t);
 
@@ -107,6 +107,6 @@ int main(){
 	Free_memory(&p0, &p1, &p2, &p3, &p4, &p5, &p6,
 		    &mass, &momentum_X, &momentum_Y, &energy, &mass_fraction,
 		    &interface_p, &flux_X, &flux_Y,
-		    &MAX_Freq, &MAX_CFL, &B);
+		    &MAX_Freq, &B);
 return 0;
 }

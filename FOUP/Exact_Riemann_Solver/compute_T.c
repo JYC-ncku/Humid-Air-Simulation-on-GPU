@@ -3,7 +3,7 @@
 #include <math.h>
 #include "Compute_Cv.h"
 
-__device__ float compute_T(float T, float Y, float e_target){
+float compute_T(float T, float Y, float e_target){
 	float T_new, e, R; // R is Residual function.
 	float Torlerance = 0.001;
 	float error = 100.0;

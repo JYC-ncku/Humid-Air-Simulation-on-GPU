@@ -4,7 +4,7 @@
 
 void Initial(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, float *p6,
 	     float *mass, float *momentum_X, float *momentum_Y, float *energy, float *mass_fraction,
-	     float *MAX_Freq, float *MAX_CFL, float R_dry, float R_v, int NX, int NY, int N_CELLS){
+	     float *MAX_Freq, float R_dry, float R_v, int NX, int NY, int N_CELLS){
 /*
 	int INDEX = blockIdx.x * blockDim.x + threadIdx.x;
 	int i = (int)INDEX / (NY+4);
@@ -25,7 +25,6 @@ void Initial(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, f
 			R_mix = R_dry * (1 - p5[INDEX]) + R_v * p5[INDEX];
 			p0[INDEX] = p4[INDEX] / (R_mix * p3[INDEX]);
 			MAX_Freq[INDEX] = 0.0;
-			MAX_CFL[INDEX] = 0.0;
 
 			mass[INDEX] = p0[INDEX];
 			momentum_X[INDEX] = p0[INDEX] * p1[INDEX];
