@@ -2,7 +2,7 @@
 #include <math.h>
 #include "Compute_Cv.h"
 
-__device__ float MINMOD(float U_L, float U_C, float U_R, float dx){
+float MINMOD(float U_L, float U_C, float U_R, float dx){
 	float dU_dx;
 	float Forward = (U_R - U_C) / dx;
 	float Backward = (U_C - U_L) / dx;
@@ -16,12 +16,12 @@ __device__ float MINMOD(float U_L, float U_C, float U_R, float dx){
 	return dU_dx;
 }
 
-__device__ void Calc_flux(float *d_interface_p, float *d_flux,
-			     float QL_rho, float QL_ux, float QL_vy, float QL_vz, float QL_cRT, float R_mix_L, float Cv_mix_L, float Gamma_L, float Y_L_star,
-			     float QR_rho, float QR_ux, float QR_vy, float QR_vz, float QR_cRT, float R_mix_R, float Cv_mix_R, float Gamma_R, float Y_R_star,
-			     float nx, float ny, float nz,
-			     float px, float py, float pz,
-			     float qx, float qy, float qz, int wall_flag){
+void Calc_flux(float *interface_p, float *flux,
+	       float QL_rho, float QL_ux, float QL_vy, float QL_vz, float QL_cRT, float R_mix_L, float Cv_mix_L, float Gamma_L, float Y_L_star,
+	       float QR_rho, float QR_ux, float QR_vy, float QR_vz, float QR_cRT, float R_mix_R, float Cv_mix_R, float Gamma_R, float Y_R_star,
+	       float nx, float ny, float nz,
+	       float px, float py, float pz,
+	       float qx, float qy, float qz, int wall_flag){
 	// DECLARE CONSTANTS
 	float QL_u, QL_v, QL_w, QR_u, QR_v, QR_w; // 一個界面會有來自x,y,z三個不同方向的速度分量進入，然後我們有左邊界面跟右邊界面。
 	float QR_RT, QL_RT, QR_T, QL_T, QR_E, QL_E, QR_p, QL_p, QR_a, QL_a, QL_e, QR_e;
@@ -670,59 +670,65 @@ __device__ void Calc_flux(float *d_interface_p, float *d_flux,
 	pzflx = flxnmn*nz + flxpmn*pz + flxqmn*qz;
 
 	// Final Flux calculations
-	d_flux[0] = mflx;
-	d_flux[1] = pxflx;
-	d_flux[2] = pyflx;
-	d_flux[3] = pzflx;
-	d_flux[4] = eflx;
-	d_flux[5] = mfflx;
+	flux[0] = mflx;
+	flux[1] = pxflx;
+	flux[2] = pyflx;
+	flux[3] = pzflx;
+	flux[4] = eflx;
+	flux[5] = mfflx;
 
 	// States now
-	d_interface_p[0] = QI_rho;
-	d_interface_p[1] = QI_u;
-	d_interface_p[2] = QI_v;
-	d_interface_p[3] = QI_w;
-	d_interface_p[4] = QI_T;
-	d_interface_p[5] = QI_p;
+	interface_p[0] = QI_rho;
+	interface_p[1] = QI_u;
+	interface_p[2] = QI_v;
+	interface_p[3] = QI_w;
+	interface_p[4] = QI_T;
+	interface_p[5] = QI_p;
 }
 
-__global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float *d_p5,
-				  float *d_interface_p, float *d_flux_X, float *d_flux_Y,
-				  float R_dry, float R_v, float D, float mu, float K, float dx, float dy, int NX, int NY, int N_CELLS){
+void Calc_Tot_Flux(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5,
+		   float *interface_p, float *flux_X, float *flux_Y,
+		   float R_dry, float R_v, float D, float mu, float K, float dx, float dy, int NX, int NY, int N_CELLS){
+/*
 	int INDEX = blockIdx.x * blockDim.x + threadIdx.x;
 	int i = (int) INDEX / (NY+4);
 	int j = (int) INDEX - i * (NY+4);
-	int INDEX_R = (i + 1) * (NY + 4) + j;
-	int INDEX_RR = (i + 2) * (NY + 4) + j;
-	int INDEX_L = (i - 1) * (NY + 4) + j;
-	int INDEX_B = i * (NY + 4) + (j - 1);
-	int INDEX_T = i * (NY + 4) + (j + 1);
-	int INDEX_TT = i * (NY + 4) + (j + 2);
-	if (INDEX < N_CELLS){
+*/
+
+//	if (INDEX < N_CELLS){
 		//X-dir
-		if (i >= 1 && i < NX + 2 && j >= 2 && j < NY + 2){
-			float rho_L = d_p0[INDEX_L];
-			float rho_C = d_p0[INDEX];
-			float rho_R = d_p0[INDEX_R];
-			float rho_RR = d_p0[INDEX_RR];
+//		if (i >= 1 && i < NX + 2 && j >= 2 && j < NY + 2){
+	for (int i = 1; i < NX + 2; i++){
+		for (int j = 1; j < NY + 1; j++){
+			int INDEX = i * (NY + 2) + j;
+			int INDEX_R = (i + 1) * (NY + 2) + j;
+			int INDEX_RR = (i + 2) * (NY + 2) + j;
+			int INDEX_L = (i - 1) * (NY + 2) + j;
+			int INDEX_T = i * (NY + 2) + (j + 1);
+			int INDEX_B = i * (NY + 2) + (j - 1);
+
+			float rho_L = p0[INDEX_L];
+			float rho_C = p0[INDEX];
+			float rho_R = p0[INDEX_R];
+			float rho_RR = p0[INDEX_RR];
 			float drho_dx_L = MINMOD(rho_L, rho_C, rho_R, dx);
 			float drho_dx_R = MINMOD(rho_C, rho_R, rho_RR, dx);
 			float rho_L_star = rho_C + 0.5 * dx * drho_dx_L;
 			float rho_R_star = rho_R - 0.5 * dx * drho_dx_R;
 
-			float u_L = d_p1[INDEX_L];
-			float u_C = d_p1[INDEX];
-			float u_R = d_p1[INDEX_R];
-			float u_RR = d_p1[INDEX_RR];
+			float u_L = p1[INDEX_L];
+			float u_C = p1[INDEX];
+			float u_R = p1[INDEX_R];
+			float u_RR = p1[INDEX_RR];
 			float du_dx_L = MINMOD(u_L, u_C, u_R, dx);
 			float du_dx_R = MINMOD(u_C, u_R, u_RR, dx);
 			float u_L_star = u_C + 0.5 * dx * du_dx_L;
 			float u_R_star = u_R - 0.5 * dx * du_dx_R;
 
-			float v_L = d_p2[INDEX_L];
-			float v_C = d_p2[INDEX];
-			float v_R = d_p2[INDEX_R];
-			float v_RR = d_p2[INDEX_RR];
+			float v_L = p2[INDEX_L];
+			float v_C = p2[INDEX];
+			float v_R = p2[INDEX_R];
+			float v_RR = p2[INDEX_RR];
 			float dv_dx_L = MINMOD(v_L, v_C, v_R, dx);
 			float dv_dx_R = MINMOD(v_C, v_R, v_RR, dx);
 			float v_L_star = v_C + 0.5 * dx * dv_dx_L;
@@ -731,19 +737,19 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 			float QL_vz = 0.0;
 			float QR_vz = 0.0;
 
-			float T_L = d_p3[INDEX_L];
-			float T_C = d_p3[INDEX];
-			float T_R = d_p3[INDEX_R];
-			float T_RR = d_p3[INDEX_RR];
+			float T_L = p3[INDEX_L];
+			float T_C = p3[INDEX];
+			float T_R = p3[INDEX_R];
+			float T_RR = p3[INDEX_RR];
 			float dT_dx_L = MINMOD(T_L, T_C, T_R, dx);
 			float dT_dx_R = MINMOD(T_C, T_R, T_RR, dx);
 			float T_L_star = T_C + 0.5 * dx * dT_dx_L;
 			float T_R_star = T_R - 0.5 * dx * dT_dx_R;
 
-			float Y_L = d_p5[INDEX_L];
-			float Y_C = d_p5[INDEX];
-			float Y_R = d_p5[INDEX_R];
-			float Y_RR = d_p5[INDEX_RR];
+			float Y_L = p5[INDEX_L];
+			float Y_C = p5[INDEX];
+			float Y_R = p5[INDEX_R];
+			float Y_RR = p5[INDEX_RR];
 			float dY_dx_L = MINMOD(Y_L, Y_C, Y_R, dx);
 			float dY_dx_R = MINMOD(Y_C, Y_R, Y_RR, dx);
 			float Y_L_star = Y_C + 0.5 * dx * dY_dx_L;
@@ -761,16 +767,16 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 			float cRT_L_star = sqrt(R_mix_L * T_L_star); // Sound speed a = (R*T)^0.5
 			float cRT_R_star = sqrt(R_mix_R * T_R_star);
 
-			Calc_flux(&d_interface_p[INDEX*6], &d_flux_X[INDEX*6], // 因為flux跟interface_p都有6個data需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
-				     rho_L_star, u_L_star, v_L_star, QL_vz, cRT_L_star, R_mix_L, Cv_mix_L, Gamma_L, Y_L_star,
-				     rho_R_star, u_R_star, v_R_star, QR_vz, cRT_R_star, R_mix_R, Cv_mix_R, Gamma_R, Y_R_star,
-				     1.0, 0.0, 0.0,
-				     0.0, 1.0, 0.0,
-				     0.0, 0.0, 1.0, 0.0);
+			Calc_flux(&interface_p[INDEX*6], &flux_X[INDEX*6], // 因為flux跟interface_p都有6個data需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
+				  rho_L_star, u_L_star, v_L_star, QL_vz, cRT_L_star, R_mix_L, Cv_mix_L, Gamma_L, Y_L_star,
+				  rho_R_star, u_R_star, v_R_star, QR_vz, cRT_R_star, R_mix_R, Cv_mix_R, Gamma_R, Y_R_star,
+				  1.0, 0.0, 0.0,
+				  0.0, 1.0, 0.0,
+				  0.0, 0.0, 1.0, 0.0);
 
 			float rho_interface_X = 0.5 * (rho_C + rho_R);
 			float dY_dx_interface = (Y_R - Y_C) / dx;
-			d_flux_X[INDEX*6 + 5] += - rho_interface_X * D * dY_dx_interface;
+			flux_X[INDEX*6 + 5] += - rho_interface_X * D * dY_dx_interface;
 
 			// Add Navier-Stokes viscosity and thermal conductivity term (X-dir)
 			// 1. Calc the forward gradient at the interface
@@ -779,12 +785,12 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 			float dT_dx = (T_R - T_C) / dx;
 
 			// 2. Calc the tangential gradient at the interface
-			int INDEX_R_T = (i + 1) * (NY + 4) + (j + 1);
-			int INDEX_R_B = (i + 1) * (NY + 4) + (j - 1);
-			float du_dy = 0.5 * ( (d_p1[INDEX_T] - d_p1[INDEX_B]) / (2.0 * dy)
-					  + (d_p1[INDEX_R_T] - d_p1[INDEX_R_B]) / (2.0 * dy) );
-			float dv_dy = 0.5 * ( (d_p2[INDEX_T] - d_p2[INDEX_B]) / (2.0 * dy)
-					  + (d_p2[INDEX_R_T] - d_p2[INDEX_R_B]) / (2.0 * dy) );
+			int INDEX_R_T = (i + 1) * (NY + 2) + (j + 1);
+			int INDEX_R_B = (i + 1) * (NY + 2) + (j - 1);
+			float du_dy = 0.5 * ( (p1[INDEX_T] - p1[INDEX_B]) / (2.0 * dy)
+					  + (p1[INDEX_R_T] - p1[INDEX_R_B]) / (2.0 * dy) );
+			float dv_dy = 0.5 * ( (p2[INDEX_T] - p2[INDEX_B]) / (2.0 * dy)
+					  + (p2[INDEX_R_T] - p2[INDEX_R_B]) / (2.0 * dy) );
 
 			// 3. Calc the shear stress tensor and heat flux
 			float tau_xx = (4.0/3.0) * mu * du_dx - (2.0/3.0) * mu * dv_dy;
@@ -796,35 +802,44 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 			float v_int_X = 0.5 * (v_C + v_R);
 
 			// 5. Total flux = Exact Riemann flux - viscousity flux
-			d_flux_X[INDEX*6 + 1] -= tau_xx;                                     // X-Momentum flux
-			d_flux_X[INDEX*6 + 2] -= tau_xy;                                     // Y-Momentum flux
-			d_flux_X[INDEX*6 + 4] -= (u_int_X * tau_xx + v_int_X * tau_xy - q_x); // Energy flux
-
+			flux_X[INDEX*6 + 1] -= tau_xx;                                     // X-Momentum flux
+			flux_X[INDEX*6 + 2] -= tau_xy;                                     // Y-Momentum flux
+			flux_X[INDEX*6 + 4] -= (u_int_X * tau_xx + v_int_X * tau_xy - q_x); // Energy flux
 		}
+	}
 		//Y-dir
-		if (i >= 2 && i < NX + 2 && j >= 1 && j < NY + 2){
-			float rho_B = d_p0[INDEX_B];
-			float rho_C = d_p0[INDEX];
-			float rho_T = d_p0[INDEX_T];
-			float rho_TT = d_p0[INDEX_TT];
+//		if (i >= 2 && i < NX + 2 && j >= 1 && j < NY + 2){
+	for (int i = 1; i < NX + 1; i++){
+		for( int j = 1; j < NY + 2; j++){
+			int INDEX = i * (NY + 2) + j;
+			int INDEX_R = (i + 1) * (NY + 2) + j;
+			int INDEX_L = (i - 1) * (NY + 2) + j;
+			int INDEX_B = i * (NY + 2) + (j - 1);
+			int INDEX_T = i * (NY + 2) + (j + 1);
+			int INDEX_TT = i * (NY + 2) + (j + 2);
+
+			float rho_B = p0[INDEX_B];
+			float rho_C = p0[INDEX];
+			float rho_T = p0[INDEX_T];
+			float rho_TT = p0[INDEX_TT];
 			float drho_dy_B = MINMOD(rho_B, rho_C, rho_T, dy);
 			float drho_dy_T = MINMOD(rho_C, rho_T, rho_TT, dy);
 			float rho_B_star = rho_C + 0.5 * dy * drho_dy_B;
 			float rho_T_star = rho_T - 0.5 * dy * drho_dy_T;
 
-			float u_B = d_p1[INDEX_B];
-			float u_C = d_p1[INDEX];
-			float u_T = d_p1[INDEX_T];
-			float u_TT = d_p1[INDEX_TT];
+			float u_B = p1[INDEX_B];
+			float u_C = p1[INDEX];
+			float u_T = p1[INDEX_T];
+			float u_TT = p1[INDEX_TT];
 			float du_dy_B = MINMOD(u_B, u_C, u_T, dy);
 			float du_dy_T = MINMOD(u_C, u_T, u_TT, dy);
 			float u_B_star = u_C + 0.5 * dy * du_dy_B;
 			float u_T_star = u_T - 0.5 * dy * du_dy_T;
 
-			float v_B = d_p2[INDEX_B];
-			float v_C = d_p2[INDEX];
-			float v_T = d_p2[INDEX_T];
-			float v_TT = d_p2[INDEX_TT];
+			float v_B = p2[INDEX_B];
+			float v_C = p2[INDEX];
+			float v_T = p2[INDEX_T];
+			float v_TT = p2[INDEX_TT];
 			float dv_dy_B = MINMOD(v_B, v_C, v_T, dy);
 			float dv_dy_T = MINMOD(v_C, v_T, v_TT, dy);
 			float v_B_star = v_C + 0.5 * dy * dv_dy_B;
@@ -833,19 +848,19 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 			float QB_vz = 0.0;
 			float QT_vz = 0.0;
 
-			float T_B = d_p3[INDEX_B];
-			float T_C = d_p3[INDEX];
-			float T_T = d_p3[INDEX_T];
-			float T_TT = d_p3[INDEX_TT];
+			float T_B = p3[INDEX_B];
+			float T_C = p3[INDEX];
+			float T_T = p3[INDEX_T];
+			float T_TT = p3[INDEX_TT];
 			float dT_dy_B = MINMOD(T_B, T_C, T_T, dy);
 			float dT_dy_T = MINMOD(T_C, T_T, T_TT, dy);
 			float T_B_star = T_C + 0.5 * dy * dT_dy_B;
 			float T_T_star = T_T - 0.5 * dy * dT_dy_T;
 
-			float Y_B = d_p5[INDEX_B];
-			float Y_C = d_p5[INDEX];
-			float Y_T = d_p5[INDEX_T];
-			float Y_TT = d_p5[INDEX_TT];
+			float Y_B = p5[INDEX_B];
+			float Y_C = p5[INDEX];
+			float Y_T = p5[INDEX_T];
+			float Y_TT = p5[INDEX_TT];
 			float dY_dy_B = MINMOD(Y_B, Y_C, Y_T, dy);
 			float dY_dy_T = MINMOD(Y_C, Y_T, Y_TT, dy);
 			float Y_B_star = Y_C + 0.5 * dy * dY_dy_B;
@@ -863,16 +878,16 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 			float cRT_B_star = sqrt(R_mix_B * T_B_star); // Sound speed a = (R*T)^0.5
 			float cRT_T_star = sqrt(R_mix_T * T_T_star);
 
-			Calc_flux(&d_interface_p[INDEX*6], &d_flux_Y[INDEX*6], // 因為flux跟interface_p都有6個data需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
-				     rho_B_star, u_B_star, v_B_star, QB_vz, cRT_B_star, R_mix_B, Cv_mix_B, Gamma_B, Y_B_star,
-				     rho_T_star, u_T_star, v_T_star, QT_vz, cRT_T_star, R_mix_T, Cv_mix_T, Gamma_T, Y_T_star,
-				     0.0, 1.0, 0.0,
-				     -1.0, 0.0, 0.0,
-				     0.0, 0.0, 1.0, 0.0);
+			Calc_flux(&interface_p[INDEX*6], &flux_Y[INDEX*6], // 因為flux跟interface_p都有6個data需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
+				  rho_B_star, u_B_star, v_B_star, QB_vz, cRT_B_star, R_mix_B, Cv_mix_B, Gamma_B, Y_B_star,
+				  rho_T_star, u_T_star, v_T_star, QT_vz, cRT_T_star, R_mix_T, Cv_mix_T, Gamma_T, Y_T_star,
+				  0.0, 1.0, 0.0,
+				  -1.0, 0.0, 0.0,
+				  0.0, 0.0, 1.0, 0.0);
 
 			float rho_interface_Y = 0.5 * (rho_C + rho_T);
 			float dY_dy_interface = (Y_T - Y_C) / dy;
-			d_flux_Y[INDEX*6 + 5] += - rho_interface_Y * D * dY_dy_interface;
+			flux_Y[INDEX*6 + 5] += - rho_interface_Y * D * dY_dy_interface;
 
 			// Add Navier-Stokes viscosity and thermal conductivity term (X-dir)
 			// 1. Calc the forward gradient at the interface
@@ -881,12 +896,12 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 			float dT_dy = (T_T - T_C) / dy;
 
 			// 2. Calc the tangential gradient at the interface
-			int INDEX_T_L = (i - 1) * (NY + 4) + (j + 1);
-			int INDEX_T_R = (i + 1) * (NY + 4) + (j + 1);
-			float du_dx = 0.5 * ( (d_p1[INDEX_R] - d_p1[INDEX_L]) / (2.0 * dx)
-					  + (d_p1[INDEX_T_R] - d_p1[INDEX_T_L]) / (2.0 * dx) );
-			float dv_dx = 0.5 * ( (d_p2[INDEX_R] - d_p2[INDEX_L]) / (2.0 * dx)
-					  + (d_p2[INDEX_T_R] - d_p2[INDEX_T_L]) / (2.0 * dx) );
+			int INDEX_T_L = (i - 1) * (NY + 2) + (j + 1);
+			int INDEX_T_R = (i + 1) * (NY + 2) + (j + 1);
+			float du_dx = 0.5 * ( (p1[INDEX_R] - p1[INDEX_L]) / (2.0 * dx)
+					  + (p1[INDEX_T_R] - p1[INDEX_T_L]) / (2.0 * dx) );
+			float dv_dx = 0.5 * ( (p2[INDEX_R] - p2[INDEX_L]) / (2.0 * dx)
+					  + (p2[INDEX_T_R] - p2[INDEX_T_L]) / (2.0 * dx) );
 
 			// 3. Calc the shear stress tensor and heat flux
 			float tau_yy = (4.0/3.0) * mu * dv_dy - (2.0/3.0) * mu * du_dx;
@@ -898,13 +913,13 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 			float v_int_Y = 0.5 * (v_C + v_T);
 
 			// 5. Total flux = Exact Riemann flux - viscousity flux
-			d_flux_Y[INDEX*6 + 1] -= tau_yx;                                     // X-Momentum flux
-			d_flux_Y[INDEX*6 + 2] -= tau_yy;                                     // Y-Momentum flux
-			d_flux_Y[INDEX*6 + 4] -= (u_int_Y * tau_yx + v_int_Y * tau_yy - q_y); // Energy flux
+			flux_Y[INDEX*6 + 1] -= tau_yx;                                     // X-Momentum flux
+			flux_Y[INDEX*6 + 2] -= tau_yy;                                     // Y-Momentum flux
+			flux_Y[INDEX*6 + 4] -= (u_int_Y * tau_yx + v_int_Y * tau_yy - q_y); // Energy flux
 		}
 	}
 }
-
+/*
 void Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float *d_p5,
 		   float *d_interface_p, float *d_flux_X, float *d_flux_Y,
 		   float R_dry, float R_v, float D, float mu, float K, float dx, float dy, int NX, int NY, int N_CELLS){
@@ -914,3 +929,4 @@ void Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_
 				 	d_interface_p, d_flux_X, d_flux_Y,
 					R_dry, R_v, D, mu, K, dx, dy, NX, NY, N_CELLS);
 }
+*/

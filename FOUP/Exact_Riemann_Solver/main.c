@@ -4,7 +4,7 @@
 #include "memory.h"
 #include "Initial.h"
 #include "Boundary.h"
-//#include "Calc_flux.h"
+#include "Calc_flux.h"
 //#include "Primitive_variable.h"
 
 int main(){
@@ -51,11 +51,11 @@ int main(){
 //		float dt = Compute_dt(MAX_Freq, MAX_CFL, p0, p1, p2, p3, p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
 
 		Boundary(p0, p1, p2, p3, p4, p5, p6, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
-/*
+
 		Calc_Tot_Flux(p0, p1, p2, p3, p4, p5,
 			      interface_p, flux_X, flux_Y,
 			      R_dry, R_v, D, mu, K, dx, dy, NX, NY, N_CELLS);
-
+/*
 		Calc_primitive_variable(p0, p1, p2, p3, p4, p5, p6,
 					mass, momentum_X, momentum_Y, energy, mass_fraction,
 					flux_X, flux_Y,
