@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "Compute_Cv.h"
-
+/*
 float MINMOD(float U_L, float U_C, float U_R, float dx){
 	float dU_dx;
 	float Forward = (U_R - U_C) / dx;
@@ -15,7 +15,7 @@ float MINMOD(float U_L, float U_C, float U_R, float dx){
 	}
 	return dU_dx;
 }
-
+*/
 void Calc_flux(float *interface_p, float *flux,
 	       float QL_rho, float QL_ux, float QL_vy, float QL_vz, float QL_cRT, float R_mix_L, float Cv_mix_L, float Gamma_L, float Y_L_star,
 	       float QR_rho, float QR_ux, float QR_vy, float QR_vz, float QR_cRT, float R_mix_R, float Cv_mix_R, float Gamma_R, float Y_R_star,
@@ -698,62 +698,81 @@ void Calc_Tot_Flux(float *p0, float *p1, float *p2, float *p3, float *p4, float 
 //	if (INDEX < N_CELLS){
 		//X-dir
 //		if (i >= 1 && i < NX + 2 && j >= 2 && j < NY + 2){
-	for (int i = 1; i < NX + 2; i++){
+	for (int i = 0; i < NX + 1; i++){
 		for (int j = 1; j < NY + 1; j++){
 			int INDEX = i * (NY + 2) + j;
 			int INDEX_R = (i + 1) * (NY + 2) + j;
-			int INDEX_RR = (i + 2) * (NY + 2) + j;
-			int INDEX_L = (i - 1) * (NY + 2) + j;
+//			int INDEX_RR = (i + 2) * (NY + 2) + j;
+//			int INDEX_L = (i - 1) * (NY + 2) + j;
 			int INDEX_T = i * (NY + 2) + (j + 1);
 			int INDEX_B = i * (NY + 2) + (j - 1);
 
-			float rho_L = p0[INDEX_L];
+//			float rho_L = p0[INDEX_L];
 			float rho_C = p0[INDEX];
 			float rho_R = p0[INDEX_R];
+/*
 			float rho_RR = p0[INDEX_RR];
 			float drho_dx_L = MINMOD(rho_L, rho_C, rho_R, dx);
 			float drho_dx_R = MINMOD(rho_C, rho_R, rho_RR, dx);
 			float rho_L_star = rho_C + 0.5 * dx * drho_dx_L;
 			float rho_R_star = rho_R - 0.5 * dx * drho_dx_R;
+*/
+			float rho_L_star = rho_C;
+			float rho_R_star = rho_R;
 
-			float u_L = p1[INDEX_L];
+//			float u_L = p1[INDEX_L];
 			float u_C = p1[INDEX];
 			float u_R = p1[INDEX_R];
+/*
 			float u_RR = p1[INDEX_RR];
 			float du_dx_L = MINMOD(u_L, u_C, u_R, dx);
 			float du_dx_R = MINMOD(u_C, u_R, u_RR, dx);
 			float u_L_star = u_C + 0.5 * dx * du_dx_L;
 			float u_R_star = u_R - 0.5 * dx * du_dx_R;
-
-			float v_L = p2[INDEX_L];
+*/
+			float u_L_star = u_C;
+			float u_R_star = u_R;
+//			float v_L = p2[INDEX_L];
 			float v_C = p2[INDEX];
 			float v_R = p2[INDEX_R];
+/*
 			float v_RR = p2[INDEX_RR];
 			float dv_dx_L = MINMOD(v_L, v_C, v_R, dx);
 			float dv_dx_R = MINMOD(v_C, v_R, v_RR, dx);
 			float v_L_star = v_C + 0.5 * dx * dv_dx_L;
 			float v_R_star = v_R - 0.5 * dx * dv_dx_R;
+*/
+			float v_L_star = v_C;
+			float v_R_star = v_R;
 
 			float QL_vz = 0.0;
 			float QR_vz = 0.0;
 
-			float T_L = p3[INDEX_L];
+//			float T_L = p3[INDEX_L];
 			float T_C = p3[INDEX];
 			float T_R = p3[INDEX_R];
+/*
 			float T_RR = p3[INDEX_RR];
 			float dT_dx_L = MINMOD(T_L, T_C, T_R, dx);
 			float dT_dx_R = MINMOD(T_C, T_R, T_RR, dx);
 			float T_L_star = T_C + 0.5 * dx * dT_dx_L;
 			float T_R_star = T_R - 0.5 * dx * dT_dx_R;
+*/
+			float T_L_star = T_C;
+			float T_R_star = T_R;
 
-			float Y_L = p5[INDEX_L];
+//			float Y_L = p5[INDEX_L];
 			float Y_C = p5[INDEX];
 			float Y_R = p5[INDEX_R];
+/*
 			float Y_RR = p5[INDEX_RR];
 			float dY_dx_L = MINMOD(Y_L, Y_C, Y_R, dx);
 			float dY_dx_R = MINMOD(Y_C, Y_R, Y_RR, dx);
 			float Y_L_star = Y_C + 0.5 * dx * dY_dx_L;
 			float Y_R_star = Y_R - 0.5 * dx * dY_dx_R;
+*/
+			float Y_L_star = Y_C;
+			float Y_R_star = Y_R;
 
 			float R_mix_L = R_dry * (1 - Y_L_star) + R_v * Y_L_star;
 			float R_mix_R = R_dry * (1 - Y_R_star) + R_v * Y_R_star;
@@ -810,7 +829,7 @@ void Calc_Tot_Flux(float *p0, float *p1, float *p2, float *p3, float *p4, float 
 		//Y-dir
 //		if (i >= 2 && i < NX + 2 && j >= 1 && j < NY + 2){
 	for (int i = 1; i < NX + 1; i++){
-		for( int j = 1; j < NY + 2; j++){
+		for( int j = 0; j < NY + 1; j++){
 			int INDEX = i * (NY + 2) + j;
 			int INDEX_R = (i + 1) * (NY + 2) + j;
 			int INDEX_L = (i - 1) * (NY + 2) + j;
@@ -818,53 +837,74 @@ void Calc_Tot_Flux(float *p0, float *p1, float *p2, float *p3, float *p4, float 
 			int INDEX_T = i * (NY + 2) + (j + 1);
 			int INDEX_TT = i * (NY + 2) + (j + 2);
 
-			float rho_B = p0[INDEX_B];
+//			float rho_B = p0[INDEX_B];
 			float rho_C = p0[INDEX];
 			float rho_T = p0[INDEX_T];
+/*
 			float rho_TT = p0[INDEX_TT];
 			float drho_dy_B = MINMOD(rho_B, rho_C, rho_T, dy);
 			float drho_dy_T = MINMOD(rho_C, rho_T, rho_TT, dy);
 			float rho_B_star = rho_C + 0.5 * dy * drho_dy_B;
 			float rho_T_star = rho_T - 0.5 * dy * drho_dy_T;
+*/
+			float rho_B_star = rho_C;
+			float rho_T_star = rho_T;
 
-			float u_B = p1[INDEX_B];
+//			float u_B = p1[INDEX_B];
 			float u_C = p1[INDEX];
 			float u_T = p1[INDEX_T];
+/*
 			float u_TT = p1[INDEX_TT];
 			float du_dy_B = MINMOD(u_B, u_C, u_T, dy);
 			float du_dy_T = MINMOD(u_C, u_T, u_TT, dy);
 			float u_B_star = u_C + 0.5 * dy * du_dy_B;
 			float u_T_star = u_T - 0.5 * dy * du_dy_T;
+*/
+			float u_B_star = u_C;
+			float u_T_star = u_T;
 
-			float v_B = p2[INDEX_B];
+//			float v_B = p2[INDEX_B];
 			float v_C = p2[INDEX];
 			float v_T = p2[INDEX_T];
+/*
 			float v_TT = p2[INDEX_TT];
 			float dv_dy_B = MINMOD(v_B, v_C, v_T, dy);
 			float dv_dy_T = MINMOD(v_C, v_T, v_TT, dy);
 			float v_B_star = v_C + 0.5 * dy * dv_dy_B;
 			float v_T_star = v_T - 0.5 * dy * dv_dy_T;
+*/
+			float v_B_star = v_C;
+			float v_T_star = v_T;
 
 			float QB_vz = 0.0;
 			float QT_vz = 0.0;
 
-			float T_B = p3[INDEX_B];
+//			float T_B = p3[INDEX_B];
 			float T_C = p3[INDEX];
 			float T_T = p3[INDEX_T];
+/*
 			float T_TT = p3[INDEX_TT];
 			float dT_dy_B = MINMOD(T_B, T_C, T_T, dy);
 			float dT_dy_T = MINMOD(T_C, T_T, T_TT, dy);
 			float T_B_star = T_C + 0.5 * dy * dT_dy_B;
 			float T_T_star = T_T - 0.5 * dy * dT_dy_T;
+*/
 
-			float Y_B = p5[INDEX_B];
+			float T_B_star = T_C;
+			float T_T_star = T_T;
+
+//			float Y_B = p5[INDEX_B];
 			float Y_C = p5[INDEX];
 			float Y_T = p5[INDEX_T];
+/*
 			float Y_TT = p5[INDEX_TT];
 			float dY_dy_B = MINMOD(Y_B, Y_C, Y_T, dy);
 			float dY_dy_T = MINMOD(Y_C, Y_T, Y_TT, dy);
 			float Y_B_star = Y_C + 0.5 * dy * dY_dy_B;
 			float Y_T_star = Y_T - 0.5 * dy * dY_dy_T;
+*/
+			float Y_B_star = Y_C;
+			float Y_T_star = Y_T;
 
 			float R_mix_B = R_dry * (1 - Y_B_star) + R_v * Y_B_star;
 			float R_mix_T = R_dry * (1 - Y_T_star) + R_v * Y_T_star;

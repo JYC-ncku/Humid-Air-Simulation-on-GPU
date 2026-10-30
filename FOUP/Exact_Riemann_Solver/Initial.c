@@ -15,7 +15,7 @@ void Initial(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, f
 //		if (i >= 2 && i < NX + 2 && j >= 2 && j < NY + 2){
 	for (int i = 1; i < NX + 1; i++){
 		for (int j = 1; j < NY + 1; j++){
-			int INDEX = i * (NY+4) + j;
+			int INDEX = i * (NY+2) + j;
 			p1[INDEX] = 5.0; // u = 5 m/s
 			p2[INDEX] = 0.0; // v = 0 m/s
 			p3[INDEX] = 300.0; // T = 300 K

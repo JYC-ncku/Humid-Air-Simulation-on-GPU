@@ -10,7 +10,7 @@
 int main(){
 	int NX = 384;
 	int NY = 620;
-	int N_CELLS = (NX+4) * (NY+4); // 2 Ghost cells
+	int N_CELLS = (NX+2) * (NY+2); // 1 Ghost cells
 	 // p0: Density (rho), p1: X-velocity (u), p2: Y-velocity (v), p3: Temperature (T), p4: Pressure (p), p5: Mass fraction (Y_v), p6: Relative humidity (RH)
 	float *p0, *p1, *p2, *p3, *p4, *p5, *p6,
 	      *mass, *momentum_X, *momentum_Y, *energy, *mass_fraction,
@@ -40,13 +40,13 @@ int main(){
 			&MAX_Freq, &B, N_CELLS);
 
 	Initial(p0, p1, p2, p3, p4, p5, p6, mass, momentum_X, momentum_Y, energy, mass_fraction, MAX_Freq, R_dry, R_v, NX, NY, N_CELLS);
-/*
+
 	int step = 0;
 
 	float output_interval = 0.05; // 每 0.05 秒輸出一次
 	float next_output_time = 0.0; // 下一次輸出的時間點
 	int frame_count = 0;          // 影格編號
-*/
+
 	while(t < t_FINAL){
 		float dt = Compute_dt(MAX_Freq,  p0, p1, p2, p3, p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
 
@@ -60,7 +60,7 @@ int main(){
 					mass, momentum_X, momentum_Y, energy, mass_fraction,
 					flux_X, flux_Y,
 					R_dry, R_v, dx, dy, dt, NX, NY, N_CELLS);
-/*
+
 	if (t >= next_output_time) {
 		printf("Saving Frame %03d at t = %.3f...\n", frame_count, t);
 
@@ -68,11 +68,11 @@ int main(){
 		sprintf(filename, "Results_frame_%03d.txt", frame_count);
 
 		FILE *pFile = fopen(filename, "w");
-		for (int i = 2; i < NX + 2; i++){
-			for (int j = 2; j < NY + 2; j++){
-				int INDEX = i * (NY+4) + j;
-				float X = (i - 1.5) * dx;
-				float Y = (j - 1.5) * dy;
+		for (int i = 1; i < NX + 1; i++){
+			for (int j = 1; j < NY + 1; j++){
+				int INDEX = i * (NY+2) + j;
+				float X = (i - 0.5) * dx;
+				float Y = (j - 0.5) * dy;
 				fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, Y, p1[INDEX], p3[INDEX], p5[INDEX], p6[INDEX]);
 			}
 		}
@@ -88,7 +88,7 @@ int main(){
 		if (step % 100 == 0) {
 			printf("Current time = %.6f / %.2f\n", t, t_FINAL);
 		}
-*/
+
 	}
 
 /*

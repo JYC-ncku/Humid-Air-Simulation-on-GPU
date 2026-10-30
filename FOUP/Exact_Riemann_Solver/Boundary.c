@@ -15,12 +15,12 @@ void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, 
 //		if (j >= 2 && j < NY + 2 && i == 0){
 	for (int j = 1; j < NY + 1; j++){
 //		int LEFT_LEFT_GHOST = 0 * (NY+4) + j;
-		int LEFT_GHOST = 1 * (NY+4) + j;
+		int LEFT_GHOST = 0 * (NY+2) + j;
 //		int RIGHT_RIGHT_GHOST = (NX+3) * (NY+4) + j;
-		int RIGHT_GHOST = (NX+2) * (NY+4) + j;
+		int RIGHT_GHOST = (NX+1) * (NY+2) + j;
 
-		int LEFT_INNER = 2 * (NY+4) + j;
-		int RIGHT_INNER = (NX+1) * (NY+4) + j;
+		int LEFT_INNER = 1 * (NY+2) + j;
+		int RIGHT_INNER = NX * (NY+2) + j;
 		float y_center = (j - 0.5) * dy;
 //		p1[LEFT_GHOST] = 5.0; // u = 5 m/s
 		if (y_center < Delta) {
@@ -63,13 +63,13 @@ void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, 
 //		if (i >= 2 && i < NX + 2 && j == 0){
 	for (int i = 2; i < NX + 2; i++){
 //		int BOTTOM_BOTTOM_GHOST = i * (NY+4) + 0;
-		int BOTTOM_GHOST = i * (NY+4) + 1;
+		int BOTTOM_GHOST = i * (NY+2) + 0;
 //		int TOP_TOP_GHOST = i * (NY+4) + (NY+3);
-		int TOP_GHOST = i * (NY+4) + (NY+2);
+		int TOP_GHOST = i * (NY+2) + (NY+1);
 
-		int BOTTOM_INNER = i * (NY+4) + 2;
+		int BOTTOM_INNER = i * (NY+2) + 1;
 //		int BOTTOM_INNER_INNER = i * (NY+4) + 3;
-		int TOP_INNER = i * (NY+4) + (NY+1);
+		int TOP_INNER = i * (NY+2) + NY;
 		float x_center = (i - 0.5) * dx;
 
 		p1[BOTTOM_GHOST] = -p1[BOTTOM_INNER];

@@ -131,13 +131,19 @@ float Compute_dt(float *MAX_Freq, float *p0, float *p1, float *p2, float *p3, fl
 	float h_MAX_CFL;
 	cudaMemcpy(&h_MAX_CFL, MAX_CFL, sizeof(float), cudaMemcpyDeviceToHost);
 */
-	float MAX_CFL;
+	Compute_MAX_CFL(MAX_Freq, p0, p1, p2, p3, p5, dx, dy, R_dry, R_v, NX, NY, N_CELLS);
+
+	float MAX_CFL = 1e-6;
+
 	for (int i = 1; i < NX + 1; i++){
 		for (int j = 1; j < NY + 1; j++){
 			int INDEX = i * (NY+2) + j;
-			MAX_CFL = MAX_Freq[INDEX];
+			if (MAX_Freq[INDEX] > MAX_CFL) {
+				MAX_CFL = MAX_Freq[INDEX];
+			}
 		}
 	}
+
 	float dt = CFL / MAX_CFL;
 	return dt;
 }
