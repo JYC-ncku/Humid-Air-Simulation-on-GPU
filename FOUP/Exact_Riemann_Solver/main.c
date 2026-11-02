@@ -47,12 +47,12 @@ int main(){
 	float next_output_time = 0.0; // 下一次輸出的時間點
 	int frame_count = 0;          // 影格編號
 */
-/*
+
 	while(t < t_FINAL){
 		float dt = Compute_dt(MAX_Freq,  p0, p1, p2, p3, p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
 
 		Boundary(p0, p1, p2, p3, p4, p5, p6, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
-
+/*
 		Calc_Tot_Flux(p0, p1, p2, p3, p4, p5,
 			      interface_p, flux_X, flux_Y,
 			      R_dry, R_v, D, mu, K, dx, dy, NX, NY, N_CELLS);
@@ -83,7 +83,7 @@ int main(){
 		next_output_time += output_interval; // 設定下一次拍照時間
 
 	}
-
+*/
 		t += dt;
 		step++;
 		if (step % 100 == 0) {
@@ -92,7 +92,6 @@ int main(){
 
 	}
 
-*/
 	FILE *pFile = fopen("Results_of_384x620_cells_1s.txt", "w");
 	for (int i = 1; i < NX + 1; i++){
 		for (int j = 1; j < NY + 1; j++){

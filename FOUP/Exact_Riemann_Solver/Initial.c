@@ -40,7 +40,7 @@ void Initial(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, f
 				p1[INDEX] = 0.0; // u = 0 m/s
 				p2[INDEX] = 0.0; // v = 0 m/s
 				p5[INDEX] = 0.0; // phi = 0
-				p6[INDEX] = 1.0; // RH = 0
+				p6[INDEX] = 0.0; // RH = 0
 			}
 
 			R_mix = R_dry * (1 - p5[INDEX]) + R_v * p5[INDEX];
