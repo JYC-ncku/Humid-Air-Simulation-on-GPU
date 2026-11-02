@@ -8,8 +8,8 @@
 #include "Primitive_variable.h"
 
 int main(){
-	int NX = 384;
-	int NY = 620;
+	int NX = 96;
+	int NY = 155;
 	int N_CELLS = (NX+2) * (NY+2); // 1 Ghost cells
 	 // p0: Density (rho), p1: X-velocity (u), p2: Y-velocity (v), p3: Temperature (T), p4: Pressure (p), p5: Mass fraction (Y_v), p6: Relative humidity (RH)
 	float *p0, *p1, *p2, *p3, *p4, *p5, *p6,
@@ -19,7 +19,7 @@ int main(){
 	float L = 0.959; // unit: m
 	float H = 1.55; // unit: m
 	float t = 0;
-	float t_FINAL = 1.0; // unit: s
+	float t_FINAL = 10.0; // unit: s
 //	float R = 1.0;
 //	float GAMMA = 1.4;
 	float CFL = 0.25;
@@ -42,11 +42,11 @@ int main(){
 	Initial(p0, p1, p2, p3, p4, p5, p6, mass, momentum_X, momentum_Y, energy, mass_fraction, MAX_Freq, B, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
 
 	int step = 0;
-/*
+
 	float output_interval = 0.05; // 每 0.05 秒輸出一次
 	float next_output_time = 0.0; // 下一次輸出的時間點
 	int frame_count = 0;          // 影格編號
-*/
+
 
 	while(t < t_FINAL){
 		float dt = Compute_dt(MAX_Freq,  p0, p1, p2, p3, p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
@@ -61,7 +61,7 @@ int main(){
 					mass, momentum_X, momentum_Y, energy, mass_fraction,
 					flux_X, flux_Y,
 					R_dry, R_v, dx, dy, dt, NX, NY, N_CELLS);
-/*
+
 	if (t >= next_output_time) {
 		printf("Saving Frame %03d at t = %.3f...\n", frame_count, t);
 
@@ -83,7 +83,7 @@ int main(){
 		next_output_time += output_interval; // 設定下一次拍照時間
 
 	}
-*/
+
 		t += dt;
 		step++;
 		if (step % 100 == 0) {
@@ -91,7 +91,7 @@ int main(){
 		}
 
 	}
-
+/*
 	FILE *pFile = fopen("Results_of_384x620_cells_1s.txt", "w");
 	for (int i = 1; i < NX + 1; i++){
 		for (int j = 1; j < NY + 1; j++){
@@ -103,7 +103,7 @@ int main(){
 		}
 	}
 	fclose(pFile);
-
+*/
 	Free_memory(&p0, &p1, &p2, &p3, &p4, &p5, &p6,
 		    &mass, &momentum_X, &momentum_Y, &energy, &mass_fraction,
 		    &interface_p, &flux_X, &flux_Y,
