@@ -4,7 +4,7 @@
 
 void Initial(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, float *p6,
 	     float *mass, float *momentum_X, float *momentum_Y, float *energy, float *mass_fraction,
-	     float *MAX_Freq, float R_dry, float R_v, int NX, int NY, int N_CELLS){
+	     float *MAX_Freq, float *B, float R_dry, float R_v, float dx, float dy, int NX, int NY, int N_CELLS){
 /*
 	int INDEX = blockIdx.x * blockDim.x + threadIdx.x;
 	int i = (int)INDEX / (NY+4);
@@ -16,12 +16,34 @@ void Initial(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, f
 	for (int i = 1; i < NX + 1; i++){
 		for (int j = 1; j < NY + 1; j++){
 			int INDEX = i * (NY+2) + j;
-			p1[INDEX] = 5.0; // u = 5 m/s
-			p2[INDEX] = 0.0; // v = 0 m/s
-			p3[INDEX] = 300.0; // T = 300 K
-			p4[INDEX] = 101325.0; // P = 1 atm
-			p5[INDEX] = 0.0 ; // phi = 0
-			p6[INDEX] = 0.0; // RH = 0
+			float X = (i - 0.5) * dx;
+			float Y = (j - 0.5) * dy;
+
+			// If B[INDEX] = 1 ==> walls, else B[INDEX] = 0 ==> Not wall
+			if ( (X > 0.0 && X < 0.344 && ( (Y > 0.0 && Y < 0.662) || (Y > 0.982 && Y < 1.55) ) ) ){
+				B[INDEX] = 1.0;
+			} else {
+				B[INDEX] = 0.0;
+			}
+
+			if (B[INDEX] == 1.0){
+				p1[INDEX] = 0.0;
+				p2[INDEX] = 0.0;
+				p3[INDEX] = 0.0;
+				p4[INDEX] = 0.0;
+				p5[INDEX] = 0.0;
+				p6[INDEX] = 0.0;
+			}
+
+			if(B[INDEX] == 0.0){
+				p1[INDEX] = 0.0; // u = 0 m/s
+				p2[INDEX] = 0.0; // v = 0 m/s
+				p3[INDEX] = 300.0; // T = 300 K
+				p4[INDEX] = 101325.0; // P = 1 atm
+				p5[INDEX] = 0.0; // phi = 0
+				p6[INDEX] = 0.0; // RH = 0
+			}
+
 			R_mix = R_dry * (1 - p5[INDEX]) + R_v * p5[INDEX];
 			p0[INDEX] = p4[INDEX] / (R_mix * p3[INDEX]);
 			MAX_Freq[INDEX] = 0.0;
@@ -38,6 +60,7 @@ void Initial(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, f
 		}
 	}
 }
+
 /*
 void Initial(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, float *p6,
 	     float *mass, float *momentum_X, float *momentum_Y, float *energy, float *mass_fraction,

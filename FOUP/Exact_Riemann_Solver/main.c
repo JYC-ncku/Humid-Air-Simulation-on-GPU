@@ -39,14 +39,15 @@ int main(){
 			&interface_p, &flux_X, &flux_Y,
 			&MAX_Freq, &B, N_CELLS);
 
-	Initial(p0, p1, p2, p3, p4, p5, p6, mass, momentum_X, momentum_Y, energy, mass_fraction, MAX_Freq, R_dry, R_v, NX, NY, N_CELLS);
+	Initial(p0, p1, p2, p3, p4, p5, p6, mass, momentum_X, momentum_Y, energy, mass_fraction, MAX_Freq, B, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
 
 	int step = 0;
-
+/*
 	float output_interval = 0.05; // 每 0.05 秒輸出一次
 	float next_output_time = 0.0; // 下一次輸出的時間點
 	int frame_count = 0;          // 影格編號
-
+*/
+/*
 	while(t < t_FINAL){
 		float dt = Compute_dt(MAX_Freq,  p0, p1, p2, p3, p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
 
@@ -91,19 +92,19 @@ int main(){
 
 	}
 
-/*
-	FILE *pFile = fopen("Results_of_400x200_cells_1s.txt", "w");
-	for (int i = 2; i < NX + 2; i++){
-		for (int j = 2; j < NY + 2; j++){
+*/
+	FILE *pFile = fopen("Results_of_384x620_cells_1s.txt", "w");
+	for (int i = 1; i < NX + 1; i++){
+		for (int j = 1; j < NY + 1; j++){
 			int INDEX = i * (NY+4) + j;
-			float X = (i - 1.5) * dx;
-			float Y = (j - 1.5) * dy;
+			float X = (i - 0.5) * dx;
+			float Y = (j - 0.5) * dy;
 		fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n",
 				X, Y, p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX], p5[INDEX], p6[INDEX]);
 		}
 	}
 	fclose(pFile);
-*/
+
 	Free_memory(&p0, &p1, &p2, &p3, &p4, &p5, &p6,
 		    &mass, &momentum_X, &momentum_Y, &energy, &mass_fraction,
 		    &interface_p, &flux_X, &flux_Y,
