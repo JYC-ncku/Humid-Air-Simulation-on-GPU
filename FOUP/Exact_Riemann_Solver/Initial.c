@@ -19,6 +19,9 @@ void Initial(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, f
 			float X = (i - 0.5) * dx;
 			float Y = (j - 0.5) * dy;
 
+			p3[INDEX] = 300.0; // T = 300 K
+			p4[INDEX] = 101325.0; // P = 1 atm
+
 			// If B[INDEX] = 1 ==> walls, else B[INDEX] = 0 ==> Not wall
 			if ( (X > 0.0 && X < 0.344 && ( (Y > 0.0 && Y < 0.662) || (Y > 0.982 && Y < 1.55) ) ) ){
 				B[INDEX] = 1.0;
@@ -29,8 +32,6 @@ void Initial(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, f
 			if (B[INDEX] == 1.0){
 				p1[INDEX] = 0.0;
 				p2[INDEX] = 0.0;
-				p3[INDEX] = 0.0;
-				p4[INDEX] = 0.0;
 				p5[INDEX] = 0.0;
 				p6[INDEX] = 0.0;
 			}
@@ -38,10 +39,8 @@ void Initial(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, f
 			if(B[INDEX] == 0.0){
 				p1[INDEX] = 0.0; // u = 0 m/s
 				p2[INDEX] = 0.0; // v = 0 m/s
-				p3[INDEX] = 300.0; // T = 300 K
-				p4[INDEX] = 101325.0; // P = 1 atm
 				p5[INDEX] = 0.0; // phi = 0
-				p6[INDEX] = 0.0; // RH = 0
+				p6[INDEX] = 1.0; // RH = 0
 			}
 
 			R_mix = R_dry * (1 - p5[INDEX]) + R_v * p5[INDEX];

@@ -96,10 +96,10 @@ int main(){
 	FILE *pFile = fopen("Results_of_384x620_cells_1s.txt", "w");
 	for (int i = 1; i < NX + 1; i++){
 		for (int j = 1; j < NY + 1; j++){
-			int INDEX = i * (NY+4) + j;
+			int INDEX = i * (NY+2) + j;
 			float X = (i - 0.5) * dx;
 			float Y = (j - 0.5) * dy;
-		fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n",
+		fprintf(pFile, "%.4f\t%.4f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n",
 				X, Y, p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX], p5[INDEX], p6[INDEX]);
 		}
 	}
