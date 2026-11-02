@@ -18,12 +18,12 @@ for i = 1:1:NO_RESULTS
     filename = sprintf('Results_frame_%s.txt', generate_string(i-1));
 
 A = load(filename);
-    surf(reshape(A(:,1), 200, 400), reshape(A(:,2),200,400), reshape(A(:,6),200,400)) 
+    surf(reshape(A(:,1), 620, 384), reshape(A(:,2), 620, 384), reshape(A(:,6), 620, 384)) 
     view(2)
     shading flat
     colorbar;
-    xticks(0.1:0.1:0.9);
-    yticks(0.05:0.05:0.45);
+    xticks(0.1:0.1:0.959);
+    yticks(0.1:0.1:1.55);
     title('Relative Humidity between 0s ~ 1s (HLL & Variable CV)');
     M(i) = getframe(f);
     pause(0.01)

@@ -61,7 +61,7 @@ void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, 
 	}
 	//BOTTOM and TOP
 //		if (i >= 2 && i < NX + 2 && j == 0){
-	for (int i = 2; i < NX + 2; i++){
+	for (int i = 1; i < NX + 1; i++){
 //		int BOTTOM_BOTTOM_GHOST = i * (NY+4) + 0;
 		int BOTTOM_GHOST = i * (NY+2) + 0;
 //		int TOP_TOP_GHOST = i * (NY+4) + (NY+3);
