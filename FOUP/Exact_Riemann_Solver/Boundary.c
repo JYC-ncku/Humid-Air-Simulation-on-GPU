@@ -3,12 +3,16 @@
 
 void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, float *p6, float R_dry, float R_v, float dx, float dy, int NX, int NY, int N_CELLS){
 
-	float R_mix_L, R_mix_B, P_sat, phi_max;
+	float R_mix_L, R_mix_B, P_sat, P_v, phi_max;
 	float X_WALL = 0.344;
+	float X_INLET_1 = 0.494; // INLET 1 hole width = 150 mm; 0.344+0.15=0.494
+	float X_INLET_2 = 0.709; // INLET 2 hole width = 250 mm; 0.959-0.25=0.709
 	float Y_LOWER_WALL = 0.662;
 	float Y_UPPER_WALL = 0.982;
 	float Y_LOWER_HOLE = 0.932;
 	int i_wall = (int)round(X_WALL / dx);
+	int i_inlet_1 = (int)round(X_INLET_1 / dx);
+	int i_inlet_2 = (int)round(X_INLET_2 / dx);
 	int j_lower_wall = (int)round(Y_LOWER_WALL / dy);
 	int j_upper_wall = (int)round(Y_UPPER_WALL / dy);
 	int j_lower_hole = (int)round(Y_LOWER_HOLE / dy);
@@ -71,63 +75,65 @@ void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, 
 		}
 	}
 
-
-	for (int i = 1; i < NX + 1; i++){
-//		int BOTTOM_BOTTOM_GHOST = i * (NY+4) + 0;
-		int BOTTOM_GHOST = i * (NY+2) + 0;
-//		int TOP_TOP_GHOST = i * (NY+4) + (NY+3);
+	// TOP (X = 344 ~ 959 mm and Y = 1550 mm)
+	for (int i = i_wall + 1; i < NX + 1; i++){
 		int TOP_GHOST = i * (NY+2) + (NY+1);
-
-		int BOTTOM_INNER = i * (NY+2) + 1;
-//		int BOTTOM_INNER_INNER = i * (NY+4) + 3;
 		int TOP_INNER = i * (NY+2) + NY;
-		float x_center = (i - 0.5) * dx;
-
-		p1[BOTTOM_GHOST] = -p1[BOTTOM_INNER];
-		p2[BOTTOM_GHOST] = -p2[BOTTOM_INNER];
-		p4[BOTTOM_GHOST] = p4[BOTTOM_INNER]; // P = 1 atm
-/*
-		p1[BOTTOM_BOTTOM_GHOST] = -p1[BOTTOM_INNER_INNER];
-		p2[BOTTOM_BOTTOM_GHOST] = -p2[BOTTOM_INNER_INNER];
-		p4[BOTTOM_BOTTOM_GHOST] = p4[BOTTOM_INNER_INNER];
-*/
-
-		if (x_center >= 0.2 && x_center <= 0.7){
-			p3[BOTTOM_GHOST] = 373.15; //T = 373.15 K (Boiling water)
-			P_sat = 611.0 * exp((17.27 * (p3[BOTTOM_GHOST] - 273.15)) / ((p3[BOTTOM_GHOST] - 273.15) + 237.3)); // Tetens equation
-			if (p4[BOTTOM_GHOST] <= P_sat) {
-				phi_max = 1.0;
-			} else {
-				phi_max = (P_sat / R_v) / (((p4[BOTTOM_GHOST] - P_sat) / R_dry) + (P_sat / R_v));
-			}
-			p5[BOTTOM_GHOST] = phi_max;
+		if (i >= i_wall + 1 && i <= i_inlet_1){
+			p1[TOP_GHOST] = 0.0; // Inflow u = 0.0 m/s
+			p2[TOP_GHOST] = -1.0; // Inflow v = -1.0 m/s
+			p3[TOP_GHOST] = p3[TOP_INNER];
+			p4[TOP_GHOST] = p4[TOP_INNER];
+			p5[TOP_GHOST] = 0.0; // Inflow phi = 0;
+		} else if( i >= i_inlet_2 && i < NX + 1){
+			p1[TOP_GHOST] = 0.0; // Inflow u = 0.0 m/s
+			p2[TOP_GHOST] = -0.5; // Inflow v = -0.5 m/s
+			p3[TOP_GHOST] = p3[TOP_INNER];
+			p4[TOP_GHOST] = p4[TOP_INNER];
+			p6[TOP_GHOST] = 0.3; // Inflow RH = 30%;
+			P_sat = 611.0 * exp((17.27 * (p3[TOP_GHOST] - 273.15)) / ((p3[TOP_GHOST] - 273.15) + 237.3)); // Tetens equation
+			P_v = 0.30 * P_sat;
+			p5[TOP_GHOST] = (0.622 * P_v) / (p4[TOP_GHOST] - 0.378 * P_v);
 		} else {
-			p3[BOTTOM_GHOST] = 300.15;
-			p5[BOTTOM_GHOST] = 0.0;
+			p1[TOP_GHOST] = -p1[TOP_INNER];
+			p2[TOP_GHOST] = -p2[TOP_INNER];
+			p3[TOP_GHOST] = p3[TOP_INNER];
+			p4[TOP_GHOST] = p4[TOP_INNER];
+			p5[TOP_GHOST] = p5[TOP_INNER];
 		}
+	}
 
-		R_mix_B = R_dry * (1 - p5[BOTTOM_GHOST]) + R_v * p5[BOTTOM_GHOST];
-		p0[BOTTOM_GHOST] = p4[BOTTOM_GHOST] / (R_mix_B * p3[BOTTOM_GHOST]);
-
-/*
-		p3[BOTTOM_BOTTOM_GHOST] = p3[BOTTOM_GHOST];
-		p5[BOTTOM_BOTTOM_GHOST] = p5[BOTTOM_GHOST];
-		p0[BOTTOM_BOTTOM_GHOST] = p0[BOTTOM_GHOST];
-*/
-		p0[TOP_GHOST] = p0[TOP_INNER];
-		p1[TOP_GHOST] = p1[TOP_INNER];
-		p2[TOP_GHOST] = p2[TOP_INNER];
+	//TOP (X = 0 ~ 344 mm and Y = 982 mm)
+	for (int i = 1; i <= i_wall; i++){
+		int TOP_GHOST = i * (NY+2) + (j_upper_wall+1);
+		int TOP_INNER = i * (NY+2) + (j_upper_wall);
+		p1[TOP_GHOST] = -p1[TOP_INNER];
+		p2[TOP_GHOST] = -p2[TOP_INNER];
 		p3[TOP_GHOST] = p3[TOP_INNER];
 		p4[TOP_GHOST] = p4[TOP_INNER];
 		p5[TOP_GHOST] = p5[TOP_INNER];
-/*
-		p0[TOP_TOP_GHOST] = p0[TOP_INNER];
-		p1[TOP_TOP_GHOST] = p1[TOP_INNER];
-		p2[TOP_TOP_GHOST] = p2[TOP_INNER];
-		p3[TOP_TOP_GHOST] = p3[TOP_INNER];
-		p4[TOP_TOP_GHOST] = p4[TOP_INNER];
-		p5[TOP_TOP_GHOST] = p5[TOP_INNER];
-*/
+	}
+
+	//BOTTOM (X = 0 ~ 344 mm and Y = 662 mm)
+	for (int i = 1; i <= i_wall; i++){
+		int BOTTOM_GHOST = i * (NY+2) + (j_lower_wall);
+		int BOTTOM_INNER = i * (NY+2) + (j_lower_wall+1);
+		p1[BOTTOM_GHOST] = -p1[BOTTOM_INNER];
+		p2[BOTTOM_GHOST] = -p2[BOTTOM_INNER];
+		p3[BOTTOM_GHOST] = p3[BOTTOM_INNER];
+		p4[BOTTOM_GHOST] = p4[BOTTOM_INNER];
+		p5[BOTTOM_GHOST] = p5[BOTTOM_INNER];
+	}
+
+	//BOTTOM (X = 344 ~ 959 mm and Y = 0)
+	for (int i = i_wall + 1; i < NX + 1 ; i++){
+		int BOTTOM_GHOST = i * (NY+2) + 0;
+		int BOTTOM_INNER = i * (NY+2) + 1;
+		p1[BOTTOM_GHOST] = p1[BOTTOM_INNER];
+		p2[BOTTOM_GHOST] = p2[BOTTOM_INNER];
+		p3[BOTTOM_GHOST] = p3[BOTTOM_INNER];
+		p4[BOTTOM_GHOST] = p4[BOTTOM_INNER];
+		p5[BOTTOM_GHOST] = p5[BOTTOM_INNER];
 	}
 }
 /*
