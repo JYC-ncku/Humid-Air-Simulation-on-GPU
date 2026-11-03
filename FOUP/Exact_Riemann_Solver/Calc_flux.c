@@ -687,7 +687,7 @@ void Calc_flux(float *interface_p, float *flux,
 }
 
 void Calc_Tot_Flux(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5,
-		   float *interface_p, float *flux_X, float *flux_Y,
+		   float *interface_p, float *flux_X, float *flux_Y, float *B,
 		   float R_dry, float R_v, float D, float mu, float K, float dx, float dy, int NX, int NY, int N_CELLS){
 /*
 	int INDEX = blockIdx.x * blockDim.x + threadIdx.x;
@@ -785,6 +785,35 @@ void Calc_Tot_Flux(float *p0, float *p1, float *p2, float *p3, float *p4, float 
 
 			float cRT_L_star = sqrt(R_mix_L * T_L_star); // Sound speed a = (R*T)^0.5
 			float cRT_R_star = sqrt(R_mix_R * T_R_star);
+			// Left is wall
+			if (B[INDEX] == 1.0 && B[INDEX_R] == 0.0){
+				rho_L_star = rho_R_star;
+				u_L_star = -u_R_star;
+				v_L_star = -v_R_star;
+				T_L_star = T_R_star;
+				Y_L_star = Y_R_star;
+				R_mix_L = R_mix_R;
+				Cv_mix_L = Cv_mix_R;
+				Gamma_L = Gamma_R;
+				cRT_L_star = cRT_R_star;
+			// Right is wall
+			} else if(B[INDEX] == 0.0 && B[INDEX_R] == 1.0){
+				rho_R_star = rho_L_star;
+				u_R_star = -u_L_star;
+				v_R_star = -v_L_star;
+				T_R_star = T_L_star;
+				Y_R_star = Y_L_star;
+				R_mix_R = R_mix_L;
+				Cv_mix_R = Cv_mix_L;
+				Gamma_R = Gamma_L;
+				cRT_R_star = cRT_L_star;
+			// All in the wall
+			} else if(B[INDEX] == 1.0 && B[INDEX_R] == 1.0){
+				u_L_star = 0.0;
+				u_R_star = 0.0;
+				v_L_star = 0.0;
+				v_R_star = 0.0;
+			}
 
 			Calc_flux(&interface_p[INDEX*6], &flux_X[INDEX*6], // 因為flux跟interface_p都有6個data需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
 				  rho_L_star, u_L_star, v_L_star, QL_vz, cRT_L_star, R_mix_L, Cv_mix_L, Gamma_L, Y_L_star,
@@ -793,15 +822,15 @@ void Calc_Tot_Flux(float *p0, float *p1, float *p2, float *p3, float *p4, float 
 				  0.0, 1.0, 0.0,
 				  0.0, 0.0, 1.0, 0.0);
 
-			float rho_interface_X = 0.5 * (rho_C + rho_R);
-			float dY_dx_interface = (Y_R - Y_C) / dx;
+			float rho_interface_X = 0.5 * (rho_L_star + rho_R_star);
+			float dY_dx_interface = (Y_R_star - Y_L_star) / dx;
 			flux_X[INDEX*6 + 5] += - rho_interface_X * D * dY_dx_interface;
 
 			// Add Navier-Stokes viscosity and thermal conductivity term (X-dir)
 			// 1. Calc the forward gradient at the interface
-			float du_dx = (u_R - u_C) / dx;
-			float dv_dx = (v_R - v_C) / dx;
-			float dT_dx = (T_R - T_C) / dx;
+			float du_dx = (u_R_star - u_L_star) / dx;
+			float dv_dx = (v_R_star - v_L_star) / dx;
+			float dT_dx = (T_R_star - T_L_star) / dx;
 
 			// 2. Calc the tangential gradient at the interface
 			int INDEX_R_T = (i + 1) * (NY + 2) + (j + 1);
@@ -817,8 +846,8 @@ void Calc_Tot_Flux(float *p0, float *p1, float *p2, float *p3, float *p4, float 
 			float q_x = -K * dT_dx;
 
 			// 4. Calc the average velocity at the interface
-			float u_int_X = 0.5 * (u_C + u_R);
-			float v_int_X = 0.5 * (v_C + v_R);
+			float u_int_X = 0.5 * (u_L_star + u_R_star);
+			float v_int_X = 0.5 * (v_L_star + v_R_star);
 
 			// 5. Total flux = Exact Riemann flux - viscousity flux
 			flux_X[INDEX*6 + 1] -= tau_xx;                                     // X-Momentum flux
@@ -917,6 +946,35 @@ void Calc_Tot_Flux(float *p0, float *p1, float *p2, float *p3, float *p4, float 
 
 			float cRT_B_star = sqrt(R_mix_B * T_B_star); // Sound speed a = (R*T)^0.5
 			float cRT_T_star = sqrt(R_mix_T * T_T_star);
+			// Bottom is wall
+			if (B[INDEX] == 1.0 && B[INDEX_T] == 0.0){
+				rho_B_star = rho_T_star;
+				u_B_star = -u_T_star;
+				v_B_star = -v_T_star;
+				T_B_star = T_T_star;
+				Y_B_star = Y_T_star;
+				R_mix_B = R_mix_T;
+				Cv_mix_B = Cv_mix_T;
+				Gamma_B = Gamma_T;
+				cRT_B_star = cRT_T_star;
+			// Bottom is wall
+			} else if(B[INDEX] == 0.0 && B[INDEX_T] == 1.0){
+				rho_T_star = rho_B_star;
+				u_T_star = -u_B_star;
+				v_T_star = -v_B_star;
+				T_T_star = T_B_star;
+				Y_T_star = Y_B_star;
+				R_mix_T = R_mix_B;
+				Cv_mix_T = Cv_mix_B;
+				Gamma_T = Gamma_B;
+				cRT_T_star = cRT_B_star;
+			// All in the wall
+			} else if(B[INDEX] == 1.0 && B[INDEX_T] == 1.0){
+				u_B_star = 0.0;
+				u_T_star = 0.0;
+				v_B_star = 0.0;
+				v_T_star = 0.0;
+			}
 
 			Calc_flux(&interface_p[INDEX*6], &flux_Y[INDEX*6], // 因為flux跟interface_p都有6個data需要儲存，如果不加這行的話數據就會一直不斷被覆蓋，最後變成只有儲存到最後一格的資料。
 				  rho_B_star, u_B_star, v_B_star, QB_vz, cRT_B_star, R_mix_B, Cv_mix_B, Gamma_B, Y_B_star,
@@ -925,15 +983,15 @@ void Calc_Tot_Flux(float *p0, float *p1, float *p2, float *p3, float *p4, float 
 				  -1.0, 0.0, 0.0,
 				  0.0, 0.0, 1.0, 0.0);
 
-			float rho_interface_Y = 0.5 * (rho_C + rho_T);
-			float dY_dy_interface = (Y_T - Y_C) / dy;
+			float rho_interface_Y = 0.5 * (rho_B_star + rho_T_star);
+			float dY_dy_interface = (Y_T_star - Y_B_star) / dy;
 			flux_Y[INDEX*6 + 5] += - rho_interface_Y * D * dY_dy_interface;
 
 			// Add Navier-Stokes viscosity and thermal conductivity term (X-dir)
 			// 1. Calc the forward gradient at the interface
-			float du_dy = (u_T - u_C) / dy;
-			float dv_dy = (v_T - v_C) / dy;
-			float dT_dy = (T_T - T_C) / dy;
+			float du_dy = (u_T_star - u_B_star) / dy;
+			float dv_dy = (v_T_star - v_B_star) / dy;
+			float dT_dy = (T_T_star - T_B_star) / dy;
 
 			// 2. Calc the tangential gradient at the interface
 			int INDEX_T_L = (i - 1) * (NY + 2) + (j + 1);
@@ -949,8 +1007,8 @@ void Calc_Tot_Flux(float *p0, float *p1, float *p2, float *p3, float *p4, float 
 			float q_y = -K * dT_dy;
 
 			// 4. Calc the average velocity at the interface
-			float u_int_Y = 0.5 * (u_C + u_T);
-			float v_int_Y = 0.5 * (v_C + v_T);
+			float u_int_Y = 0.5 * (u_B_star + u_T_star);
+			float v_int_Y = 0.5 * (v_B_star + v_T_star);
 
 			// 5. Total flux = Exact Riemann flux - viscousity flux
 			flux_Y[INDEX*6 + 1] -= tau_yx;                                     // X-Momentum flux

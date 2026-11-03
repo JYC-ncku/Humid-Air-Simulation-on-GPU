@@ -54,12 +54,12 @@ int main(){
 		Boundary(p0, p1, p2, p3, p4, p5, p6, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
 
 		Calc_Tot_Flux(p0, p1, p2, p3, p4, p5,
-			      interface_p, flux_X, flux_Y,
+			      interface_p, flux_X, flux_Y, B,
 			      R_dry, R_v, D, mu, K, dx, dy, NX, NY, N_CELLS);
 
 		Calc_primitive_variable(p0, p1, p2, p3, p4, p5, p6,
 					mass, momentum_X, momentum_Y, energy, mass_fraction,
-					flux_X, flux_Y,
+					flux_X, flux_Y, B,
 					R_dry, R_v, dx, dy, dt, NX, NY, N_CELLS);
 
 	if (t >= next_output_time) {
