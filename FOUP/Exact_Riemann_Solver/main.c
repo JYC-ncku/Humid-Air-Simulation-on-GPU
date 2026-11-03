@@ -19,7 +19,7 @@ int main(){
 	float L = 0.959; // unit: m
 	float H = 1.55; // unit: m
 	float t = 0;
-	float t_FINAL = 10.0; // unit: s
+	float t_FINAL = 0.5; // unit: s
 //	float R = 1.0;
 //	float GAMMA = 1.4;
 	float CFL = 0.25;
@@ -74,7 +74,7 @@ int main(){
 				int INDEX = i * (NY+2) + j;
 				float X = (i - 0.5) * dx;
 				float Y = (j - 0.5) * dy;
-				fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, Y, p1[INDEX], p3[INDEX], p5[INDEX], p6[INDEX]);
+				fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, Y, p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX], p5[INDEX], p6[INDEX]);
 			}
 		}
 		fclose(pFile);
