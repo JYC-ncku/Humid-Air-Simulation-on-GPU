@@ -26,7 +26,28 @@ void Initial(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, f
 			if ( (X > 0.0 && X < 0.344 && ( (Y > 0.0 && Y < 0.662) || (Y > 0.982 && Y < 1.55) ) ) ){
 				B[INDEX] = 1.0;
 			} else {
-				B[INDEX] = 0.0;
+				int is_wafer = 0;
+				if (X >= 0.039 && X <= 0.339){
+					float wafer_thickness = dy;
+					int num_wafers = 10;
+
+					float total_span_Y = 0.3; // Total hight of all wafers
+					float start_Y = 0.68; // Hight of first wafer
+					float pitch_Y = total_span_Y / num_wafers;
+					for (int k = 0; k < num_wafers; k++) {
+				        	float y_bottom = start_Y + k * pitch_Y;
+						float y_top = y_bottom + wafer_thickness;
+						if (Y >= y_bottom && Y <= y_top) {
+							is_wafer = 1;
+							break;
+						}
+					}
+				}
+				if (is_wafer){
+					B[INDEX] = 1.0;
+				} else{
+					B[INDEX] = 0.0;
+				}
 			}
 
 			if (B[INDEX] == 1.0){

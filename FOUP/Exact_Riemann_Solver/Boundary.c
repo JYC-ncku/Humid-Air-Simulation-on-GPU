@@ -68,7 +68,7 @@ void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, 
 		int LEFT_GHOST = 0 * (NY+2) + j;
 		int LEFT_INNER = 1 * (NY+2) + j;
 		if (j >= j_lower_hole && j <= j_upper_wall){
-			p1[LEFT_GHOST] = 0.0; // Inflow u = 1.0 m/s
+			p1[LEFT_GHOST] = 1.0; // Inflow u = 1.0 m/s
 			p2[LEFT_GHOST] = 0.0; // Inflow v = 0.0 m/s
 			p3[LEFT_GHOST] = p3[LEFT_INNER];
 			p4[LEFT_GHOST] = p4[LEFT_INNER];
@@ -89,15 +89,17 @@ void Boundary(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, 
 	for (int i = 1; i < NX + 1; i++){
 		int TOP_GHOST = i * (NY+2) + (NY+1);
 		int TOP_INNER = i * (NY+2) + NY;
+		// Inlet 1
 		if (i >= i_wall + 1 && i <= i_inlet_1){
 			p1[TOP_GHOST] = 0.0; // Inlet u = 0.0 m/s
-			p2[TOP_GHOST] = 0.0; // Inlet v = -1.0 m/s
+			p2[TOP_GHOST] = -1.0; // Inlet v = -1.0 m/s
 			p3[TOP_GHOST] = p3[TOP_INNER];
 			p4[TOP_GHOST] = p4[TOP_INNER];
 			p5[TOP_GHOST] = 0.0; // Inlet phi = 0;
+		// Inlet 2
 		} else if( i >= i_inlet_2 && i < NX + 1){
 			p1[TOP_GHOST] = 0.0; // Inlet u = 0.0 m/s
-			p2[TOP_GHOST] = -5.0; // Inlet v = -0.5 m/s
+			p2[TOP_GHOST] = -0.5; // Inlet v = -0.5 m/s
 			p3[TOP_GHOST] = p3[TOP_INNER];
 			p4[TOP_GHOST] = p4[TOP_INNER];
 			p6[TOP_GHOST] = 0.3; // Inlet RH = 30%;
