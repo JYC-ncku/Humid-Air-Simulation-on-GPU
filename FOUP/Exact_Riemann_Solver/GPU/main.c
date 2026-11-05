@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "memory.h"
-//#include "Initial.h"
+#include "Initial.h"
 //#include "Boundary.h"
 //#include "Calc_flux.h"
 //#include "Primitive_variable.h"
@@ -40,9 +40,9 @@ int main(){
 			&d_mass, &d_momentum_X, &d_momentum_Y, &d_energy, &d_mass_fraction,
 			&d_interface_p, &d_flux_X, &d_flux_Y,
 			&MAX_Freq, &d_MAX_CFL, N_CELLS);
-/*
-	Initial(p0, p1, p2, p3, p4, p5, p6, mass, momentum_X, momentum_Y, energy, mass_fraction, MAX_Freq, B, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
 
+	Initial(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, d_B, d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction, MAX_Freq, d_MAX_CFL, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
+/*
 	int step = 0;
 
 	float output_interval = 0.05; // 每 0.05 秒輸出一次
@@ -94,19 +94,28 @@ int main(){
 
 	}
 */
-/*
-	FILE *pFile = fopen("Results_of_96x155_cells_1s.txt", "w");
+	//Get the data from device
+	Get_From_Device(&h_p0, &d_p0, N_CELLS);
+	Get_From_Device(&h_p1, &d_p1, N_CELLS);
+	Get_From_Device(&h_p2, &d_p2, N_CELLS);
+	Get_From_Device(&h_p3, &d_p3, N_CELLS);
+	Get_From_Device(&h_p4, &d_p4, N_CELLS);
+	Get_From_Device(&h_p5, &d_p5, N_CELLS);
+	Get_From_Device(&h_p6, &d_p6, N_CELLS);
+	Get_From_Device(&h_B, &d_B, N_CELLS);
+
+	FILE *pFile = fopen("Results_of_96x155_cells_10s.txt", "w");
 	for (int i = 1; i < NX + 1; i++){
 		for (int j = 1; j < NY + 1; j++){
 			int INDEX = i * (NY+2) + j;
 			float X = (i - 0.5) * dx;
 			float Y = (j - 0.5) * dy;
 			fprintf(pFile, "%.4f\t%.4f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n",
-					X, Y, p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX], p5[INDEX], p6[INDEX], B[INDEX]);
+					X, Y, h_p0[INDEX], h_p1[INDEX], h_p2[INDEX], h_p3[INDEX], h_p4[INDEX], h_p5[INDEX], h_p6[INDEX], h_B[INDEX]);
 		}
 	}
 	fclose(pFile);
-*/
+
 	Free_memory(&h_p0, &h_p1, &h_p2, &h_p3, &h_p4, &h_p5, &h_p6, &h_B,
 		    &d_p0, &d_p1, &d_p2, &d_p3, &d_p4, &d_p5, &d_p6, &d_B,
 		    &d_mass, &d_momentum_X, &d_momentum_Y, &d_energy, &d_mass_fraction,

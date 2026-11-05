@@ -1,1 +1,1 @@
-float Compute_Cv(float T, float Y);
+__device__ float Compute_Cv(float T, float Y);

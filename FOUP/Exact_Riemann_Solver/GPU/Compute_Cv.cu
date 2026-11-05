@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-float Compute_Cv(float T, float Y){
+__device__ float Compute_Cv(float T, float Y){
 	float a1, a2, a3, a4, a5; // N2
 	float b1, b2, b3, b4, b5; // O2
 	float c1, c2, c3, c4, c5; // H2O
