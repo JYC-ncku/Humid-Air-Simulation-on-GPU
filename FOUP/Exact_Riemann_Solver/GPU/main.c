@@ -2,20 +2,21 @@
 #include <stdio.h>
 #include <math.h>
 #include "memory.h"
-#include "Initial.h"
-#include "Boundary.h"
-#include "Calc_flux.h"
-#include "Primitive_variable.h"
+//#include "Initial.h"
+//#include "Boundary.h"
+//#include "Calc_flux.h"
+//#include "Primitive_variable.h"
 
 int main(){
 	int NX = 96;
 	int NY = 155;
 	int N_CELLS = (NX+2) * (NY+2); // 1 Ghost cells
 	 // p0: Density (rho), p1: X-velocity (u), p2: Y-velocity (v), p3: Temperature (T), p4: Pressure (p), p5: Mass fraction (Y_v), p6: Relative humidity (RH)
-	float *p0, *p1, *p2, *p3, *p4, *p5, *p6,
-	      *mass, *momentum_X, *momentum_Y, *energy, *mass_fraction,
-	      *interface_p, *flux_X, *flux_Y,
-	      *MAX_Freq, *B;
+	float *h_p0, *h_p1, *h_p2, *h_p3, *h_p4, *h_p5, *h_p6, *h_B,
+	      *d_p0, *d_p1, *d_p2, *d_p3, *d_p4, *d_p5, *d_p6, *d_B,
+	      *d_mass, *d_momentum_X, *d_momentum_Y, *d_energy, *d_mass_fraction,
+	      *d_interface_p, *d_flux_X, *d_flux_Y,
+	      *MAX_Freq, *d_MAX_CFL;
 	float L = 0.959; // unit: m
 	float H = 1.55; // unit: m
 	float t = 0;
@@ -34,11 +35,12 @@ int main(){
 	float R_v = R_bar / MW_H2O; // unit:J/(kg*k) R = R_bar / Molecular weight
 	float R_dry = R_bar / MW_air;
 
-	Allocate_memory(&p0, &p1, &p2, &p3, &p4, &p5, &p6,
-			&mass, &momentum_X, &momentum_Y, &energy, &mass_fraction,
-			&interface_p, &flux_X, &flux_Y,
-			&MAX_Freq, &B, N_CELLS);
-
+	Allocate_memory(&h_p0, &h_p1, &h_p2, &h_p3, &h_p4, &h_p5, &h_p6, &h_B,
+			&d_p0, &d_p1, &d_p2, &d_p3, &d_p4, &d_p5, &d_p6, &d_B,
+			&d_mass, &d_momentum_X, &d_momentum_Y, &d_energy, &d_mass_fraction,
+			&d_interface_p, &d_flux_X, &d_flux_Y,
+			&MAX_Freq, &d_MAX_CFL, N_CELLS);
+/*
 	Initial(p0, p1, p2, p3, p4, p5, p6, mass, momentum_X, momentum_Y, energy, mass_fraction, MAX_Freq, B, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
 
 	int step = 0;
@@ -91,6 +93,7 @@ int main(){
 		}
 
 	}
+*/
 /*
 	FILE *pFile = fopen("Results_of_96x155_cells_1s.txt", "w");
 	for (int i = 1; i < NX + 1; i++){
@@ -104,9 +107,10 @@ int main(){
 	}
 	fclose(pFile);
 */
-	Free_memory(&p0, &p1, &p2, &p3, &p4, &p5, &p6,
-		    &mass, &momentum_X, &momentum_Y, &energy, &mass_fraction,
-		    &interface_p, &flux_X, &flux_Y,
-		    &MAX_Freq, &B);
+	Free_memory(&h_p0, &h_p1, &h_p2, &h_p3, &h_p4, &h_p5, &h_p6, &h_B,
+		    &d_p0, &d_p1, &d_p2, &d_p3, &d_p4, &d_p5, &d_p6, &d_B,
+		    &d_mass, &d_momentum_X, &d_momentum_Y, &d_energy, &d_mass_fraction,
+		    &d_interface_p, &d_flux_X, &d_flux_Y,
+		    &MAX_Freq, &d_MAX_CFL);
 return 0;
 }
