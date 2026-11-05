@@ -20,7 +20,7 @@ int main(){
 	float L = 0.959; // unit: m
 	float H = 1.55; // unit: m
 	float t = 0;
-	float t_FINAL = 1.0; // unit: s
+	float t_FINAL = 10.0; // unit: s
 //	float R = 1.0;
 //	float GAMMA = 1.4;
 	float CFL = 0.25;
@@ -44,11 +44,11 @@ int main(){
 	Initial(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, d_B, d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction, MAX_Freq, d_MAX_CFL, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
 
 	int step = 0;
-/*
-	float output_interval = 0.05; // 每 0.05 秒輸出一次
+
+	float output_interval = 1.0; // 每 1.0 秒輸出一次
 	float next_output_time = 0.0; // 下一次輸出的時間點
 	int frame_count = 0;          // 影格編號
-*/
+
 	while(t < t_FINAL){
 		float dt = Compute_dt(MAX_Freq, d_MAX_CFL, d_p0, d_p1, d_p2, d_p3, d_p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
 
@@ -62,9 +62,20 @@ int main(){
 					d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction,
 					d_flux_X, d_flux_Y, d_B,
 					R_dry, R_v, dx, dy, dt, NX, NY, N_CELLS);
-/*
+
+	// For make animations
 	if (t >= next_output_time) {
 		printf("Saving Frame %03d at t = %.3f...\n", frame_count, t);
+
+		//Get the data from device
+		Get_From_Device(&h_p0, &d_p0, N_CELLS);
+		Get_From_Device(&h_p1, &d_p1, N_CELLS);
+		Get_From_Device(&h_p2, &d_p2, N_CELLS);
+		Get_From_Device(&h_p3, &d_p3, N_CELLS);
+		Get_From_Device(&h_p4, &d_p4, N_CELLS);
+		Get_From_Device(&h_p5, &d_p5, N_CELLS);
+		Get_From_Device(&h_p6, &d_p6, N_CELLS);
+		Get_From_Device(&h_B, &d_B, N_CELLS);
 
 		char filename[100];
 		sprintf(filename, "Results_frame_%03d.txt", frame_count);
@@ -75,7 +86,8 @@ int main(){
 				int INDEX = i * (NY+2) + j;
 				float X = (i - 0.5) * dx;
 				float Y = (j - 0.5) * dy;
-				fprintf(pFile, "%.3f\t%.3f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, Y, p0[INDEX], p1[INDEX], p2[INDEX], p3[INDEX], p4[INDEX], p5[INDEX], p6[INDEX]);
+				fprintf(pFile, "%.4f\t%.4f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, Y, h_p0[INDEX], h_p1[INDEX], h_p2[INDEX], h_p3[INDEX],
+													       h_p4[INDEX], h_p5[INDEX], h_p6[INDEX], h_B[INDEX]);
 			}
 		}
 		fclose(pFile);
@@ -84,7 +96,7 @@ int main(){
 		next_output_time += output_interval; // 設定下一次拍照時間
 
 	}
-*/
+
 		t += dt;
 		step++;
 		if (step % 100 == 0) {
@@ -92,7 +104,7 @@ int main(){
 		}
 
 	}
-
+/*
 	//Get the data from device
 	Get_From_Device(&h_p0, &d_p0, N_CELLS);
 	Get_From_Device(&h_p1, &d_p1, N_CELLS);
@@ -114,7 +126,7 @@ int main(){
 		}
 	}
 	fclose(pFile);
-
+*/
 	Free_memory(&h_p0, &h_p1, &h_p2, &h_p3, &h_p4, &h_p5, &h_p6, &h_B,
 		    &d_p0, &d_p1, &d_p2, &d_p3, &d_p4, &d_p5, &d_p6, &d_B,
 		    &d_mass, &d_momentum_X, &d_momentum_Y, &d_energy, &d_mass_fraction,
