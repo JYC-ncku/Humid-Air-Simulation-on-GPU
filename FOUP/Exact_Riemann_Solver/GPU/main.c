@@ -3,9 +3,9 @@
 #include <math.h>
 #include "memory.h"
 #include "Initial.h"
-//#include "Boundary.h"
-//#include "Calc_flux.h"
-//#include "Primitive_variable.h"
+#include "Boundary.h"
+#include "Calc_flux.h"
+#include "Primitive_variable.h"
 
 int main(){
 	int NX = 96;
@@ -20,7 +20,7 @@ int main(){
 	float L = 0.959; // unit: m
 	float H = 1.55; // unit: m
 	float t = 0;
-	float t_FINAL = 10.0; // unit: s
+	float t_FINAL = 1.0; // unit: s
 //	float R = 1.0;
 //	float GAMMA = 1.4;
 	float CFL = 0.25;
@@ -42,28 +42,27 @@ int main(){
 			&MAX_Freq, &d_MAX_CFL, N_CELLS);
 
 	Initial(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, d_B, d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction, MAX_Freq, d_MAX_CFL, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
-/*
-	int step = 0;
 
+	int step = 0;
+/*
 	float output_interval = 0.05; // 每 0.05 秒輸出一次
 	float next_output_time = 0.0; // 下一次輸出的時間點
 	int frame_count = 0;          // 影格編號
-
-
+*/
 	while(t < t_FINAL){
-		float dt = Compute_dt(MAX_Freq,  p0, p1, p2, p3, p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
+		float dt = Compute_dt(MAX_Freq, d_MAX_CFL, d_p0, d_p1, d_p2, d_p3, d_p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
 
-		Boundary(p0, p1, p2, p3, p4, p5, p6, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
+		Boundary(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
 
-		Calc_Tot_Flux(p0, p1, p2, p3, p4, p5,
-			      interface_p, flux_X, flux_Y, B,
+		Calc_Tot_Flux(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_B,
+			      d_interface_p, d_flux_X, d_flux_Y,
 			      R_dry, R_v, D, mu, K, dx, dy, NX, NY, N_CELLS);
 
-		Calc_primitive_variable(p0, p1, p2, p3, p4, p5, p6,
-					mass, momentum_X, momentum_Y, energy, mass_fraction,
-					flux_X, flux_Y, B,
+		Calc_primitive_variable(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6,
+					d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction,
+					d_flux_X, d_flux_Y, d_B,
 					R_dry, R_v, dx, dy, dt, NX, NY, N_CELLS);
-
+/*
 	if (t >= next_output_time) {
 		printf("Saving Frame %03d at t = %.3f...\n", frame_count, t);
 
@@ -85,7 +84,7 @@ int main(){
 		next_output_time += output_interval; // 設定下一次拍照時間
 
 	}
-
+*/
 		t += dt;
 		step++;
 		if (step % 100 == 0) {
@@ -93,7 +92,7 @@ int main(){
 		}
 
 	}
-*/
+
 	//Get the data from device
 	Get_From_Device(&h_p0, &d_p0, N_CELLS);
 	Get_From_Device(&h_p1, &d_p1, N_CELLS);
