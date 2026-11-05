@@ -50,6 +50,10 @@ void Initial(float *p0, float *p1, float *p2, float *p3, float *p4, float *p5, f
 				}
 			}
 
+			if (X >= 0.494 && X <= 0.709 && Y == 1.55){
+				B[INDEX] = 1.0;
+			}
+
 			if (B[INDEX] == 1.0){
 				p1[INDEX] = 0.0;
 				p2[INDEX] = 0.0;
