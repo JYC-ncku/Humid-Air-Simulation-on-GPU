@@ -8,8 +8,8 @@
 #include "Primitive_variable.h"
 
 int main(){
-	int NX = 96;
-	int NY = 155;
+	int NX = 384;
+	int NY = 620;
 	int N_CELLS = (NX+2) * (NY+2); // 1 Ghost cells
 	 // p0: Density (rho), p1: X-velocity (u), p2: Y-velocity (v), p3: Temperature (T), p4: Pressure (p), p5: Mass fraction (Y_v), p6: Relative humidity (RH)
 	float *h_p0, *h_p1, *h_p2, *h_p3, *h_p4, *h_p5, *h_p6, *h_B,

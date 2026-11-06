@@ -1,6 +1,6 @@
 function [u] = generate_movie()
 
-NO_RESULTS = 200;
+NO_RESULTS = 10;
 M(NO_RESULTS) = struct('cdata', [], 'colormap', []);
 f = figure;
 f.Visible = 'off';
@@ -11,7 +11,7 @@ f.Visible = 'off';
 % Relative_Humidity
 
 v = VideoWriter('Relative_Humidity_HLL_Variable_CV_10s');
-v.FrameRate = 20;    % Set frames per second (optional)
+v.FrameRate = 1;    % Set frames per second (optional)
 v.Quality = 100;     % Set quality from 0 to 100 (optional)
 open(v);
 for i = 1:1:NO_RESULTS
