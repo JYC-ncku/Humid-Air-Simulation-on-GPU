@@ -10,7 +10,7 @@
 int main(){
 	int NX = 384;
 	int NY = 620;
-	int N_CELLS = (NX+2) * (NY+2); // 1 Ghost cells
+	int N_CELLS = (NX+4) * (NY+4); // 1 Ghost cells
 	 // p0: Density (rho), p1: X-velocity (u), p2: Y-velocity (v), p3: Temperature (T), p4: Pressure (p), p5: Mass fraction (Y_v), p6: Relative humidity (RH)
 	float *h_p0, *h_p1, *h_p2, *h_p3, *h_p4, *h_p5, *h_p6, *h_B,
 	      *d_p0, *d_p1, *d_p2, *d_p3, *d_p4, *d_p5, *d_p6, *d_B,
@@ -81,11 +81,11 @@ int main(){
 		sprintf(filename, "Results_frame_%03d.txt", frame_count);
 
 		FILE *pFile = fopen(filename, "w");
-		for (int i = 1; i < NX + 1; i++){
-			for (int j = 1; j < NY + 1; j++){
-				int INDEX = i * (NY+2) + j;
-				float X = (i - 0.5) * dx;
-				float Y = (j - 0.5) * dy;
+		for (int i = 2; i < NX + 2; i++){
+			for (int j = 2; j < NY + 2; j++){
+				int INDEX = i * (NY+4) + j;
+				float X = (i - 1.5) * dx;
+				float Y = (j - 1.5) * dy;
 				fprintf(pFile, "%.4f\t%.4f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, Y, h_p0[INDEX], h_p1[INDEX], h_p2[INDEX], h_p3[INDEX],
 													       h_p4[INDEX], h_p5[INDEX], h_p6[INDEX], h_B[INDEX]);
 			}
@@ -120,11 +120,11 @@ int main(){
 	Get_From_Device(&h_B, &d_B, N_CELLS);
 
 	FILE *pFile = fopen("Results_of_96x155_cells_10s.txt", "w");
-	for (int i = 1; i < NX + 1; i++){
-		for (int j = 1; j < NY + 1; j++){
-			int INDEX = i * (NY+2) + j;
-			float X = (i - 0.5) * dx;
-			float Y = (j - 0.5) * dy;
+	for (int i = 2; i < NX + 2; i++){
+		for (int j = 2; j < NY + 2; j++){
+			int INDEX = i * (NY+4) + j;
+			float X = (i - 1.5) * dx;
+			float Y = (j - 1.5) * dy;
 			fprintf(pFile, "%.4f\t%.4f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n",
 					X, Y, h_p0[INDEX], h_p1[INDEX], h_p2[INDEX], h_p3[INDEX], h_p4[INDEX], h_p5[INDEX], h_p6[INDEX], h_B[INDEX]);
 		}

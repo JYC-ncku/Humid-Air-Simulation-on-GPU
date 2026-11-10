@@ -33,8 +33,6 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 			d_p3[RIGHT_GHOST] = d_p3[RIGHT_INNER];
 			d_p4[RIGHT_GHOST] = d_p4[RIGHT_INNER];
 			d_p5[RIGHT_GHOST] = d_p5[RIGHT_INNER];
-			R_mix = R_dry * (1.0 - d_p5[RIGHT_GHOST]) + R_v * d_p5[RIGHT_GHOST];
-			d_p0[RIGHT_GHOST] = d_p4[RIGHT_GHOST] / (R_mix * d_p3[RIGHT_GHOST]);
 		}
 
 		// LEFT (X = 0 and Y = 662 ~982 mm)
@@ -54,8 +52,6 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 				d_p4[LEFT_GHOST] = d_p4[LEFT_INNER];
 				d_p5[LEFT_GHOST] = d_p5[LEFT_INNER];
 			}
-			R_mix = R_dry * (1.0 - d_p5[LEFT_GHOST]) + R_v * d_p5[LEFT_GHOST];
-			d_p0[LEFT_GHOST] = d_p4[LEFT_GHOST] / (R_mix * d_p3[LEFT_GHOST]);
 		}
 
 		// TOP (X = 344 ~ 959 mm and Y = 1550 mm)
@@ -86,8 +82,6 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 				d_p4[TOP_GHOST] = d_p4[TOP_INNER];
 				d_p5[TOP_GHOST] = d_p5[TOP_INNER];
 			}
-			R_mix = R_dry * (1.0 - d_p5[TOP_GHOST]) + R_v * d_p5[TOP_GHOST];
-			d_p0[TOP_GHOST] = d_p4[TOP_GHOST] / (R_mix * d_p3[TOP_GHOST]);
 		}
 		//BOTTOM (X = 0 ~ 344 mm and Y = 662 mm)
 		if (i >= 1 && i < NX + 1){
@@ -107,8 +101,6 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 				d_p4[BOTTOM_GHOST] = d_p4[BOTTOM_INNER];
 				d_p5[BOTTOM_GHOST] = d_p5[BOTTOM_INNER];
 			}
-			R_mix = R_dry * (1.0 - d_p5[BOTTOM_GHOST]) + R_v * d_p5[BOTTOM_GHOST];
-			d_p0[BOTTOM_GHOST] = d_p4[BOTTOM_GHOST] / (R_mix * d_p3[BOTTOM_GHOST]);
 		}
 	}
 }

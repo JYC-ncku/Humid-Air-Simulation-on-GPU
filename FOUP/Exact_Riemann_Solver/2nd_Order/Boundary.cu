@@ -18,14 +18,16 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 	int j_lower_hole = (int)round(Y_LOWER_HOLE / dy);
 
 	int INDEX = blockIdx.x * blockDim.x + threadIdx.x;
-	int i = (int)INDEX / (NY+2);
-	int j = (int)INDEX - i * (NY+2);
+	int i = (int)INDEX / (NY+4);
+	int j = (int)INDEX - i * (NY+4);
 
 	if (INDEX < N_CELLS){
 		// RIGHT (X = 959 mm)
-		if (j >= 1 && j < NY + 1){
-			int RIGHT_GHOST = (NX+1) * (NY+2) + j;
-			int RIGHT_INNER = NX * (NY+2) + j;
+		if (j >= 2 && j < NY + 2){
+			int RIGHT_GHOST = (NX+2) * (NY+4) + j;
+			int RIGHT_RIGHT_GHOST = (NX+3) * (NY+4) + j;;
+			int RIGHT_INNER = (NX+1) * (NY+4) + j;
+			int RIGHT_RIGHT_INNER = NX * (NY+4) + j;
 
 			d_p0[RIGHT_GHOST] = d_p0[RIGHT_INNER];
 			d_p1[RIGHT_GHOST] = -d_p1[RIGHT_INNER];
@@ -33,14 +35,19 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 			d_p3[RIGHT_GHOST] = d_p3[RIGHT_INNER];
 			d_p4[RIGHT_GHOST] = d_p4[RIGHT_INNER];
 			d_p5[RIGHT_GHOST] = d_p5[RIGHT_INNER];
-			R_mix = R_dry * (1.0 - d_p5[RIGHT_GHOST]) + R_v * d_p5[RIGHT_GHOST];
-			d_p0[RIGHT_GHOST] = d_p4[RIGHT_GHOST] / (R_mix * d_p3[RIGHT_GHOST]);
+
+			d_p0[RIGHT_RIHGT_GHOST] = d_p0[RIGHT_RIHGT_INNER];
+			d_p1[RIGHT_RIHGT_GHOST] = -d_p1[RIGHT_RIHGT_INNER];
+			d_p2[RIGHT_RIHGT_GHOST] = -d_p2[RIGHT_RIHGT_INNER];
+			d_p3[RIGHT_RIHGT_GHOST] = d_p3[RIGHT_RIHGT_INNER];
+			d_p4[RIGHT_RIHGT_GHOST] = d_p4[RIGHT_RIHGT_INNER];
+			d_p5[RIGHT_RIHGT_GHOST] = d_p5[RIGHT_RIHGT_INNER];
 		}
 
 		// LEFT (X = 0 and Y = 662 ~982 mm)
-		if (j >= 1 && j < NY + 1){
-			int LEFT_GHOST = 0 * (NY+2) + j;
-			int LEFT_INNER = 1 * (NY+2) + j;
+		if (j >= 2 && j < NY + 2){
+			int LEFT_GHOST = 0 * (NY+4) + j;
+			int LEFT_INNER = 1 * (NY+4) + j;
 			if (j >= j_lower_hole && j <= j_upper_wall){
 				d_p1[LEFT_GHOST] = 1.0; // Inflow u = 1.0 m/s
 				d_p2[LEFT_GHOST] = 0.0; // Inflow v = 0.0 m/s
@@ -54,14 +61,12 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 				d_p4[LEFT_GHOST] = d_p4[LEFT_INNER];
 				d_p5[LEFT_GHOST] = d_p5[LEFT_INNER];
 			}
-			R_mix = R_dry * (1.0 - d_p5[LEFT_GHOST]) + R_v * d_p5[LEFT_GHOST];
-			d_p0[LEFT_GHOST] = d_p4[LEFT_GHOST] / (R_mix * d_p3[LEFT_GHOST]);
 		}
 
 		// TOP (X = 344 ~ 959 mm and Y = 1550 mm)
-		if (i >= 1 && i < NX + 1){
-			int TOP_GHOST = i * (NY+2) + (NY+1);
-			int TOP_INNER = i * (NY+2) + NY;
+		if (i >= 2 && i < NX + 2){
+			int TOP_GHOST = i * (NY+4) + (NY+1);
+			int TOP_INNER = i * (NY+4) + NY;
 			// Inlet 1
 			if (i >= i_wall + 1 && i <= i_inlet_1){
 				d_p1[TOP_GHOST] = 0.0; // Inlet u = 0.0 m/s
@@ -86,13 +91,11 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 				d_p4[TOP_GHOST] = d_p4[TOP_INNER];
 				d_p5[TOP_GHOST] = d_p5[TOP_INNER];
 			}
-			R_mix = R_dry * (1.0 - d_p5[TOP_GHOST]) + R_v * d_p5[TOP_GHOST];
-			d_p0[TOP_GHOST] = d_p4[TOP_GHOST] / (R_mix * d_p3[TOP_GHOST]);
 		}
 		//BOTTOM (X = 0 ~ 344 mm and Y = 662 mm)
-		if (i >= 1 && i < NX + 1){
-			int BOTTOM_GHOST = i * (NY+2) + 0;
-			int BOTTOM_INNER = i * (NY+2) + 1;
+		if (i >= 2 && i < NX + 2){
+			int BOTTOM_GHOST = i * (NY+4) + 0;
+			int BOTTOM_INNER = i * (NY+4) + 1;
 			if (i >= i_wall + 1) {
 				d_p1[BOTTOM_GHOST] = d_p1[BOTTOM_INNER];
 				d_p2[BOTTOM_GHOST] = d_p2[BOTTOM_INNER];
@@ -107,8 +110,6 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 				d_p4[BOTTOM_GHOST] = d_p4[BOTTOM_INNER];
 				d_p5[BOTTOM_GHOST] = d_p5[BOTTOM_INNER];
 			}
-			R_mix = R_dry * (1.0 - d_p5[BOTTOM_GHOST]) + R_v * d_p5[BOTTOM_GHOST];
-			d_p0[BOTTOM_GHOST] = d_p4[BOTTOM_GHOST] / (R_mix * d_p3[BOTTOM_GHOST]);
 		}
 	}
 }
