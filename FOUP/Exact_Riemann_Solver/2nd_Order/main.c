@@ -119,7 +119,7 @@ int main(){
 	Get_From_Device(&h_p6, &d_p6, N_CELLS);
 	Get_From_Device(&h_B, &d_B, N_CELLS);
 
-	FILE *pFile = fopen("Results_of_96x155_cells_10s.txt", "w");
+	FILE *pFile = fopen("Results_of_384x620_cells_0.5s.txt", "w");
 	for (int i = 2; i < NX + 2; i++){
 		for (int j = 2; j < NY + 2; j++){
 			int INDEX = i * (NY+4) + j;
@@ -130,10 +130,6 @@ int main(){
 		}
 	}
 	fclose(pFile);
-
-	float CFL_diffusion = 1.0 / (2.0 * D * (1.0 / (dx * dx) + 1.0 / (dy * dy)));
-	printf("CFL_diff = %.2f\n", CFL_diffusion);
-
 
 	Free_memory(&h_p0, &h_p1, &h_p2, &h_p3, &h_p4, &h_p5, &h_p6, &h_B,
 		    &d_p0, &d_p1, &d_p2, &d_p3, &d_p4, &d_p5, &d_p6, &d_B,

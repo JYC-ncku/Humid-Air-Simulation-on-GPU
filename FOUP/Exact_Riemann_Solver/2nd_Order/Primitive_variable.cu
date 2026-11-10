@@ -9,12 +9,12 @@
 // Return the maximum CFL number across all cells
 __global__ void GPU_Compute_MAX_CFL(float *MAX_Freq, float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p5, float dx, float dy, float R_dry, float R_v, int NX, int NY, int N_CELLS){
 	int INDEX = blockIdx.x * blockDim.x + threadIdx.x;
-	int i = (int)INDEX / (NY+2);
-	int j = (int)INDEX - i * (NY+2);
+	int i = (int)INDEX / (NY+4);
+	int j = (int)INDEX - i * (NY+4);
 	float R_mix, Cv_mix, Gamma_mix;
 	if (INDEX < N_CELLS){
 	// Only care inner cells.
-		if (i >= 1 && i < NX + 1 && j >= 1 && j < NY + 1){
+		if (i >= 2 && i < NX + 2 && j >= 2 && j < NY + 2){
 			float u = d_p1[INDEX];
 			float v = d_p2[INDEX];
 			float T = d_p3[INDEX];
@@ -39,16 +39,16 @@ __global__ void GPU_Calc_primitive_variable(float *d_p0, float *d_p1, float *d_p
 					   float *d_flux_X, float *d_flux_Y, float *d_B,
 					   float R_dry, float R_v, float dx, float dy, float dt, int NX, int NY, int N_CELLS){
 	int INDEX = blockIdx.x * blockDim.x + threadIdx.x;
-	int i = (int)INDEX / (NY+2);
-	int j = (int)INDEX - i * (NY+2);
+	int i = (int)INDEX / (NY+4);
+	int j = (int)INDEX - i * (NY+4);
 	float e_target, T_old, phi_new, phi_max,  R_mix, P_sat, P_v;
 	if (INDEX < N_CELLS){
-		if (i >= 1 && i < NX + 1 && j >= 1 && j < NY + 1){
+		if (i >= 2 && i < NX + 2 && j >= 2 && j < NY + 2){
 			if (d_B[INDEX] == 0.0){
 				// 我們是 i*5，所以左界面是 (i-1)*5，右界面是 i*5
-				int L_interface = ((i - 1) * (NY + 2) + j) * 6;
+				int L_interface = ((i - 1) * (NY + 4) + j) * 6;
 				int R_interface = INDEX * 6; // T_intewrface = R_interface
-				int B_interface = (i * (NY + 2) + (j - 1)) * 6;
+				int B_interface = (i * (NY + 4) + (j - 1)) * 6;
 				int T_interface = INDEX * 6; // T_intewrface = R_interface
 
 			        // Use FVM to get new conservation values
