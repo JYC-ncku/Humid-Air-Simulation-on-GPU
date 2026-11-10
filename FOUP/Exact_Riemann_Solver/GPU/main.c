@@ -20,10 +20,10 @@ int main(){
 	float L = 0.959; // unit: m
 	float H = 1.55; // unit: m
 	float t = 0;
-	float t_FINAL = 10.0; // unit: s
+	float t_FINAL = 0.5; // unit: s
 //	float R = 1.0;
 //	float GAMMA = 1.4;
-	float CFL = 0.25;
+	float CFL = 0.8;
 	float dx = L/NX; // 0.0025
 	float dy = H/NY; // 0.0025
 	float D = 1.837e-5; // Diffusivity of water vapor. unit:(m^2/s)
@@ -44,11 +44,11 @@ int main(){
 	Initial(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, d_B, d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction, MAX_Freq, d_MAX_CFL, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
 
 	int step = 0;
-
+/*
 	float output_interval = 1.0; // 每 1.0 秒輸出一次
 	float next_output_time = 0.0; // 下一次輸出的時間點
 	int frame_count = 0;          // 影格編號
-
+*/
 	while(t < t_FINAL){
 		float dt = Compute_dt(MAX_Freq, d_MAX_CFL, d_p0, d_p1, d_p2, d_p3, d_p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
 
@@ -62,7 +62,7 @@ int main(){
 					d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction,
 					d_flux_X, d_flux_Y, d_B,
 					R_dry, R_v, dx, dy, dt, NX, NY, N_CELLS);
-
+/*
 	// For make animations
 	if (t >= next_output_time) {
 		printf("Saving Frame %03d at t = %.3f...\n", frame_count, t);
@@ -96,15 +96,19 @@ int main(){
 		next_output_time += output_interval; // 設定下一次拍照時間
 
 	}
-
+*/
 		t += dt;
 		step++;
 		if (step % 100 == 0) {
 			printf("Current time = %.6f / %.2f\n", t, t_FINAL);
+			float actual_CFL_diff = D * dt * (1.0 / (dx * dx) + 1.0 / (dy * dy));
+			printf("  => Actual NS CFL: %.4f\n", CFL);
+			printf("  => Actual Diff CFL: %e\n", actual_CFL_diff);
+
 		}
 
 	}
-/*
+
 	//Get the data from device
 	Get_From_Device(&h_p0, &d_p0, N_CELLS);
 	Get_From_Device(&h_p1, &d_p1, N_CELLS);
@@ -126,7 +130,11 @@ int main(){
 		}
 	}
 	fclose(pFile);
-*/
+
+	float CFL_diffusion = 1.0 / (2.0 * D * (1.0 / (dx * dx) + 1.0 / (dy * dy)));
+	printf("CFL_diff = %.2f\n", CFL_diffusion);
+
+
 	Free_memory(&h_p0, &h_p1, &h_p2, &h_p3, &h_p4, &h_p5, &h_p6, &h_B,
 		    &d_p0, &d_p1, &d_p2, &d_p3, &d_p4, &d_p5, &d_p6, &d_B,
 		    &d_mass, &d_momentum_X, &d_momentum_Y, &d_energy, &d_mass_fraction,
