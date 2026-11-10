@@ -40,12 +40,14 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 			int LEFT_GHOST = 0 * (NY+2) + j;
 			int LEFT_INNER = 1 * (NY+2) + j;
 			if (j >= j_lower_hole && j <= j_upper_wall){
+				d_p0[LEFT_GHOST] = d_p0[LEFT_INNER];
 				d_p1[LEFT_GHOST] = 1.0; // Inflow u = 1.0 m/s
 				d_p2[LEFT_GHOST] = 0.0; // Inflow v = 0.0 m/s
 				d_p3[LEFT_GHOST] = d_p3[LEFT_INNER];
 				d_p4[LEFT_GHOST] = d_p4[LEFT_INNER];
 				d_p5[LEFT_GHOST] = 0.0; // Inflow phi = 0;
 			} else{
+				d_p0[LEFT_GHOST] = d_p0[LEFT_INNER];
 				d_p1[LEFT_GHOST] = -d_p1[LEFT_INNER];
 				d_p2[LEFT_GHOST] = -d_p2[LEFT_INNER];
 				d_p3[LEFT_GHOST] = d_p3[LEFT_INNER];
@@ -60,6 +62,7 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 			int TOP_INNER = i * (NY+2) + NY;
 			// Inlet 1
 			if (i >= i_wall + 1 && i <= i_inlet_1){
+				d_p0[TOP_GHOST] = d_p0[TOP_INNER];
 				d_p1[TOP_GHOST] = 0.0; // Inlet u = 0.0 m/s
 				d_p2[TOP_GHOST] = -1.0; // Inlet v = -1.0 m/s
 				d_p3[TOP_GHOST] = d_p3[TOP_INNER];
@@ -67,6 +70,7 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 				d_p5[TOP_GHOST] = 0.0; // Inlet phi = 0;
 			// Inlet 2
 			} else if( i >= i_inlet_2 && i < NX + 1){
+				d_p0[TOP_GHOST] = d_p0[TOP_INNER];
 				d_p1[TOP_GHOST] = 0.0; // Inlet u = 0.0 m/s
 				d_p2[TOP_GHOST] = -0.5; // Inlet v = -0.5 m/s
 				d_p3[TOP_GHOST] = d_p3[TOP_INNER];
@@ -76,6 +80,7 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 				P_v = 0.30 * P_sat;
 				d_p5[TOP_GHOST] = (0.622 * P_v) / (d_p4[TOP_GHOST] - 0.378 * P_v);
 			} else {
+				d_p0[TOP_GHOST] = d_p0[TOP_INNER];
 				d_p1[TOP_GHOST] = -d_p1[TOP_INNER];
 				d_p2[TOP_GHOST] = -d_p2[TOP_INNER];
 				d_p3[TOP_GHOST] = d_p3[TOP_INNER];
@@ -88,6 +93,7 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 			int BOTTOM_GHOST = i * (NY+2) + 0;
 			int BOTTOM_INNER = i * (NY+2) + 1;
 			if (i >= i_wall + 1) {
+				d_p0[BOTTOM_GHOST] = d_p0[BOTTOM_INNER];
 				d_p1[BOTTOM_GHOST] = d_p1[BOTTOM_INNER];
 				d_p2[BOTTOM_GHOST] = d_p2[BOTTOM_INNER];
 				d_p3[BOTTOM_GHOST] = d_p3[BOTTOM_INNER];
@@ -95,6 +101,7 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 				d_p5[BOTTOM_GHOST] = d_p5[BOTTOM_INNER];
 			} else{
 				//BOTTOM (X = 344 ~ 959 mm and Y = 0) Outlet
+				d_p0[BOTTOM_GHOST] = d_p0[BOTTOM_INNER];
 				d_p1[BOTTOM_GHOST] = -d_p1[BOTTOM_INNER];
 				d_p2[BOTTOM_GHOST] = -d_p2[BOTTOM_INNER];
 				d_p3[BOTTOM_GHOST] = d_p3[BOTTOM_INNER];

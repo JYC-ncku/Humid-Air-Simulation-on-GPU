@@ -36,46 +36,76 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 			d_p4[RIGHT_GHOST] = d_p4[RIGHT_INNER];
 			d_p5[RIGHT_GHOST] = d_p5[RIGHT_INNER];
 
-			d_p0[RIGHT_RIHGT_GHOST] = d_p0[RIGHT_RIHGT_INNER];
-			d_p1[RIGHT_RIHGT_GHOST] = -d_p1[RIGHT_RIHGT_INNER];
-			d_p2[RIGHT_RIHGT_GHOST] = -d_p2[RIGHT_RIHGT_INNER];
-			d_p3[RIGHT_RIHGT_GHOST] = d_p3[RIGHT_RIHGT_INNER];
-			d_p4[RIGHT_RIHGT_GHOST] = d_p4[RIGHT_RIHGT_INNER];
-			d_p5[RIGHT_RIHGT_GHOST] = d_p5[RIGHT_RIHGT_INNER];
+			d_p0[RIGHT_RIGHT_GHOST] = d_p0[RIGHT_RIGHT_INNER];
+			d_p1[RIGHT_RIGHT_GHOST] = -d_p1[RIGHT_RIGHT_INNER];
+			d_p2[RIGHT_RIGHT_GHOST] = -d_p2[RIGHT_RIGHT_INNER];
+			d_p3[RIGHT_RIGHT_GHOST] = d_p3[RIGHT_RIGHT_INNER];
+			d_p4[RIGHT_RIGHT_GHOST] = d_p4[RIGHT_RIGHT_INNER];
+			d_p5[RIGHT_RIGHT_GHOST] = d_p5[RIGHT_RIGHT_INNER];
 		}
 
 		// LEFT (X = 0 and Y = 662 ~982 mm)
 		if (j >= 2 && j < NY + 2){
-			int LEFT_GHOST = 0 * (NY+4) + j;
-			int LEFT_INNER = 1 * (NY+4) + j;
+			int LEFT_GHOST = 1 * (NY+4) + j;
+			int LEFT_LEFT_GHOST = 0 * (NY+4) + j;
+			int LEFT_INNER = 2 * (NY+4) + j;
+			int LEFT_LEFT_INNER = 3 * (NY+4) + j;
+
 			if (j >= j_lower_hole && j <= j_upper_wall){
+				d_p0[LEFT_GHOST] = d_p0[LEFT_INNER];
 				d_p1[LEFT_GHOST] = 1.0; // Inflow u = 1.0 m/s
 				d_p2[LEFT_GHOST] = 0.0; // Inflow v = 0.0 m/s
 				d_p3[LEFT_GHOST] = d_p3[LEFT_INNER];
 				d_p4[LEFT_GHOST] = d_p4[LEFT_INNER];
 				d_p5[LEFT_GHOST] = 0.0; // Inflow phi = 0;
+
+				d_p0[LEFT_LEFT_GHOST] = d_p0[LEFT_GHOST];
+				d_p1[LEFT_LEFT_GHOST] = d_p1[LEFT_GHOST];
+				d_p2[LEFT_LEFT_GHOST] = d_p2[LEFT_GHOST];
+				d_p3[LEFT_LEFT_GHOST] = d_p3[LEFT_GHOST];
+				d_p4[LEFT_LEFT_GHOST] = d_p4[LEFT_GHOST];
+				d_p5[LEFT_LEFT_GHOST] = d_p5[LEFT_GHOST];
 			} else{
+				d_p0[LEFT_GHOST] = d_p0[LEFT_INNER];
 				d_p1[LEFT_GHOST] = -d_p1[LEFT_INNER];
 				d_p2[LEFT_GHOST] = -d_p2[LEFT_INNER];
 				d_p3[LEFT_GHOST] = d_p3[LEFT_INNER];
 				d_p4[LEFT_GHOST] = d_p4[LEFT_INNER];
 				d_p5[LEFT_GHOST] = d_p5[LEFT_INNER];
+
+				d_p0[LEFT_LEFT_GHOST] = d_p0[LEFT_LEFT_INNER];
+				d_p1[LEFT_LEFT_GHOST] = -d_p1[LEFT_LEFT_INNER];
+				d_p2[LEFT_LEFT_GHOST] = -d_p2[LEFT_LEFT_INNER];
+				d_p3[LEFT_LEFT_GHOST] = d_p3[LEFT_LEFT_INNER];
+				d_p4[LEFT_LEFT_GHOST] = d_p4[LEFT_LEFT_INNER];
+				d_p5[LEFT_LEFT_GHOST] = d_p5[LEFT_LEFT_INNER];
 			}
 		}
 
 		// TOP (X = 344 ~ 959 mm and Y = 1550 mm)
 		if (i >= 2 && i < NX + 2){
-			int TOP_GHOST = i * (NY+4) + (NY+1);
-			int TOP_INNER = i * (NY+4) + NY;
+			int TOP_GHOST = i * (NY+4) + (NY+2);
+			int TOP_TOP_GHOST = i * (NY+4) + (NY+3);
+			int TOP_INNER = i * (NY+4) + (NY+1);
+			int TOP_TOP_INNER = i * (NY+4) + NY;
 			// Inlet 1
 			if (i >= i_wall + 1 && i <= i_inlet_1){
+				d_p0[TOP_GHOST] = d_p0[TOP_INNER];
 				d_p1[TOP_GHOST] = 0.0; // Inlet u = 0.0 m/s
 				d_p2[TOP_GHOST] = -1.0; // Inlet v = -1.0 m/s
 				d_p3[TOP_GHOST] = d_p3[TOP_INNER];
 				d_p4[TOP_GHOST] = d_p4[TOP_INNER];
 				d_p5[TOP_GHOST] = 0.0; // Inlet phi = 0;
+
+				d_p0[TOP_TOP_GHOST] = d_p0[TOP_GHOST];
+				d_p1[TOP_TOP_GHOST] = d_p1[TOP_GHOST];
+				d_p2[TOP_TOP_GHOST] = d_p2[TOP_GHOST];
+				d_p3[TOP_TOP_GHOST] = d_p3[TOP_GHOST];
+				d_p4[TOP_TOP_GHOST] = d_p4[TOP_GHOST];
+				d_p5[TOP_TOP_GHOST] = d_p5[TOP_GHOST];
 			// Inlet 2
-			} else if( i >= i_inlet_2 && i < NX + 1){
+			} else if( i >= i_inlet_2 && i < NX + 2){
+				d_p0[TOP_GHOST] = d_p0[TOP_INNER];
 				d_p1[TOP_GHOST] = 0.0; // Inlet u = 0.0 m/s
 				d_p2[TOP_GHOST] = -0.5; // Inlet v = -0.5 m/s
 				d_p3[TOP_GHOST] = d_p3[TOP_INNER];
@@ -84,31 +114,64 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 				P_sat = 611.0 * exp((17.27 * (d_p3[TOP_GHOST] - 273.15)) / ((d_p3[TOP_GHOST] - 273.15) + 237.3)); // Tetens equation
 				P_v = 0.30 * P_sat;
 				d_p5[TOP_GHOST] = (0.622 * P_v) / (d_p4[TOP_GHOST] - 0.378 * P_v);
+
+				d_p0[TOP_TOP_GHOST] = d_p0[TOP_GHOST];
+				d_p1[TOP_TOP_GHOST] = d_p1[TOP_GHOST];
+				d_p2[TOP_TOP_GHOST] = d_p2[TOP_GHOST];
+				d_p3[TOP_TOP_GHOST] = d_p3[TOP_GHOST];
+				d_p4[TOP_TOP_GHOST] = d_p4[TOP_GHOST];
+				d_p5[TOP_TOP_GHOST] = d_p5[TOP_GHOST];
 			} else {
+				d_p0[TOP_GHOST] = d_p0[TOP_INNER];
 				d_p1[TOP_GHOST] = -d_p1[TOP_INNER];
 				d_p2[TOP_GHOST] = -d_p2[TOP_INNER];
 				d_p3[TOP_GHOST] = d_p3[TOP_INNER];
 				d_p4[TOP_GHOST] = d_p4[TOP_INNER];
 				d_p5[TOP_GHOST] = d_p5[TOP_INNER];
+
+				d_p0[TOP_TOP_GHOST] = d_p0[TOP_TOP_INNER];
+				d_p1[TOP_TOP_GHOST] = -d_p1[TOP_TOP_INNER];
+				d_p2[TOP_TOP_GHOST] = -d_p2[TOP_TOP_INNER];
+				d_p3[TOP_TOP_GHOST] = d_p3[TOP_TOP_INNER];
+				d_p4[TOP_TOP_GHOST] = d_p4[TOP_TOP_INNER];
+				d_p5[TOP_TOP_GHOST] = d_p5[TOP_TOP_INNER];
 			}
 		}
-		//BOTTOM (X = 0 ~ 344 mm and Y = 662 mm)
+		//BOTTOM (X = 344 ~ 959 mm and Y = 0) Outlet
 		if (i >= 2 && i < NX + 2){
-			int BOTTOM_GHOST = i * (NY+4) + 0;
-			int BOTTOM_INNER = i * (NY+4) + 1;
+			int BOTTOM_GHOST = i * (NY+4) + 1;
+			int BOTTOM_BOTTOM_GHOST = i * (NY+4) + 0;
+			int BOTTOM_INNER = i * (NY+4) + 2;
+			int BOTTOM_BOTTOM_INNER = i * (NY+4) + 3;
 			if (i >= i_wall + 1) {
+				d_p0[BOTTOM_GHOST] = d_p0[BOTTOM_INNER];
 				d_p1[BOTTOM_GHOST] = d_p1[BOTTOM_INNER];
 				d_p2[BOTTOM_GHOST] = d_p2[BOTTOM_INNER];
 				d_p3[BOTTOM_GHOST] = d_p3[BOTTOM_INNER];
 				d_p4[BOTTOM_GHOST] = d_p4[BOTTOM_INNER];
 				d_p5[BOTTOM_GHOST] = d_p5[BOTTOM_INNER];
+
+				d_p0[BOTTOM_BOTTOM_GHOST] = d_p0[BOTTOM_INNER];
+				d_p1[BOTTOM_BOTTOM_GHOST] = d_p1[BOTTOM_INNER];
+				d_p2[BOTTOM_BOTTOM_GHOST] = d_p2[BOTTOM_INNER];
+				d_p3[BOTTOM_BOTTOM_GHOST] = d_p3[BOTTOM_INNER];
+				d_p4[BOTTOM_BOTTOM_GHOST] = d_p4[BOTTOM_INNER];
+				d_p5[BOTTOM_BOTTOM_GHOST] = d_p5[BOTTOM_INNER];
 			} else{
-				//BOTTOM (X = 344 ~ 959 mm and Y = 0) Outlet
+				//BOTTOM (X = 0 ~ 344 mm and Y = 662 mm)
+				d_p0[BOTTOM_GHOST] = d_p0[BOTTOM_INNER];
 				d_p1[BOTTOM_GHOST] = -d_p1[BOTTOM_INNER];
 				d_p2[BOTTOM_GHOST] = -d_p2[BOTTOM_INNER];
 				d_p3[BOTTOM_GHOST] = d_p3[BOTTOM_INNER];
 				d_p4[BOTTOM_GHOST] = d_p4[BOTTOM_INNER];
 				d_p5[BOTTOM_GHOST] = d_p5[BOTTOM_INNER];
+
+				d_p0[BOTTOM_BOTTOM_GHOST] = d_p0[BOTTOM_BOTTOM_INNER];
+				d_p1[BOTTOM_BOTTOM_GHOST] = -d_p1[BOTTOM_BOTTOM_INNER];
+				d_p2[BOTTOM_BOTTOM_GHOST] = -d_p2[BOTTOM_BOTTOM_INNER];
+				d_p3[BOTTOM_BOTTOM_GHOST] = d_p3[BOTTOM_BOTTOM_INNER];
+				d_p4[BOTTOM_BOTTOM_GHOST] = d_p4[BOTTOM_BOTTOM_INNER];
+				d_p5[BOTTOM_BOTTOM_GHOST] = d_p5[BOTTOM_BOTTOM_INNER];
 			}
 		}
 	}
