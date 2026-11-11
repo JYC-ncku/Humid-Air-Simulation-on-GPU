@@ -814,7 +814,7 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 				  0.0, 1.0, 0.0,
 				  0.0, 0.0, 1.0, 0.0);
 
-			float rho_interface_X = 0.5 * (rho_L_star + rho_R_star);
+			float rho_interface_X = 0.5 * (rho_C + rho_R);
 			float dY_dx_interface = (Y_R- Y_C) / dx;
 			d_flux_X[INDEX*6 + 5] += - rho_interface_X * D * dY_dx_interface;
 
@@ -838,8 +838,8 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 			float q_x = -K * dT_dx;
 
 			// 4. Calc the average velocity at the interface
-			float u_int_X = 0.5 * (u_L_star + u_R_star);
-			float v_int_X = 0.5 * (v_L_star + v_R_star);
+			float u_int_X = 0.5 * (u_C + u_R);
+			float v_int_X = 0.5 * (v_C + v_R);
 
 			// 5. Total flux = Exact Riemann flux - viscousity flux
 			d_flux_X[INDEX*6 + 1] -= tau_xx;                                     // X-Momentum flux
@@ -968,7 +968,7 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 				  -1.0, 0.0, 0.0,
 				  0.0, 0.0, 1.0, 0.0);
 
-			float rho_interface_Y = 0.5 * (rho_B_star + rho_T_star);
+			float rho_interface_Y = 0.5 * (rho_C + rho_T);
 			float dY_dy_interface = (Y_T - Y_C) / dy;
 			d_flux_Y[INDEX*6 + 5] += - rho_interface_Y * D * dY_dy_interface;
 
@@ -992,8 +992,8 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 			float q_y = -K * dT_dy;
 
 			// 4. Calc the average velocity at the interface
-			float u_int_Y = 0.5 * (u_B_star + u_T_star);
-			float v_int_Y = 0.5 * (v_B_star + v_T_star);
+			float u_int_Y = 0.5 * (u_C + u_T);
+			float v_int_Y = 0.5 * (v_C + v_T);
 
 			// 5. Total flux = Exact Riemann flux - viscousity flux
 			d_flux_Y[INDEX*6 + 1] -= tau_yx;                                     // X-Momentum flux
