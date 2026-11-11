@@ -23,7 +23,7 @@ int main(){
 	float t_FINAL = 0.5; // unit: s
 //	float R = 1.0;
 //	float GAMMA = 1.4;
-	float CFL = 0.8;
+	float CFL = 0.25;
 	float dx = L/NX; // 0.0025
 	float dy = H/NY; // 0.0025
 	float D = 1.837e-5; // Diffusivity of water vapor. unit:(m^2/s)

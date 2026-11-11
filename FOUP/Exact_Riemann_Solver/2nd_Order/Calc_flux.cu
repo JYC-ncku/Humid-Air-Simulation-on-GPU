@@ -815,14 +815,14 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 				  0.0, 0.0, 1.0, 0.0);
 
 			float rho_interface_X = 0.5 * (rho_L_star + rho_R_star);
-			float dY_dx_interface = (Y_R_star - Y_L_star) / dx;
+			float dY_dx_interface = (Y_R- Y_C) / dx;
 			d_flux_X[INDEX*6 + 5] += - rho_interface_X * D * dY_dx_interface;
 
 			// Add Navier-Stokes viscosity and thermal conductivity term (X-dir)
 			// 1. Calc the forward gradient at the interface
-			float du_dx = (u_R_star - u_L_star) / dx;
-			float dv_dx = (v_R_star - v_L_star) / dx;
-			float dT_dx = (T_R_star - T_L_star) / dx;
+			float du_dx = (u_R - u_C) / dx;
+			float dv_dx = (v_R - v_C) / dx;
+			float dT_dx = (T_R - T_C) / dx;
 
 			// 2. Calc the tangential gradient at the interface
 			int INDEX_R_T = (i + 1) * (NY + 4) + (j + 1);
@@ -969,14 +969,14 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 				  0.0, 0.0, 1.0, 0.0);
 
 			float rho_interface_Y = 0.5 * (rho_B_star + rho_T_star);
-			float dY_dy_interface = (Y_T_star - Y_B_star) / dy;
+			float dY_dy_interface = (Y_T - Y_C) / dy;
 			d_flux_Y[INDEX*6 + 5] += - rho_interface_Y * D * dY_dy_interface;
 
 			// Add Navier-Stokes viscosity and thermal conductivity term (X-dir)
 			// 1. Calc the forward gradient at the interface
-			float du_dy = (u_T_star - u_B_star) / dy;
-			float dv_dy = (v_T_star - v_B_star) / dy;
-			float dT_dy = (T_T_star - T_B_star) / dy;
+			float du_dy = (u_T - u_C) / dy;
+			float dv_dy = (v_T - v_C) / dy;
+			float dT_dy = (T_T - T_C) / dy;
 
 			// 2. Calc the tangential gradient at the interface
 			int INDEX_T_L = (i - 1) * (NY + 4) + (j + 1);
