@@ -19,8 +19,8 @@ int main(){
 	      *MAX_Freq, *d_MAX_CFL;
 	float L = 0.959; // unit: m
 	float H = 1.55; // unit: m
-	float t = 0;
-	float t_FINAL = 0.5; // unit: s
+	double t = 0;
+	double t_FINAL = 0.5; // unit: s
 //	float R = 1.0;
 //	float GAMMA = 1.4;
 	float CFL = 0.25;
@@ -45,8 +45,8 @@ int main(){
 
 	int step = 0;
 /*
-	float output_interval = 1.0; // 每 1.0 秒輸出一次
-	float next_output_time = 0.0; // 下一次輸出的時間點
+	dobule output_interval = 1.0; // 每 1.0 秒輸出一次
+	double next_output_time = 0.0; // 下一次輸出的時間點
 	int frame_count = 0;          // 影格編號
 */
 	while(t < t_FINAL){
@@ -65,7 +65,7 @@ int main(){
 /*
 	// For make animations
 	if (t >= next_output_time) {
-		printf("Saving Frame %03d at t = %.3f...\n", frame_count, t);
+		printf("Saving Frame %03d at t = %.3lg...\n", frame_count, t);
 
 		//Get the data from device
 		Get_From_Device(&h_p0, &d_p0, N_CELLS);
@@ -100,7 +100,7 @@ int main(){
 		t += dt;
 		step++;
 		if (step % 100 == 0) {
-			printf("Current time = %.6f / %.2f\n", t, t_FINAL);
+			printf("Current time = %.6lg / %.2lg\n", t, t_FINAL);
 			float actual_CFL_diff = D * dt * (1.0 / (dx * dx) + 1.0 / (dy * dy));
 			printf("  => Actual NS CFL: %.4f\n", CFL);
 			printf("  => Actual Diff CFL: %e\n", actual_CFL_diff);
