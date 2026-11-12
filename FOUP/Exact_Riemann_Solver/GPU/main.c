@@ -19,8 +19,8 @@ int main(){
 	      *MAX_Freq, *d_MAX_CFL;
 	float L = 0.959; // unit: m
 	float H = 1.55; // unit: m
-	float t = 0;
-	float t_FINAL = 0.5; // unit: s
+	double t = 0;
+	double t_FINAL = 0.5; // unit: s
 //	float R = 1.0;
 //	float GAMMA = 1.4;
 	float CFL = 0.8;
@@ -45,12 +45,12 @@ int main(){
 
 	int step = 0;
 /*
-	float output_interval = 1.0; // 每 1.0 秒輸出一次
-	float next_output_time = 0.0; // 下一次輸出的時間點
+	double output_interval = 1.0; // 每 1.0 秒輸出一次
+	double next_output_time = 0.0; // 下一次輸出的時間點
 	int frame_count = 0;          // 影格編號
 */
 	while(t < t_FINAL){
-		float dt = Compute_dt(MAX_Freq, d_MAX_CFL, d_p0, d_p1, d_p2, d_p3, d_p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
+		double dt = Compute_dt(MAX_Freq, d_MAX_CFL, d_p0, d_p1, d_p2, d_p3, d_p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
 
 		Boundary(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
 
@@ -100,7 +100,7 @@ int main(){
 		t += dt;
 		step++;
 		if (step % 100 == 0) {
-			printf("Current time = %.6f / %.2f\n", t, t_FINAL);
+			printf("Current time = %.6lg / %.2lg\n", t, t_FINAL);
 			float actual_CFL_diff = D * dt * (1.0 / (dx * dx) + 1.0 / (dy * dy));
 			printf("  => Actual NS CFL: %.4f\n", CFL);
 			printf("  => Actual Diff CFL: %e\n", actual_CFL_diff);
