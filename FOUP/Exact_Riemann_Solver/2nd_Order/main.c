@@ -16,14 +16,15 @@ int main(){
 	      *d_p0, *d_p1, *d_p2, *d_p3, *d_p4, *d_p5, *d_p6, *d_B,
 	      *d_mass, *d_momentum_X, *d_momentum_Y, *d_energy, *d_mass_fraction,
 	      *d_interface_p, *d_flux_X, *d_flux_Y,
-	      *MAX_Freq, *d_MAX_CFL;
+	      *MAX_Freq, *d_MAX_CFL,
+	      *d_mass_old, *d_momentum_X_old, *d_momentum_Y_old, *d_energy_old, *d_mass_fraction_old;
 	float L = 0.959; // unit: m
 	float H = 1.55; // unit: m
 	double t = 0;
 	double t_FINAL = 0.5; // unit: s
 //	float R = 1.0;
 //	float GAMMA = 1.4;
-	float CFL = 0.25;
+	float CFL = 0.8;
 	float dx = L/NX; // 0.0025
 	float dy = H/NY; // 0.0025
 	float D = 1.837e-5; // Diffusivity of water vapor. unit:(m^2/s)
@@ -39,7 +40,8 @@ int main(){
 			&d_p0, &d_p1, &d_p2, &d_p3, &d_p4, &d_p5, &d_p6, &d_B,
 			&d_mass, &d_momentum_X, &d_momentum_Y, &d_energy, &d_mass_fraction,
 			&d_interface_p, &d_flux_X, &d_flux_Y,
-			&MAX_Freq, &d_MAX_CFL, N_CELLS);
+			&MAX_Freq, &d_MAX_CFL,
+			&d_mass_old, &d_momentum_X_old, &d_momentum_Y_old, &d_energy_old, &d_mass_fraction_old, N_CELLS);
 
 	Initial(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, d_B, d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction, MAX_Freq, d_MAX_CFL, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
 
@@ -50,7 +52,10 @@ int main(){
 	int frame_count = 0;          // 影格編號
 */
 	while(t < t_FINAL){
-		float dt = Compute_dt(MAX_Freq, d_MAX_CFL, d_p0, d_p1, d_p2, d_p3, d_p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
+		double dt = Compute_dt(MAX_Freq, d_MAX_CFL, d_p0, d_p1, d_p2, d_p3, d_p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
+
+		Save_Old_State(d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction,
+			       d_mass_old, d_momentum_X_old, d_momentum_Y_old, d_energy_old, d_mass_fraction_old, N_CELLS);
 
 		Boundary(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
 
@@ -62,6 +67,16 @@ int main(){
 					d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction,
 					d_flux_X, d_flux_Y, d_B,
 					R_dry, R_v, dx, dy, dt, NX, NY, N_CELLS);
+		// Stage 2
+		Boundary(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
+
+		Calc_Tot_Flux(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_B, d_interface_p, d_flux_X, d_flux_Y,
+			      R_dry, R_v, D, mu, K, dx, dy, NX, NY, N_CELLS);
+
+		Calc_primitive_variable_Stage2(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6,
+					       d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction,
+					       d_mass_old, d_momentum_X_old, d_momentum_Y_old, d_energy_old, d_mass_fraction_old,
+					       d_flux_X, d_flux_Y, d_B, R_dry, R_v, dx, dy, dt, NX, NY, N_CELLS);
 /*
 	// For make animations
 	if (t >= next_output_time) {
@@ -135,6 +150,7 @@ int main(){
 		    &d_p0, &d_p1, &d_p2, &d_p3, &d_p4, &d_p5, &d_p6, &d_B,
 		    &d_mass, &d_momentum_X, &d_momentum_Y, &d_energy, &d_mass_fraction,
 		    &d_interface_p, &d_flux_X, &d_flux_Y,
-		    &MAX_Freq, &d_MAX_CFL);
+		    &MAX_Freq, &d_MAX_CFL,
+		    &d_mass_old, &d_momentum_X_old, &d_momentum_Y_old, &d_energy_old, &d_mass_fraction_old);
 return 0;
 }
