@@ -6,7 +6,7 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 	float P_sat, P_v;
 	float X_WALL = 0.344;
 	float X_INLET_1 = 0.494; // INLET 1 hole width = 150 mm; 0.344+0.15=0.494
-	float X_INLET_2 = 0.709; // INLET 2 hole width = 250 mm; 0.959-0.25=0.709
+	float X_INLET_2 = 0.859; // INLET 2 hole width = 100 mm; 0.959-0.1=0.859
 	float Y_LOWER_WALL = 0.662;
 	float Y_UPPER_WALL = 0.982;
 	float Y_LOWER_HOLE = 0.932;
