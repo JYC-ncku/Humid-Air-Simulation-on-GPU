@@ -1,6 +1,8 @@
 void Calc_primitive_variable(float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float *d_p5, float *d_p6,
 			     float *d_mass, float *d_momentum_X, float *d_momentum_Y, float *d_energy, float *d_mass_fraction,
-			     float *d_flux_X, float *d_flux_Y, float *d_B,
+			     float *d_mass_flux_X, float *d_momentum_X_flux_X, float *d_momentum_Y_flux_X, float *d_energy_flux_X, float *d_mass_fraction_flux_X,
+			     float *d_mass_flux_Y, float *d_momentum_X_flux_Y, float *d_momentum_Y_flux_Y, float *d_energy_flux_Y, float *d_mass_fraction_flux_Y,
+			     float *d_B,
 			     float R_dry, float R_v, float dx, float dy, float dt, int NX, int NY, int N_CELLS);
 
 float Compute_dt(float *MAX_Freq, float *d_MAX_CFL, float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p5, float dx, float dy, float R_dry, float R_v, float CFL, int NX, int NY, int N_CELLS);
@@ -10,5 +12,8 @@ void Save_Old_State(float *d_mass, float *d_momentum_X, float *d_momentum_Y, flo
 
 void Calc_primitive_variable_Stage2(float *d_p0, float *d_p1, float *d_p2, float *d_p3, float *d_p4, float *d_p5, float *d_p6,
 				    float *d_mass, float *d_momentum_X, float *d_momentum_Y, float *d_energy, float *d_mass_fraction,
+				    float *d_mass_flux_X, float *d_momentum_X_flux_X, float *d_momentum_Y_flux_X, float *d_energy_flux_X, float *d_mass_fraction_flux_X,
+				    float *d_mass_flux_Y, float *d_momentum_X_flux_Y, float *d_momentum_Y_flux_Y, float *d_energy_flux_Y, float *d_mass_fraction_flux_Y,
 				    float *d_mass_old, float *d_momentum_X_old, float *d_momentum_Y_old, float *d_energy_old, float *d_mass_fraction_old,
-				    float *d_flux_X, float *d_flux_Y, float *d_B, float R_dry, float R_v, float dx, float dy, float dt, int NX, int NY, int N_CELLS);
+				    float *d_B,
+				    float R_dry, float R_v, float dx, float dy, float dt, int NX, int NY, int N_CELLS);
