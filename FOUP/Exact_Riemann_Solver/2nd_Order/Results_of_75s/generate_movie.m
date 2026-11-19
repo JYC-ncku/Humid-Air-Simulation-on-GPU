@@ -11,7 +11,7 @@ f.Visible = 'off';
 % Relative_Humidity
 
 v = VideoWriter('Relative_Humidity_Exact_Riemann_Variable_CV_75s_GPU');
-v.FrameRate = 1;    % Set frames per second (optional)
+v.FrameRate = 10;    % Set frames per second (optional)
 v.Quality = 100;     % Set quality from 0 to 100 (optional)
 open(v);
 for i = 1:1:NO_RESULTS

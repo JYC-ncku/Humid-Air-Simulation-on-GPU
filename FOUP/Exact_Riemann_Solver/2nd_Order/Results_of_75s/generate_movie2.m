@@ -7,7 +7,7 @@ function [u] = generate_movie()
     f.Visible = 'off';
 
     v = VideoWriter('Velocity_Streamlines_with_Wafers_75s.avi');
-    v.FrameRate = 1;    
+    v.FrameRate = 5;    
     v.Quality = 100;     
     open(v);
 
