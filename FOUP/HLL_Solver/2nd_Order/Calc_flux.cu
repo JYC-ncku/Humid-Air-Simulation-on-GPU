@@ -51,19 +51,19 @@ __device__ void Calc_HLL_X_flux(float rho_L, float rho_R, float u_L, float u_R, 
 		d_momentum_X_flux_X[INDEX] = momentum_X_flux_L;
 		d_momentum_Y_flux_X[INDEX] = momentum_Y_flux_L;
 		d_energy_flux_X[INDEX] = energy_flux_L;
-		d_mass_fraction_flux_X[INDEX] = mass_fraction_flux_L;
+//		d_mass_fraction_flux_X[INDEX] = mass_fraction_flux_L;
 	} else if ( W_R <= 0.0){
 		d_mass_flux_X[INDEX] = mass_flux_R;
 		d_momentum_X_flux_X[INDEX] = momentum_X_flux_R;
 		d_momentum_Y_flux_X[INDEX] = momentum_Y_flux_R;
 		d_energy_flux_X[INDEX] = energy_flux_R;
-		d_mass_fraction_flux_X[INDEX] = mass_fraction_flux_R;
+//		d_mass_fraction_flux_X[INDEX] = mass_fraction_flux_R;
 	} else {
 		d_mass_flux_X[INDEX] = (W_R * mass_flux_L - W_L * mass_flux_R + W_L * W_R * (mass_R - mass_L)) / (W_R - W_L);
 		d_momentum_X_flux_X[INDEX] = (W_R * momentum_X_flux_L - W_L * momentum_X_flux_R + W_L * W_R * (momentum_X_R - momentum_X_L)) / (W_R - W_L);
 		d_momentum_Y_flux_X[INDEX] = (W_R * momentum_Y_flux_L - W_L * momentum_Y_flux_R + W_L * W_R * (momentum_Y_R - momentum_Y_L)) / (W_R - W_L);
 		d_energy_flux_X[INDEX] = (W_R * energy_flux_L - W_L * energy_flux_R + W_L * W_R * (energy_R - energy_L)) / (W_R - W_L);
-		d_mass_fraction_flux_X[INDEX] = (W_R * mass_fraction_flux_L - W_L * mass_fraction_flux_R + W_L * W_R * (mass_fraction_R - mass_fraction_L)) / (W_R - W_L);
+//		d_mass_fraction_flux_X[INDEX] = (W_R * mass_fraction_flux_L - W_L * mass_fraction_flux_R + W_L * W_R * (mass_fraction_R - mass_fraction_L)) / (W_R - W_L);
 	}
 //------------------------------viscosity and thremal conductivity term----------------------------------
 	int INDEX_C = i * (NY + 4) + j;
@@ -104,13 +104,12 @@ __device__ void Calc_HLL_X_flux(float rho_L, float rho_R, float u_L, float u_R, 
 	float viscous_energy_flux = (u_interface * tau_xx) + (v_interface * tau_xy) - q_x;
 	d_energy_flux_X[INDEX] -= viscous_energy_flux;
 //------------------------------viscosity and thremal conductivity term----------------------------------
-/*
 	if (d_mass_flux_X[INDEX] > 0.0) {
 		d_mass_fraction_flux_X[INDEX] = d_mass_flux_X[INDEX] * Y_L;
 	} else {
 		d_mass_fraction_flux_X[INDEX] = d_mass_flux_X[INDEX] * Y_R;
 	}
-*/
+
 	float rho_face_X = 0.5 * (rho_L + rho_R);
 	d_mass_fraction_flux_X[INDEX] -= rho_face_X * D * ((Y_center_R - Y_center_L) / dx); //Central difference
 }
@@ -150,19 +149,19 @@ __device__ void Calc_HLL_Y_flux(float rho_B, float rho_T, float u_B, float u_T, 
 		d_momentum_X_flux_Y[INDEX] = momentum_X_flux_B;
 		d_momentum_Y_flux_Y[INDEX] = momentum_Y_flux_B;
 		d_energy_flux_Y[INDEX] = energy_flux_B;
-		d_mass_fraction_flux_Y[INDEX] = mass_fraction_flux_B;
+//		d_mass_fraction_flux_Y[INDEX] = mass_fraction_flux_B;
 	} else if ( W_T <= 0.0){
 		d_mass_flux_Y[INDEX] = mass_flux_T;
 		d_momentum_X_flux_Y[INDEX] = momentum_X_flux_T;
 		d_momentum_Y_flux_Y[INDEX] = momentum_Y_flux_T;
 		d_energy_flux_Y[INDEX] = energy_flux_T;
-		d_mass_fraction_flux_Y[INDEX] = mass_fraction_flux_T;
+//		d_mass_fraction_flux_Y[INDEX] = mass_fraction_flux_T;
 	} else {
 		d_mass_flux_Y[INDEX] = (W_T * mass_flux_B - W_B * mass_flux_T + W_B * W_T * (mass_T - mass_B)) / (W_T - W_B);
 		d_momentum_X_flux_Y[INDEX] = (W_T * momentum_X_flux_B - W_B * momentum_X_flux_T + W_B * W_T * (momentum_X_T - momentum_X_B)) / (W_T - W_B);
 		d_momentum_Y_flux_Y[INDEX] = (W_T * momentum_Y_flux_B - W_B * momentum_Y_flux_T + W_B * W_T * (momentum_Y_T - momentum_Y_B)) / (W_T - W_B);
 		d_energy_flux_Y[INDEX] = (W_T * energy_flux_B - W_B * energy_flux_T + W_B * W_T * (energy_T - energy_B)) / (W_T - W_B);
-		d_mass_fraction_flux_Y[INDEX] = (W_T * mass_fraction_flux_B - W_B * mass_fraction_flux_T + W_B * W_T * (mass_fraction_T - mass_fraction_B)) / (W_T - W_B);
+//		d_mass_fraction_flux_Y[INDEX] = (W_T * mass_fraction_flux_B - W_B * mass_fraction_flux_T + W_B * W_T * (mass_fraction_T - mass_fraction_B)) / (W_T - W_B);
 	}
 //------------------------------viscosity and thremal conductivity term----------------------------------
 	// 網格索引 (C=下網格, T=上網格)
@@ -204,13 +203,12 @@ __device__ void Calc_HLL_Y_flux(float rho_B, float rho_T, float u_B, float u_T, 
 	float viscous_energy_flux = (u_interface * tau_yx) + (v_interface * tau_yy) - q_y;
 	d_energy_flux_Y[INDEX] -= viscous_energy_flux;
 //-------------------------------------------------------------------------------------------
-/*
 	if (d_mass_flux_Y[INDEX] > 0.0) {
 		d_mass_fraction_flux_Y[INDEX] = d_mass_flux_Y[INDEX] * Y_B;
 	} else {
 		d_mass_fraction_flux_Y[INDEX] = d_mass_flux_Y[INDEX] * Y_T;
 	}
-*/
+
 	float rho_face_Y = 0.5 * (rho_B + rho_T);
 	d_mass_fraction_flux_Y[INDEX] -= rho_face_Y * D * ((Y_center_T - Y_center_B) / dy);
 }
@@ -325,8 +323,8 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 				u_R_star = -u_L_star;
 				v_R_star = -v_L_star;
 				T_R_star = T_L_star;
-				P_L_star = P_R_star;
-				E_L_star = E_R_star;
+				P_R_star = P_L_star;
+				E_R_star = E_L_star;
 				Y_R_star = Y_L_star;
 				R_mix_R = R_mix_L;
 				Cv_mix_R = Cv_mix_L;
@@ -439,8 +437,8 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 				u_T_star = -u_B_star;
 				v_T_star = -v_B_star;
 				T_T_star = T_B_star;
-				P_B_star = P_T_star;
-				E_B_star = E_T_star;
+				P_T_star = P_B_star;
+				E_T_star = E_B_star;
 				Y_T_star = Y_B_star;
 				R_mix_T = R_mix_B;
 				Cv_mix_T = Cv_mix_B;

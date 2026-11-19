@@ -65,7 +65,7 @@ int main(){
 			      d_mass_flux_X, d_momentum_X_flux_X, d_momentum_Y_flux_X, d_energy_flux_X, d_mass_fraction_flux_X,
 			      d_mass_flux_Y, d_momentum_X_flux_Y, d_momentum_Y_flux_Y, d_energy_flux_Y, d_mass_fraction_flux_Y,
 			      d_B,
-			      R_dry, R_v, D, mu, K, dx, dy, NX, NY, N_CELLS);
+			      R_dry, R_v, D, K, mu, dx, dy, NX, NY, N_CELLS);
 
 		Calc_primitive_variable(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6,
 					d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction,
@@ -80,14 +80,14 @@ int main(){
 			      d_mass_flux_X, d_momentum_X_flux_X, d_momentum_Y_flux_X, d_energy_flux_X, d_mass_fraction_flux_X,
 			      d_mass_flux_Y, d_momentum_X_flux_Y, d_momentum_Y_flux_Y, d_energy_flux_Y, d_mass_fraction_flux_Y,
 			      d_B,
-			      R_dry, R_v, D, mu, K, dx, dy, NX, NY, N_CELLS);
+			      R_dry, R_v, D, K, mu, dx, dy, NX, NY, N_CELLS);
 
 		Calc_primitive_variable_Stage2(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6,
 					       d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction,
 					       d_mass_flux_X, d_momentum_X_flux_X, d_momentum_Y_flux_X, d_energy_flux_X, d_mass_fraction_flux_X,
 					       d_mass_flux_Y, d_momentum_X_flux_Y, d_momentum_Y_flux_Y, d_energy_flux_Y, d_mass_fraction_flux_Y,
-					       d_B,
 					       d_mass_old, d_momentum_X_old, d_momentum_Y_old, d_energy_old, d_mass_fraction_old,
+					       d_B,
 					       R_dry, R_v, dx, dy, dt, NX, NY, N_CELLS);
 /*
 	// For make animations
