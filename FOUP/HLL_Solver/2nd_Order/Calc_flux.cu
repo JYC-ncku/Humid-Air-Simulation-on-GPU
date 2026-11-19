@@ -312,6 +312,8 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 				u_L_star = -u_R_star;
 				v_L_star = -v_R_star;
 				T_L_star = T_R_star;
+				P_L_star = P_R_star;
+				E_L_star = E_R_star;
 				Y_L_star = Y_R_star;
 				R_mix_L = R_mix_R;
 				Cv_mix_L = Cv_mix_R;
@@ -323,6 +325,8 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 				u_R_star = -u_L_star;
 				v_R_star = -v_L_star;
 				T_R_star = T_L_star;
+				P_L_star = P_R_star;
+				E_L_star = E_R_star;
 				Y_R_star = Y_L_star;
 				R_mix_R = R_mix_L;
 				Cv_mix_R = Cv_mix_L;
@@ -422,6 +426,8 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 				u_B_star = -u_T_star;
 				v_B_star = -v_T_star;
 				T_B_star = T_T_star;
+				P_B_star = P_T_star;
+				E_B_star = E_T_star;
 				Y_B_star = Y_T_star;
 				R_mix_B = R_mix_T;
 				Cv_mix_B = Cv_mix_T;
@@ -433,6 +439,8 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 				u_T_star = -u_B_star;
 				v_T_star = -v_B_star;
 				T_T_star = T_B_star;
+				P_B_star = P_T_star;
+				E_B_star = E_T_star;
 				Y_T_star = Y_B_star;
 				R_mix_T = R_mix_B;
 				Cv_mix_T = Cv_mix_B;

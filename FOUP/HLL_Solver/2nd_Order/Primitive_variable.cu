@@ -80,9 +80,9 @@ __global__ void GPU_Calc_primitive_variable(float *d_p0, float *d_p1, float *d_p
 				T_old = d_p3[INDEX];
 				phi_new = d_p5[INDEX];
 
-				//d_p3[INDEX] = compute_T(T_old, phi_new, e_target);
-				Cv_mix = Compute_Cv(T_old, phi_new);
-				d_p3[INDEX] = e_target / Cv_mix;
+				d_p3[INDEX] = compute_T(T_old, phi_new, e_target);
+//				Cv_mix = Compute_Cv(T_old, phi_new);
+//				d_p3[INDEX] = e_target / Cv_mix;
 
 				R_mix = R_dry * (1.0 - d_p5[INDEX]) + R_v * d_p5[INDEX];
 				d_p4[INDEX] = d_p0[INDEX] * R_mix * d_p3[INDEX];
