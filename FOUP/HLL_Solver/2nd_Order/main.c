@@ -23,8 +23,6 @@ int main(){
 	float H = 1.55; // unit: m
 	double t = 0;
 	double t_FINAL = 0.5; // unit: s
-//	float R = 1.0;
-//	float GAMMA = 1.4;
 	float CFL = 0.8;
 	float dx = L/NX; // 0.0025
 	float dy = H/NY; // 0.0025
