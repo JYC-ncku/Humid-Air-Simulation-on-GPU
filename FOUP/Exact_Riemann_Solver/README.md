@@ -1,0 +1,25 @@
+# FOUP Simulation
+The code here uses the Exact Riemann Solver to simulate the FOUP problem, comparing 1st-order and 2nd-order spatial Reconstruction.
+For the 2nd-order, I use two different limiters — MC and MINMOD.
+To better observe the flow field evolution, I have compiled the results into animations, which you can download to view.
+
+## 1st_Order
+
+The code in this folder uses first-order spatial accuracy for the simulation and includes both CPU and GPU versions.
+I first ran the CPU version to verify that the simulation converged without diverging, and then ported it to GPU for parallel acceleration.
+This also allows me to check whether the GPU computation results match the CPU baseline and are free of bugs.
+
+Results of CPU are in [here](./1st_Order/CPU)
+
+Results of GPU are in [here](./1st_Order/GPU)
+
+## 2nd_Order_MINMOD
+The code here performs second-order spatial reconstruction using the MINMOD limiter.
+Simultaneously, to prevent numerical dissipation, the time stepping is upgraded to second-order accuracy using the RK2 method (Second-order Runge-Kutta method).
+
+Results of MINMOD are in [here](./2nd_Order_MINMOD)
+
+## 2nd_Order_MC
+The code here performs second-order spatial reconstruction using the MC limiter.
+
+Results of MC are in [here](./2nd_Order_MC)
