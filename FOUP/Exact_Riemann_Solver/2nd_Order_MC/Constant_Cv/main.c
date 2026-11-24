@@ -21,7 +21,7 @@ int main(){
 	float L = 0.959; // unit: m
 	float H = 1.55; // unit: m
 	double t = 0;
-	double t_FINAL = 0.5; // unit: s
+	double t_FINAL = 75.0; // unit: s
 	float CFL = 0.8;
 	float dx = L/NX; // 0.0025
 	float dy = H/NY; // 0.0025
@@ -44,11 +44,11 @@ int main(){
 	Initial(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, d_B, d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction, MAX_Freq, d_MAX_CFL, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
 
 	int step = 0;
-/*
+
 	double output_interval = 0.5; // 每 1.0 秒輸出一次
 	double next_output_time = 0.0; // 下一次輸出的時間點
 	int frame_count = 0;          // 影格編號
-*/
+
 	while(t < t_FINAL){
 		double dt = Compute_dt(MAX_Freq, d_MAX_CFL, d_p0, d_p1, d_p2, d_p3, d_p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
 
@@ -75,7 +75,7 @@ int main(){
 					       d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction,
 					       d_mass_old, d_momentum_X_old, d_momentum_Y_old, d_energy_old, d_mass_fraction_old,
 					       d_flux_X, d_flux_Y, d_B, R_dry, R_v, dx, dy, dt, NX, NY, N_CELLS);
-/*
+
 	// For make animations
 	if (t >= next_output_time) {
 		printf("Saving Frame %03d at t = %.3lg...\n", frame_count, t);
@@ -109,7 +109,7 @@ int main(){
 		next_output_time += output_interval; // 設定下一次拍照時間
 
 	}
-*/
+
 		t += dt;
 		step++;
 		if (step % 100 == 0) {
@@ -121,7 +121,7 @@ int main(){
 		}
 
 	}
-
+/*
 	//Get the data from device
 	Get_From_Device(&h_p0, &d_p0, N_CELLS);
 	Get_From_Device(&h_p1, &d_p1, N_CELLS);
@@ -143,7 +143,7 @@ int main(){
 		}
 	}
 	fclose(pFile);
-
+*/
 	Free_memory(&h_p0, &h_p1, &h_p2, &h_p3, &h_p4, &h_p5, &h_p6, &h_B,
 		    &d_p0, &d_p1, &d_p2, &d_p3, &d_p4, &d_p5, &d_p6, &d_B,
 		    &d_mass, &d_momentum_X, &d_momentum_Y, &d_energy, &d_mass_fraction,
