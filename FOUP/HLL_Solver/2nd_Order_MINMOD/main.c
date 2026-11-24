@@ -1,0 +1,167 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include "memory.h"
+#include "Initial.h"
+#include "Boundary.h"
+#include "Calc_flux.h"
+#include "Primitive_variable.h"
+
+int main(){
+	int NX = 384;
+	int NY = 620;
+	int N_CELLS = (NX+4) * (NY+4); // 1 Ghost cells
+	 // p0: Density (rho), p1: X-velocity (u), p2: Y-velocity (v), p3: Temperature (T), p4: Pressure (p), p5: Mass fraction (Y_v), p6: Relative humidity (RH)
+	float *h_p0, *h_p1, *h_p2, *h_p3, *h_p4, *h_p5, *h_p6, *h_B,
+	      *d_p0, *d_p1, *d_p2, *d_p3, *d_p4, *d_p5, *d_p6, *d_B,
+	      *d_mass, *d_momentum_X, *d_momentum_Y, *d_energy, *d_mass_fraction,
+	      *d_mass_flux_X, *d_momentum_X_flux_X, *d_momentum_Y_flux_X, *d_energy_flux_X, *d_mass_fraction_flux_X,
+	      *d_mass_flux_Y, *d_momentum_X_flux_Y, *d_momentum_Y_flux_Y, *d_energy_flux_Y, *d_mass_fraction_flux_Y,
+	      *MAX_Freq, *d_MAX_CFL,
+	      *d_mass_old, *d_momentum_X_old, *d_momentum_Y_old, *d_energy_old, *d_mass_fraction_old;
+	float L = 0.959; // unit: m
+	float H = 1.55; // unit: m
+	double t = 0;
+	double t_FINAL = 75.0; // unit: s
+	float CFL = 0.8;
+	float dx = L/NX; // 0.0025
+	float dy = H/NY; // 0.0025
+	float D = 1.837e-5; // Diffusivity of water vapor. unit:(m^2/s)
+	float mu = 1.83e-5; // Dynamic Viscosity unit:(Pa * s)
+	float K = 0.026; // Thermal Conductivity (W/(m * K))
+	float R_bar = 8.3145; // unti:J/(mol*K)
+	float MW_H2O = 0.01802; // unit:kg/mol
+	float MW_air = 0.02897; // unit:kg/mol
+	float R_v = R_bar / MW_H2O; // unit:J/(kg*k) R = R_bar / Molecular weight
+	float R_dry = R_bar / MW_air;
+
+	Allocate_memory(&h_p0, &h_p1, &h_p2, &h_p3, &h_p4, &h_p5, &h_p6, &h_B,
+			&d_p0, &d_p1, &d_p2, &d_p3, &d_p4, &d_p5, &d_p6, &d_B,
+			&d_mass, &d_momentum_X, &d_momentum_Y, &d_energy, &d_mass_fraction,
+			&d_mass_flux_X, &d_momentum_X_flux_X, &d_momentum_Y_flux_X, &d_energy_flux_X, &d_mass_fraction_flux_X,
+			&d_mass_flux_Y, &d_momentum_X_flux_Y, &d_momentum_Y_flux_Y, &d_energy_flux_Y, &d_mass_fraction_flux_Y,
+			&MAX_Freq, &d_MAX_CFL,
+			&d_mass_old, &d_momentum_X_old, &d_momentum_Y_old, &d_energy_old, &d_mass_fraction_old, N_CELLS);
+
+	Initial(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, d_B, d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction, MAX_Freq, d_MAX_CFL, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
+
+	int step = 0;
+
+	double output_interval = 0.5; // 每 1.0 秒輸出一次
+	double next_output_time = 0.0; // 下一次輸出的時間點
+	int frame_count = 0;          // 影格編號
+
+	while(t < t_FINAL){
+		double dt = Compute_dt(MAX_Freq, d_MAX_CFL, d_p0, d_p1, d_p2, d_p3, d_p5, dx, dy, R_dry, R_v, CFL, NX, NY, N_CELLS);
+
+		Save_Old_State(d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction,
+			       d_mass_old, d_momentum_X_old, d_momentum_Y_old, d_energy_old, d_mass_fraction_old, N_CELLS);
+
+		Boundary(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
+
+		Calc_Tot_Flux(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5,
+			      d_mass_flux_X, d_momentum_X_flux_X, d_momentum_Y_flux_X, d_energy_flux_X, d_mass_fraction_flux_X,
+			      d_mass_flux_Y, d_momentum_X_flux_Y, d_momentum_Y_flux_Y, d_energy_flux_Y, d_mass_fraction_flux_Y,
+			      d_B,
+			      R_dry, R_v, D, K, mu, dx, dy, NX, NY, N_CELLS);
+
+		Calc_primitive_variable(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6,
+					d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction,
+					d_mass_flux_X, d_momentum_X_flux_X, d_momentum_Y_flux_X, d_energy_flux_X, d_mass_fraction_flux_X,
+					d_mass_flux_Y, d_momentum_X_flux_Y, d_momentum_Y_flux_Y, d_energy_flux_Y, d_mass_fraction_flux_Y,
+					d_B,
+					R_dry, R_v, dx, dy, dt, NX, NY, N_CELLS);
+		// Stage 2
+		Boundary(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6, R_dry, R_v, dx, dy, NX, NY, N_CELLS);
+
+		Calc_Tot_Flux(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5,
+			      d_mass_flux_X, d_momentum_X_flux_X, d_momentum_Y_flux_X, d_energy_flux_X, d_mass_fraction_flux_X,
+			      d_mass_flux_Y, d_momentum_X_flux_Y, d_momentum_Y_flux_Y, d_energy_flux_Y, d_mass_fraction_flux_Y,
+			      d_B,
+			      R_dry, R_v, D, K, mu, dx, dy, NX, NY, N_CELLS);
+
+		Calc_primitive_variable_Stage2(d_p0, d_p1, d_p2, d_p3, d_p4, d_p5, d_p6,
+					       d_mass, d_momentum_X, d_momentum_Y, d_energy, d_mass_fraction,
+					       d_mass_flux_X, d_momentum_X_flux_X, d_momentum_Y_flux_X, d_energy_flux_X, d_mass_fraction_flux_X,
+					       d_mass_flux_Y, d_momentum_X_flux_Y, d_momentum_Y_flux_Y, d_energy_flux_Y, d_mass_fraction_flux_Y,
+					       d_mass_old, d_momentum_X_old, d_momentum_Y_old, d_energy_old, d_mass_fraction_old,
+					       d_B,
+					       R_dry, R_v, dx, dy, dt, NX, NY, N_CELLS);
+
+	// For make animations
+	if (t >= next_output_time) {
+		printf("Saving Frame %03d at t = %.3lg...\n", frame_count, t);
+
+		//Get the data from device
+		Get_From_Device(&h_p0, &d_p0, N_CELLS);
+		Get_From_Device(&h_p1, &d_p1, N_CELLS);
+		Get_From_Device(&h_p2, &d_p2, N_CELLS);
+		Get_From_Device(&h_p3, &d_p3, N_CELLS);
+		Get_From_Device(&h_p4, &d_p4, N_CELLS);
+		Get_From_Device(&h_p5, &d_p5, N_CELLS);
+		Get_From_Device(&h_p6, &d_p6, N_CELLS);
+		Get_From_Device(&h_B, &d_B, N_CELLS);
+
+		char filename[100];
+		sprintf(filename, "Results_frame_%03d.txt", frame_count);
+
+		FILE *pFile = fopen(filename, "w");
+		for (int i = 2; i < NX + 2; i++){
+			for (int j = 2; j < NY + 2; j++){
+				int INDEX = i * (NY+4) + j;
+				float X = (i - 1.5) * dx;
+				float Y = (j - 1.5) * dy;
+				fprintf(pFile, "%.4f\t%.4f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n", X, Y, h_p0[INDEX], h_p1[INDEX], h_p2[INDEX], h_p3[INDEX],
+													       h_p4[INDEX], h_p5[INDEX], h_p6[INDEX], h_B[INDEX]);
+			}
+		}
+		fclose(pFile);
+
+		frame_count++;
+		next_output_time += output_interval; // 設定下一次拍照時間
+
+	}
+
+		t += dt;
+		step++;
+		if (step % 100 == 0) {
+			printf("Current time = %.6lg / %.2lg\n", t, t_FINAL);
+			float actual_CFL_diff = D * dt * (1.0 / (dx * dx) + 1.0 / (dy * dy));
+			printf("  => Actual NS CFL: %.4f\n", CFL);
+			printf("  => Actual Diff CFL: %e\n", actual_CFL_diff);
+
+		}
+
+	}
+/*
+	//Get the data from device
+	Get_From_Device(&h_p0, &d_p0, N_CELLS);
+	Get_From_Device(&h_p1, &d_p1, N_CELLS);
+	Get_From_Device(&h_p2, &d_p2, N_CELLS);
+	Get_From_Device(&h_p3, &d_p3, N_CELLS);
+	Get_From_Device(&h_p4, &d_p4, N_CELLS);
+	Get_From_Device(&h_p5, &d_p5, N_CELLS);
+	Get_From_Device(&h_p6, &d_p6, N_CELLS);
+	Get_From_Device(&h_B, &d_B, N_CELLS);
+
+	FILE *pFile = fopen("Results_of_384x620_cells_0.5s.txt", "w");
+	for (int i = 2; i < NX + 2; i++){
+		for (int j = 2; j < NY + 2; j++){
+			int INDEX = i * (NY+4) + j;
+			float X = (i - 1.5) * dx;
+			float Y = (j - 1.5) * dy;
+			fprintf(pFile, "%.4f\t%.4f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\t%.6f\n",
+					X, Y, h_p0[INDEX], h_p1[INDEX], h_p2[INDEX], h_p3[INDEX], h_p4[INDEX], h_p5[INDEX], h_p6[INDEX], h_B[INDEX]);
+		}
+	}
+	fclose(pFile);
+*/
+	Free_memory(&h_p0, &h_p1, &h_p2, &h_p3, &h_p4, &h_p5, &h_p6, &h_B,
+		    &d_p0, &d_p1, &d_p2, &d_p3, &d_p4, &d_p5, &d_p6, &d_B,
+		    &d_mass, &d_momentum_X, &d_momentum_Y, &d_energy, &d_mass_fraction,
+		    &d_mass_flux_X, &d_momentum_X_flux_X, &d_momentum_Y_flux_X, &d_energy_flux_X, &d_mass_fraction_flux_X,
+		    &d_mass_flux_Y, &d_momentum_X_flux_Y, &d_momentum_Y_flux_Y, &d_energy_flux_Y, &d_mass_fraction_flux_Y,
+		    &MAX_Freq, &d_MAX_CFL,
+		    &d_mass_old, &d_momentum_X_old, &d_momentum_Y_old, &d_energy_old, &d_mass_fraction_old);
+return 0;
+}
