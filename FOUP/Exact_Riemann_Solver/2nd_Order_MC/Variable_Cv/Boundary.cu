@@ -7,17 +7,10 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 	float X_WALL = 0.344;
 	float X_INLET_1 = 0.444; // INLET 1 hole width = 100 mm; 0.344+0.1=0.444
 	float X_INLET_2 = 0.759; // INLET 2 hole width = 200 mm; 0.959-0.2=0.759
-	float Y_LOWER_WALL = 0.662;
 	float Y_UPPER_WALL = 0.982;
 	float Y_LOWER_HOLE = 0.932;
 	float T_in = 300.0; // Inlet temperature = 300 K
 	float P_out = 101325.0; // Outlet pressure = 1 atm
-	int X_wall = (int)round(X_WALL / dx);
-	int X_inlet_1 = (int)round(X_INLET_1 / dx);
-	int X_inlet_2 = (int)round(X_INLET_2 / dx);
-	int Y_lower_wall = (int)round(Y_LOWER_WALL / dy);
-	int Y_upper_wall = (int)round(Y_UPPER_WALL / dy);
-	int Y_lower_hole = (int)round(Y_LOWER_HOLE / dy);
 
 	int INDEX = blockIdx.x * blockDim.x + threadIdx.x;
 	int i = (int)INDEX / (NY+4);
@@ -55,7 +48,7 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 			int LEFT_INNER = 2 * (NY+4) + j;
 			int LEFT_LEFT_INNER = 3 * (NY+4) + j;
 
-			if (Y >= Y_lower_hole && Y <= Y_upper_wall){
+			if (Y >= Y_LOWER_HOLE && Y <= Y_UPPER_WALL){
 				d_p1[LEFT_GHOST] = 1.0; // Inflow u = 1.0 m/s
 				d_p2[LEFT_GHOST] = 0.0; // Inflow v = 0.0 m/s
 				d_p3[LEFT_GHOST] = T_in;
@@ -94,7 +87,7 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 			int TOP_INNER = i * (NY+4) + (NY+1);
 			int TOP_TOP_INNER = i * (NY+4) + NY;
 			// Inlet 1
-			if (X >= X_wall + 1 && X <= X_inlet_1){
+			if (X >= X_WALL + 1 && X <= X_INLET_1){
 				d_p1[TOP_GHOST] = 0.0; // Inlet u = 0.0 m/s
 				d_p2[TOP_GHOST] = -1.0; // Inlet v = -1.0 m/s
 				d_p3[TOP_GHOST] = T_in;
@@ -110,7 +103,7 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 				d_p4[TOP_TOP_GHOST] = d_p4[TOP_GHOST];
 				d_p5[TOP_TOP_GHOST] = d_p5[TOP_GHOST];
 			// Inlet 2
-			} else if( i >= X_inlet_2 && i < NX + 2){
+			} else if( X >= X_INLET_2){
 				d_p1[TOP_GHOST] = 0.0; // Inlet u = 0.0 m/s
 				d_p2[TOP_GHOST] = -0.5; // Inlet v = -0.5 m/s
 				d_p3[TOP_GHOST] = T_in;
@@ -150,7 +143,7 @@ __global__ void GPU_Boundary(float *d_p0, float *d_p1, float *d_p2, float *d_p3,
 			int BOTTOM_BOTTOM_GHOST = i * (NY+4) + 0;
 			int BOTTOM_INNER = i * (NY+4) + 2;
 			int BOTTOM_BOTTOM_INNER = i * (NY+4) + 3;
-			if (X >= X_wall) {
+			if (X >= X_WALL) {
 				d_p1[BOTTOM_GHOST] = d_p1[BOTTOM_INNER];
 				d_p2[BOTTOM_GHOST] = d_p2[BOTTOM_INNER];
 				d_p3[BOTTOM_GHOST] = d_p3[BOTTOM_INNER];
