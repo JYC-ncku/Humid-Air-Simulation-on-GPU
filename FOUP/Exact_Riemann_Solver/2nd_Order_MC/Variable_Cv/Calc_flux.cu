@@ -976,7 +976,7 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 				Cv_mix_B = Cv_mix_T;
 				Gamma_B = Gamma_T;
 				cRT_B_star = cRT_T_star;
-			// Bottom is wall
+			// Top is wall
 			} else if(d_B[INDEX] == 0.0 && d_B[INDEX_T] == 1.0){
 				rho_T_star = rho_B_star;
 				u_T_star = -u_B_star;
@@ -1006,7 +1006,7 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 				float dY_dy_interface = (Y_T - Y_C) / dy;
 				d_flux_Y[INDEX*6 + 5] += - rho_interface_Y * D * dY_dy_interface;
 
-				// Add Navier-Stokes viscosity and thermal conductivity term (X-dir)
+				// Add Navier-Stokes viscosity and thermal conductivity term (Y-dir)
 				// 1. Calc the forward gradient at the interface
 				float du_dy = (u_T - u_C) / dy;
 				float dv_dy = (v_T - v_C) / dy;
