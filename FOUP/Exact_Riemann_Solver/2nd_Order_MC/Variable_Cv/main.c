@@ -21,7 +21,7 @@ int main(){
 	float L = 0.959; // unit: m
 	float H = 1.55; // unit: m
 	double t = 0;
-	double t_FINAL = 0.1; // unit: s
+	double t_FINAL = 0.5; // unit: s
 	float CFL = 0.8;
 	float dx = L/NX; // 0.0025
 	float dy = H/NY; // 0.0025
