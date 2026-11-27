@@ -16,6 +16,23 @@ __device__ float MINMOD(float U_L, float U_C, float U_R, float dx){
 	return dU_dx;
 }
 
+__device__ float MC(float U_L, float U_C, float U_R, float dx){
+	float dU_dx;
+	float Forward = 2.0 * (U_R - U_C) / dx;
+	float Backward = 2.0 * (U_C - U_L) / dx;
+	float Central = (U_R - U_L) / (2.0 * dx);
+	if (Backward * Forward < 0){
+		dU_dx = 0;
+	} else if (fabs(Forward) < fabs(Backward) && fabs(Forward) < fabs(Central)){
+		dU_dx = Forward;
+	} else if (fabs(Backward) < fabs(Forward) && fabs(Backward) < fabs(Central)){
+		dU_dx = Backward;
+	} else {
+		dU_dx = Central;
+	}
+	return dU_dx;
+}
+
 __device__ void Calc_flux(float *d_interface_p, float *d_flux,
 			  float QL_rho, float QL_ux, float QL_vy, float QL_vz, float QL_cRT, float R_mix_L, float Cv_mix_L, float Gamma_L, float Y_L_star,
 			  float QR_rho, float QR_ux, float QR_vy, float QR_vz, float QR_cRT, float R_mix_R, float Cv_mix_R, float Gamma_R, float Y_R_star,
@@ -813,38 +830,55 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 				  1.0, 0.0, 0.0,
 				  0.0, 1.0, 0.0,
 				  0.0, 0.0, 1.0, 0.0);
+			if (d_B[INDEX] == 0.0 && d_B[INDEX_R] == 0.0){
+				float rho_interface_X = 0.5 * (rho_C + rho_R);
+				float dY_dx_interface = (Y_R- Y_C) / dx;
+				d_flux_X[INDEX*6 + 5] += - rho_interface_X * D * dY_dx_interface;
 
-			float rho_interface_X = 0.5 * (rho_C + rho_R);
-			float dY_dx_interface = (Y_R- Y_C) / dx;
-			d_flux_X[INDEX*6 + 5] += - rho_interface_X * D * dY_dx_interface;
+				// Add Navier-Stokes viscosity and thermal conductivity term (X-dir)
+				// 1. Calc the forward gradient at the interface
+				float du_dx = (u_R - u_C) / dx;
+				float dv_dx = (v_R - v_C) / dx;
+				float dT_dx = (T_R - T_C) / dx;
 
-			// Add Navier-Stokes viscosity and thermal conductivity term (X-dir)
-			// 1. Calc the forward gradient at the interface
-			float du_dx = (u_R - u_C) / dx;
-			float dv_dx = (v_R - v_C) / dx;
-			float dT_dx = (T_R - T_C) / dx;
+				// 2. Calc the tangential gradient at the interface
+				int INDEX_R_T = (i + 1) * (NY + 4) + (j + 1);
+				int INDEX_R_B = (i + 1) * (NY + 4) + (j - 1);
+				float du_dy = 0.5 * ( (d_p1[INDEX_T] - d_p1[INDEX_B]) / (2.0 * dy)
+						  + (d_p1[INDEX_R_T] - d_p1[INDEX_R_B]) / (2.0 * dy) );
+				float dv_dy = 0.5 * ( (d_p2[INDEX_T] - d_p2[INDEX_B]) / (2.0 * dy)
+						  + (d_p2[INDEX_R_T] - d_p2[INDEX_R_B]) / (2.0 * dy) );
 
-			// 2. Calc the tangential gradient at the interface
-			int INDEX_R_T = (i + 1) * (NY + 4) + (j + 1);
-			int INDEX_R_B = (i + 1) * (NY + 4) + (j - 1);
-			float du_dy = 0.5 * ( (d_p1[INDEX_T] - d_p1[INDEX_B]) / (2.0 * dy)
-					  + (d_p1[INDEX_R_T] - d_p1[INDEX_R_B]) / (2.0 * dy) );
-			float dv_dy = 0.5 * ( (d_p2[INDEX_T] - d_p2[INDEX_B]) / (2.0 * dy)
-					  + (d_p2[INDEX_R_T] - d_p2[INDEX_R_B]) / (2.0 * dy) );
+				// 3. Calc the shear stress tensor and heat flux
+				float tau_xx = (4.0/3.0) * mu * du_dx - (2.0/3.0) * mu * dv_dy;
+				float tau_xy = mu * (du_dy + dv_dx);
+				float q_x = -K * dT_dx;
 
-			// 3. Calc the shear stress tensor and heat flux
-			float tau_xx = (4.0/3.0) * mu * du_dx - (2.0/3.0) * mu * dv_dy;
-			float tau_xy = mu * (du_dy + dv_dx);
-			float q_x = -K * dT_dx;
+				// 4. Calc the average velocity at the interface
+				float u_int_X = 0.5 * (u_C + u_R);
+				float v_int_X = 0.5 * (v_C + v_R);
 
-			// 4. Calc the average velocity at the interface
-			float u_int_X = 0.5 * (u_C + u_R);
-			float v_int_X = 0.5 * (v_C + v_R);
-
-			// 5. Total flux = Exact Riemann flux - viscousity flux
-			d_flux_X[INDEX*6 + 1] -= tau_xx;                                     // X-Momentum flux
-			d_flux_X[INDEX*6 + 2] -= tau_xy;                                     // Y-Momentum flux
-			d_flux_X[INDEX*6 + 4] -= (u_int_X * tau_xx + v_int_X * tau_xy - q_x); // Energy flux
+				// 5. Total flux = Exact Riemann flux - viscousity flux
+				d_flux_X[INDEX*6 + 1] -= tau_xx;                                     // X-Momentum flux
+				d_flux_X[INDEX*6 + 2] -= tau_xy;                                     // Y-Momentum flux
+				d_flux_X[INDEX*6 + 4] -= (u_int_X * tau_xx + v_int_X * tau_xy - q_x); // Energy flux
+			// Left is wall
+			} else if (d_B[INDEX] == 1.0 && d_B[INDEX_R] == 0.0){
+				float du_dx = 2.0 * u_R / dx;
+				float dv_dx = 2.0 * v_R / dx;
+				float tau_xx = (4.0/3.0) * mu * du_dx;
+				float tau_xy = mu * dv_dx;
+				d_flux_X[INDEX*6 + 1] -= tau_xx;
+				d_flux_X[INDEX*6 + 2] -= tau_xy;
+			// Right is wall
+			} else if (d_B[INDEX] == 0.0 && d_B[INDEX_R] == 1.0){
+				float du_dx = -2.0 * u_C / dx;
+				float dv_dx = -2.0 * v_C / dx;
+				float tau_xx = (4.0/3.0) * mu * du_dx;
+				float tau_xy = mu * dv_dx;
+				d_flux_X[INDEX*6 + 1] -= tau_xx;
+				d_flux_X[INDEX*6 + 2] -= tau_xy;
+			}
 		}
 	}
 		//Y-dir
@@ -942,7 +976,7 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 				Cv_mix_B = Cv_mix_T;
 				Gamma_B = Gamma_T;
 				cRT_B_star = cRT_T_star;
-			// Bottom is wall
+			// Top is wall
 			} else if(d_B[INDEX] == 0.0 && d_B[INDEX_T] == 1.0){
 				rho_T_star = rho_B_star;
 				u_T_star = -u_B_star;
@@ -967,38 +1001,55 @@ __global__ void GPU_Calc_Tot_Flux(float *d_p0, float *d_p1, float *d_p2, float *
 				  0.0, 1.0, 0.0,
 				  -1.0, 0.0, 0.0,
 				  0.0, 0.0, 1.0, 0.0);
+			if (d_B[INDEX] == 0.0 && d_B[INDEX_T] == 0.0){
+				float rho_interface_Y = 0.5 * (rho_C + rho_T);
+				float dY_dy_interface = (Y_T - Y_C) / dy;
+				d_flux_Y[INDEX*6 + 5] += - rho_interface_Y * D * dY_dy_interface;
 
-			float rho_interface_Y = 0.5 * (rho_C + rho_T);
-			float dY_dy_interface = (Y_T - Y_C) / dy;
-			d_flux_Y[INDEX*6 + 5] += - rho_interface_Y * D * dY_dy_interface;
+				// Add Navier-Stokes viscosity and thermal conductivity term (Y-dir)
+				// 1. Calc the forward gradient at the interface
+				float du_dy = (u_T - u_C) / dy;
+				float dv_dy = (v_T - v_C) / dy;
+				float dT_dy = (T_T - T_C) / dy;
 
-			// Add Navier-Stokes viscosity and thermal conductivity term (X-dir)
-			// 1. Calc the forward gradient at the interface
-			float du_dy = (u_T - u_C) / dy;
-			float dv_dy = (v_T - v_C) / dy;
-			float dT_dy = (T_T - T_C) / dy;
+				// 2. Calc the tangential gradient at the interface
+				int INDEX_T_L = (i - 1) * (NY + 4) + (j + 1);
+				int INDEX_T_R = (i + 1) * (NY + 4) + (j + 1);
+				float du_dx = 0.5 * ( (d_p1[INDEX_R] - d_p1[INDEX_L]) / (2.0 * dx)
+						  + (d_p1[INDEX_T_R] - d_p1[INDEX_T_L]) / (2.0 * dx) );
+				float dv_dx = 0.5 * ( (d_p2[INDEX_R] - d_p2[INDEX_L]) / (2.0 * dx)
+						  + (d_p2[INDEX_T_R] - d_p2[INDEX_T_L]) / (2.0 * dx) );
 
-			// 2. Calc the tangential gradient at the interface
-			int INDEX_T_L = (i - 1) * (NY + 4) + (j + 1);
-			int INDEX_T_R = (i + 1) * (NY + 4) + (j + 1);
-			float du_dx = 0.5 * ( (d_p1[INDEX_R] - d_p1[INDEX_L]) / (2.0 * dx)
-					  + (d_p1[INDEX_T_R] - d_p1[INDEX_T_L]) / (2.0 * dx) );
-			float dv_dx = 0.5 * ( (d_p2[INDEX_R] - d_p2[INDEX_L]) / (2.0 * dx)
-					  + (d_p2[INDEX_T_R] - d_p2[INDEX_T_L]) / (2.0 * dx) );
+				// 3. Calc the shear stress tensor and heat flux
+				float tau_yy = (4.0/3.0) * mu * dv_dy - (2.0/3.0) * mu * du_dx;
+				float tau_yx = mu * (dv_dx + du_dy); // tau_yx = tau_xy
+				float q_y = -K * dT_dy;
 
-			// 3. Calc the shear stress tensor and heat flux
-			float tau_yy = (4.0/3.0) * mu * dv_dy - (2.0/3.0) * mu * du_dx;
-			float tau_yx = mu * (dv_dx + du_dy); // tau_yx = tau_xy
-			float q_y = -K * dT_dy;
+				// 4. Calc the average velocity at the interface
+				float u_int_Y = 0.5 * (u_C + u_T);
+				float v_int_Y = 0.5 * (v_C + v_T);
 
-			// 4. Calc the average velocity at the interface
-			float u_int_Y = 0.5 * (u_C + u_T);
-			float v_int_Y = 0.5 * (v_C + v_T);
-
-			// 5. Total flux = Exact Riemann flux - viscousity flux
-			d_flux_Y[INDEX*6 + 1] -= tau_yx;                                     // X-Momentum flux
-			d_flux_Y[INDEX*6 + 2] -= tau_yy;                                     // Y-Momentum flux
-			d_flux_Y[INDEX*6 + 4] -= (u_int_Y * tau_yx + v_int_Y * tau_yy - q_y); // Energy flux
+				// 5. Total flux = Exact Riemann flux - viscousity flux
+				d_flux_Y[INDEX*6 + 1] -= tau_yx;                                     // X-Momentum flux
+				d_flux_Y[INDEX*6 + 2] -= tau_yy;                                     // Y-Momentum flux
+				d_flux_Y[INDEX*6 + 4] -= (u_int_Y * tau_yx + v_int_Y * tau_yy - q_y); // Energy flux
+			// Bottom is wall
+			} else if (d_B[INDEX] == 1.0 && d_B[INDEX_T] == 0.0){
+				float du_dy = 2.0 * u_T / dy;
+				float dv_dy = 2.0 * v_T / dy;
+				float tau_yy = (4.0/3.0) * mu * dv_dy;
+				float tau_yx = mu * du_dy;
+				d_flux_Y[INDEX*6 + 1] -= tau_yx;
+				d_flux_Y[INDEX*6 + 2] -= tau_yy;
+			// Top is wall
+			} else if (d_B[INDEX] == 0.0 && d_B[INDEX_T] == 1.0){
+				float du_dy = -2.0 * u_C / dy;
+				float dv_dy = -2.0 * v_C / dy;
+				float tau_yy = (4.0/3.0) * mu * dv_dy;
+				float tau_yx = mu * du_dy;
+				d_flux_Y[INDEX*6 + 1] -= tau_yx;
+				d_flux_Y[INDEX*6 + 2] -= tau_yy;
+			}
 		}
 	}
 }

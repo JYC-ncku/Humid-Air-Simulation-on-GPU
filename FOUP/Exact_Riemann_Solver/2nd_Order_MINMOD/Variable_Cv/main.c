@@ -8,8 +8,8 @@
 #include "Primitive_variable.h"
 
 int main(){
-	int NX = 384;
-	int NY = 620;
+	int NX = 768;
+	int NY = 1240;
 	int N_CELLS = (NX+4) * (NY+4); // 1 Ghost cells
 	 // p0: Density (rho), p1: X-velocity (u), p2: Y-velocity (v), p3: Temperature (T), p4: Pressure (p), p5: Mass fraction (Y_v), p6: Relative humidity (RH)
 	float *h_p0, *h_p1, *h_p2, *h_p3, *h_p4, *h_p5, *h_p6, *h_B,
@@ -22,8 +22,6 @@ int main(){
 	float H = 1.55; // unit: m
 	double t = 0;
 	double t_FINAL = 75.0; // unit: s
-//	float R = 1.0;
-//	float GAMMA = 1.4;
 	float CFL = 0.8;
 	float dx = L/NX; // 0.0025
 	float dy = H/NY; // 0.0025
@@ -47,7 +45,7 @@ int main(){
 
 	int step = 0;
 
-	double output_interval = 0.5; // 每 1.0 秒輸出一次
+	double output_interval = 0.5; // 每 0.5 秒輸出一次
 	double next_output_time = 0.0; // 下一次輸出的時間點
 	int frame_count = 0;          // 影格編號
 

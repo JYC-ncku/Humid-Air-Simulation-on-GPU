@@ -14,6 +14,9 @@ __global__ void GPU_Initial(float *d_p0, float *d_p1, float *d_p2, float *d_p3, 
 	float R_mix, wafer_thickness, total_span_Y, start_Y, pitch_Y, y_bottom, y_top;
 
 	if (INDEX < N_CELLS){
+		d_B[INDEX] = 0.0;
+		MAX_Freq[INDEX] = 0.0;
+		d_MAX_CFL[INDEX] = 0.0;
 		if (i >= 2 && i < NX + 2 && j >= 2 && j < NY + 2){
 			d_p3[INDEX] = 300.0; // T = 300 K
 			d_p4[INDEX] = 101325.0; // P = 1 atm
@@ -24,7 +27,7 @@ __global__ void GPU_Initial(float *d_p0, float *d_p1, float *d_p2, float *d_p3, 
 			} else {
 				is_wafer = 0;
 				if (X >= 0.039 && X <= 0.339){
-					wafer_thickness = dy;
+					wafer_thickness = 0.0025;
 					num_wafers = 10;
 
 					total_span_Y = 0.3; // Total hight of all wafers
@@ -46,10 +49,6 @@ __global__ void GPU_Initial(float *d_p0, float *d_p1, float *d_p2, float *d_p3, 
 				}
 			}
 
-			if (X >= 0.494 && X <= 0.709 && Y == 1.55){
-				d_B[INDEX] = 1.0;
-			}
-
 			if (d_B[INDEX] == 1.0){
 				d_p1[INDEX] = 0.0;
 				d_p2[INDEX] = 0.0;
@@ -66,8 +65,6 @@ __global__ void GPU_Initial(float *d_p0, float *d_p1, float *d_p2, float *d_p3, 
 
 			R_mix = R_dry * (1 - d_p5[INDEX]) + R_v * d_p5[INDEX];
 			d_p0[INDEX] = d_p4[INDEX] / (R_mix * d_p3[INDEX]);
-			MAX_Freq[INDEX] = 0.0;
-			d_MAX_CFL[INDEX] = 0.0;
 
 			d_mass[INDEX] = d_p0[INDEX];
 			d_momentum_X[INDEX] = d_p0[INDEX] * d_p1[INDEX];
