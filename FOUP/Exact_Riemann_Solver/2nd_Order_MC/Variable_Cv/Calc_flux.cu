@@ -18,8 +18,8 @@ __device__ float MINMOD(float U_L, float U_C, float U_R, float dx){
 
 __device__ float MC(float U_L, float U_C, float U_R, float dx){
 	float dU_dx;
-	float Forward = 2.0 * (U_R - U_C) / dx;
-	float Backward = 2.0 * (U_C - U_L) / dx;
+	float Forward = 1.5 * (U_R - U_C) / dx;
+	float Backward = 1.5 * (U_C - U_L) / dx;
 	float Central = (U_R - U_L) / (2.0 * dx);
 	if (Backward * Forward < 0){
 		dU_dx = 0;

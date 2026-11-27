@@ -21,7 +21,7 @@ int main(){
 	float L = 0.959; // unit: m
 	float H = 1.55; // unit: m
 	double t = 0;
-	double t_FINAL = 0.5; // unit: s
+	double t_FINAL = 75.0; // unit: s
 	float CFL = 0.8;
 	float dx = L/NX; // 0.0025
 	float dy = H/NY; // 0.0025
@@ -45,7 +45,7 @@ int main(){
 
 	int step = 0;
 
-	double output_interval = 0.01; // 每 1.0 秒輸出一次
+	double output_interval = 0.5; // 每 0.5 秒輸出一次
 	double next_output_time = 0.0; // 下一次輸出的時間點
 	int frame_count = 0;          // 影格編號
 
